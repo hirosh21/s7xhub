@@ -7,7 +7,6 @@ local CREATOR_IDS = {2959681, 9216315975, 88189937}
 local ADMIN_IDS_RGB = {1870899605, 7668266040}
 local VIP_IDS_BW = {648989434, 9987756245}
 
-local isAuthorized = false
 local function checkAuth(id)
     for _, v in pairs(CREATOR_IDS) do if v == id then return true end end
     for _, v in pairs(ADMIN_IDS_RGB) do if v == id then return true end end
@@ -28,8 +27,13 @@ local TeleportService = game:GetService("TeleportService")
 local CoreGui = game:GetService("CoreGui")
 local TweenService = game:GetService("TweenService")
 
+local targetParent = (RunService:IsStudio() or not CoreGui) and player:WaitForChild("PlayerGui") or CoreGui
 local mouse = player:GetMouse()
+local camera = workspace.CurrentCamera
 local remoteEvent = ReplicatedStorage:WaitForChild("Modules"):WaitForChild("Events"):WaitForChild("RemoteEvent")
+
+-- DETECÇÃO DE PLATAFORMA
+local isMobile = UserInputService.TouchEnabled and not UserInputService.KeyboardEnabled
 
 local GROUP_ID = 34157675
 local ADMIN_ROLES = {
@@ -38,27 +42,65 @@ local ADMIN_ROLES = {
     ["Contributor"] = true, ["Developer"] = true, ["Owner"] = true
 }
 
-local ScreenGui = Instance.new("ScreenGui", CoreGui)
+local ScreenGui = Instance.new("ScreenGui", targetParent)
 ScreenGui.Name = "S7xhud_Panel"
+ScreenGui.ResetOnSpawn = false
 
 -----------------------------------------
---- LÓGICA DE TAGS COM DISTANCE LIMIT
+--- NOTIFICAÇÃO PC (10 SEGUNDOS)
+-----------------------------------------
+if not isMobile then
+    local NotifyFrame = Instance.new("TextLabel", ScreenGui)
+    NotifyFrame.Size = UDim2.new(0, 300, 0, 50)
+    NotifyFrame.Position = UDim2.new(0.5, -150, 0.1, 0)
+    NotifyFrame.BackgroundColor3 = Color3.fromRGB(0, 0, 0)
+    NotifyFrame.BackgroundTransparency = 0.2
+    NotifyFrame.Text = "APERTE G PARA APARECER O PAINEL"
+    NotifyFrame.TextColor3 = Color3.fromRGB(170, 0, 255)
+    NotifyFrame.Font = Enum.Font.GothamBold
+    NotifyFrame.TextSize = 14
+    Instance.new("UICorner", NotifyFrame)
+    Instance.new("UIStroke", NotifyFrame).Color = Color3.fromRGB(170, 0, 255)
+
+    task.spawn(function()
+        task.wait(10)
+        TweenService:Create(NotifyFrame, TweenInfo.new(1), {TextTransparency = 1, BackgroundTransparency = 1}):Play()
+        task.wait(1)
+        NotifyFrame:Destroy()
+    end)
+end
+
+-----------------------------------------
+--- BOTÃO FLUTUANTE (APENAS MOBILE)
+-----------------------------------------
+local OpenBtn = Instance.new("TextButton", ScreenGui)
+OpenBtn.Size = UDim2.new(0, 45, 0, 45)
+OpenBtn.Position = UDim2.new(0, 10, 0.5, -22)
+OpenBtn.BackgroundColor3 = Color3.fromRGB(0, 0, 0)
+OpenBtn.Text = "S7"
+OpenBtn.TextColor3 = Color3.fromRGB(255, 255, 255)
+OpenBtn.Font = Enum.Font.GothamBold
+OpenBtn.TextSize = 18
+OpenBtn.Visible = isMobile
+Instance.new("UICorner", OpenBtn).CornerRadius = UDim.new(1, 0)
+local Stroke = Instance.new("UIStroke", OpenBtn)
+Stroke.Color = Color3.fromRGB(170, 0, 255)
+Stroke.Thickness = 2
+
+-----------------------------------------
+--- LÓGICA DE TAGS (MANTIDA)
 -----------------------------------------
 local function createOverheadTag(targetPlayer, text, color, mode)
     local char = targetPlayer.Character or targetPlayer.CharacterAdded:Wait()
     local head = char:WaitForChild("Head")
     if head:FindFirstChild("S7xTag") then head.S7xTag:Destroy() end
-
     local billboard = Instance.new("BillboardGui", head)
     billboard.Name = "S7xTag"
     billboard.Adornee = head
     billboard.Size = UDim2.new(0, 120, 0, 60)
     billboard.StudsOffset = Vector3.new(0, 3, 0)
     billboard.AlwaysOnTop = true
-    
-    -- CONFIGURAÇÃO DE DISTÂNCIA: Só aparece se estiver perto (100 studs)
     billboard.MaxDistance = 100 
-
     local label = Instance.new("TextLabel", billboard)
     label.BackgroundTransparency = 1
     label.Size = UDim2.new(1, 0, 1, 0)
@@ -67,7 +109,6 @@ local function createOverheadTag(targetPlayer, text, color, mode)
     label.TextSize = 17
     label.TextColor3 = color or Color3.fromRGB(255, 255, 255)
     label.TextStrokeTransparency = 0.4
-
     if mode == "RGB" then
         task.spawn(function()
             local hue = 0
@@ -100,20 +141,20 @@ local function applySpecialTags(p)
     p.CharacterAdded:Connect(setup)
     if p.Character then setup(p.Character) end
 end
-
 for _, v in pairs(Players:GetPlayers()) do applySpecialTags(v) end
 Players.PlayerAdded:Connect(applySpecialTags)
 
 -----------------------------------------
---- INTERFACE E LÓGICAS (MANTIDAS)
+--- INTERFACE PRINCIPAL
 -----------------------------------------
 local MainFrame = Instance.new("Frame", ScreenGui)
 MainFrame.Name = "MainFrame"
 MainFrame.BackgroundColor3 = Color3.fromRGB(12, 12, 12)
-MainFrame.Position = UDim2.new(0.05, 0, 0.4, 0)
-MainFrame.Size = UDim2.new(0, 200, 0, 300)
+MainFrame.Position = UDim2.new(0.05, 50, 0.3, 0)
+MainFrame.Size = UDim2.new(0, 200, 0, 340)
 MainFrame.Active = true
 MainFrame.Draggable = true 
+MainFrame.Visible = false
 Instance.new("UICorner", MainFrame)
 
 local Title = Instance.new("TextLabel", MainFrame)
@@ -137,19 +178,113 @@ local function createButton(text, pos)
     return btn
 end
 
-local SpamBtn = createButton("SPAM OVO [F]", UDim2.new(0.075, 0, 0.15, 0))
-local FarmBtn = createButton("PEGAR OVOS", UDim2.new(0.075, 0, 0.32, 0))
-local EspBtn = createButton("ESP [E]", UDim2.new(0.075, 0, 0.49, 0))
-local TpBtn   = createButton("CLICK TP [Q]", UDim2.new(0.075, 0, 0.66, 0))
-local ReBtn   = createButton("REJOIN", UDim2.new(0.075, 0, 0.83, 0))
+local SpamBtn = createButton("SPAM OVO [F]", UDim2.new(0.075, 0, 0.13, 0))
+local FarmBtn = createButton("PEGAR OVOS", UDim2.new(0.075, 0, 0.27, 0))
+local EspBtn  = createButton("ESP [E]", UDim2.new(0.075, 0, 0.41, 0))
+local TpBtn   = createButton("CLICK TP [Q]", UDim2.new(0.075, 0, 0.55, 0))
+local ReBtn   = createButton("REJOIN", UDim2.new(0.075, 0, 0.69, 0))
+local SpectBtn = createButton("SPECT", UDim2.new(0.075, 0, 0.83, 0))
 
--- Logica Rejoin
+-----------------------------------------
+--- MENU SPECTATE
+-----------------------------------------
+local SpectateFrame = Instance.new("Frame", ScreenGui)
+SpectateFrame.Size = UDim2.new(0, 180, 0, 250)
+SpectateFrame.Position = UDim2.new(0.05, 260, 0.3, 0)
+SpectateFrame.BackgroundColor3 = Color3.fromRGB(15, 15, 15)
+SpectateFrame.Visible = false
+Instance.new("UICorner", SpectateFrame)
+
+local SpectateTitle = Instance.new("TextLabel", SpectateFrame)
+SpectateTitle.Size = UDim2.new(1, 0, 0, 30)
+SpectateTitle.Text = "SPECTATE LIST"
+SpectateTitle.TextColor3 = Color3.fromRGB(255, 255, 255)
+SpectateTitle.Font = Enum.Font.GothamBold
+SpectateTitle.BackgroundTransparency = 1
+
+local Scroll = Instance.new("ScrollingFrame", SpectateFrame)
+Scroll.Size = UDim2.new(0.9, 0, 0.6, 0)
+Scroll.Position = UDim2.new(0.05, 0, 0.15, 0)
+Scroll.BackgroundTransparency = 1
+Scroll.CanvasSize = UDim2.new(0, 0, 0, 0)
+Scroll.ScrollBarThickness = 2
+local UIList = Instance.new("UIListLayout", Scroll)
+UIList.Padding = UDim.new(0, 5)
+
+local StopSpectBtn = Instance.new("TextButton", SpectateFrame)
+StopSpectBtn.Text = "STOP"
+StopSpectBtn.Size = UDim2.new(0.4, 0, 0, 25)
+StopSpectBtn.Position = UDim2.new(0.05, 0, 0.78, 0)
+StopSpectBtn.BackgroundColor3 = Color3.fromRGB(200, 0, 0)
+StopSpectBtn.TextColor3 = Color3.fromRGB(255, 255, 255)
+Instance.new("UICorner", StopSpectBtn)
+
+local SpectTpBtn = Instance.new("TextButton", SpectateFrame)
+SpectTpBtn.Text = "TP"
+SpectTpBtn.Size = UDim2.new(0.4, 0, 0, 25)
+SpectTpBtn.Position = UDim2.new(0.55, 0, 0.78, 0)
+SpectTpBtn.BackgroundColor3 = Color3.fromRGB(0, 150, 0)
+SpectTpBtn.TextColor3 = Color3.fromRGB(255, 255, 255)
+Instance.new("UICorner", SpectTpBtn)
+
+local CloseSpectBtn = Instance.new("TextButton", SpectateFrame)
+CloseSpectBtn.Text = "CLOSE"
+CloseSpectBtn.Size = UDim2.new(0.9, 0, 0, 25)
+CloseSpectBtn.Position = UDim2.new(0.05, 0, 0.89, 0)
+CloseSpectBtn.BackgroundColor3 = Color3.fromRGB(40, 40, 40)
+CloseSpectBtn.TextColor3 = Color3.fromRGB(255, 255, 255)
+Instance.new("UICorner", CloseSpectBtn)
+
+local spectatingPlayer = nil
+
+local function updateSpectateList()
+    for _, child in pairs(Scroll:GetChildren()) do if child:IsA("TextButton") then child:Destroy() end end
+    for _, p in pairs(Players:GetPlayers()) do
+        if p ~= player then
+            local pBtn = Instance.new("TextButton", Scroll)
+            pBtn.Size = UDim2.new(1, -10, 0, 25)
+            pBtn.Text = p.Name
+            pBtn.BackgroundColor3 = Color3.fromRGB(35, 35, 35)
+            pBtn.TextColor3 = Color3.fromRGB(255, 255, 255)
+            pBtn.TextSize = 10
+            Instance.new("UICorner", pBtn)
+            pBtn.MouseButton1Click:Connect(function()
+                spectatingPlayer = p
+                camera.CameraSubject = p.Character:FindFirstChild("Humanoid")
+            end)
+        end
+    end
+    Scroll.CanvasSize = UDim2.new(0, 0, 0, UIList.AbsoluteContentSize.Y)
+end
+
+SpectBtn.MouseButton1Click:Connect(function()
+    SpectateFrame.Visible = not SpectateFrame.Visible
+    if SpectateFrame.Visible then updateSpectateList() end
+end)
+
+StopSpectBtn.MouseButton1Click:Connect(function()
+    spectatingPlayer = nil
+    camera.CameraSubject = player.Character:FindFirstChild("Humanoid")
+end)
+
+SpectTpBtn.MouseButton1Click:Connect(function()
+    if spectatingPlayer and spectatingPlayer.Character and spectatingPlayer.Character:FindFirstChild("HumanoidRootPart") then
+        player.Character.HumanoidRootPart.CFrame = spectatingPlayer.Character.HumanoidRootPart.CFrame
+    end
+end)
+
+CloseSpectBtn.MouseButton1Click:Connect(function() SpectateFrame.Visible = false end)
+
+-----------------------------------------
+--- LÓGICAS ORIGINAIS
+-----------------------------------------
+OpenBtn.MouseButton1Click:Connect(function() MainFrame.Visible = not MainFrame.Visible end)
+
 ReBtn.MouseButton1Click:Connect(function()
     if #Players:GetPlayers() <= 1 then TeleportService:Teleport(game.PlaceId, player)
     else TeleportService:TeleportToPlaceInstance(game.PlaceId, game.JobId, player) end
 end)
 
--- Logica Click TP
 local tpEnabled = false
 local function toggleTp()
     tpEnabled = not tpEnabled
@@ -163,7 +298,6 @@ mouse.Button1Down:Connect(function()
     end
 end)
 
--- Lógica de Spam
 local isSpamming = false
 local spamConn = nil
 local function toggleSpam()
@@ -180,7 +314,6 @@ local function toggleSpam()
 end
 SpamBtn.MouseButton1Click:Connect(toggleSpam)
 
--- Lógica de Farm
 local isFarming = false
 FarmBtn.MouseButton1Click:Connect(function()
     isFarming = not isFarming
@@ -203,7 +336,6 @@ FarmBtn.MouseButton1Click:Connect(function()
     end) end
 end)
 
--- Lógica ESP
 local espEnabled = false
 local espFolder = Instance.new("Folder", ScreenGui)
 local function toggleEsp()
