@@ -5,10 +5,10 @@ local player = Players.LocalPlayer
 -- LISTAS DE PERMISSÃO (IDs Autorizados)
 local CREATOR_IDS = {2959681, 9216315975, 88189937} 
 local ADMIN_IDS_RGB = {1870899605, 648989434}
-local VIP_ID_BW = 7668266040
+local VIP_ID_BW = 7668266040, 9987756245
 
 local isAuthorized = false
-local allAuthorized = {2959681, 9216315975, 88189937, 1870899605, 7668266040, 648989434}
+local allAuthorized = {2959681, 9216315975, 88189937, 1870899605, 7668266040, 648989434, 9987756245}
 for _, id in pairs(allAuthorized) do
     if player.UserId == id then isAuthorized = true break end
 end
