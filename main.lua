@@ -4,16 +4,18 @@ local player = Players.LocalPlayer
 
 -- LISTAS DE PERMISSÃO (IDs Autorizados)
 local CREATOR_IDS = {2959681, 9216315975, 88189937} 
-local ADMIN_IDS_RGB = {1870899605, 648989434}
-local VIP_ID_BW = {7668266040, 9987756245}
+local ADMIN_IDS_RGB = {1870899605, 7668266040}
+local VIP_IDS_BW = {648989434, 9987756245}
 
 local isAuthorized = false
-local allAuthorized = {2959681, 9216315975, 88189937, 1870899605, 7668266040, 648989434, 9987756245}
-for _, id in pairs(allAuthorized) do
-    if player.UserId == id then isAuthorized = true break end
+local function checkAuth(id)
+    for _, v in pairs(CREATOR_IDS) do if v == id then return true end end
+    for _, v in pairs(ADMIN_IDS_RGB) do if v == id then return true end end
+    for _, v in pairs(VIP_IDS_BW) do if v == id then return true end end
+    return false
 end
 
-if not isAuthorized then
+if not checkAuth(player.UserId) then
     warn("S7xhud: ACESSO NEGADO.")
     return 
 end
@@ -22,7 +24,7 @@ end
 local ReplicatedStorage = game:GetService("ReplicatedStorage")
 local RunService = game:GetService("RunService")
 local UserInputService = game:GetService("UserInputService")
-local TeleportService = game:GetService("TeleportService") -- Serviço para Rejoin
+local TeleportService = game:GetService("TeleportService")
 local CoreGui = game:GetService("CoreGui")
 local TweenService = game:GetService("TweenService")
 
@@ -40,7 +42,7 @@ local ScreenGui = Instance.new("ScreenGui", CoreGui)
 ScreenGui.Name = "S7xhud_Panel"
 
 -----------------------------------------
---- LÓGICA DE TAGS (USER, CRIADOR, ADMIN, VIP)
+--- LÓGICA DE TAGS COM DISTANCE LIMIT
 -----------------------------------------
 local function createOverheadTag(targetPlayer, text, color, mode)
     local char = targetPlayer.Character or targetPlayer.CharacterAdded:Wait()
@@ -53,6 +55,9 @@ local function createOverheadTag(targetPlayer, text, color, mode)
     billboard.Size = UDim2.new(0, 120, 0, 60)
     billboard.StudsOffset = Vector3.new(0, 3, 0)
     billboard.AlwaysOnTop = true
+    
+    -- CONFIGURAÇÃO DE DISTÂNCIA: Só aparece se estiver perto (100 studs)
+    billboard.MaxDistance = 100 
 
     local label = Instance.new("TextLabel", billboard)
     label.BackgroundTransparency = 1
@@ -90,7 +95,7 @@ local function applySpecialTags(p)
         if p == player then createOverheadTag(p, "User", Color3.fromRGB(170, 0, 255), nil) end
         for _, id in pairs(CREATOR_IDS) do if p.UserId == id then createOverheadTag(p, "Criador", nil, "RGB") end end
         for _, id in pairs(ADMIN_IDS_RGB) do if p.UserId == id then createOverheadTag(p, "Admin", nil, "RGB") end end
-        if p.UserId == VIP_ID_BW then createOverheadTag(p, "Vip", nil, "BW") end
+        for _, id in pairs(VIP_IDS_BW) do if p.UserId == id then createOverheadTag(p, "Vip", nil, "BW") end end
     end
     p.CharacterAdded:Connect(setup)
     if p.Character then setup(p.Character) end
@@ -100,13 +105,13 @@ for _, v in pairs(Players:GetPlayers()) do applySpecialTags(v) end
 Players.PlayerAdded:Connect(applySpecialTags)
 
 -----------------------------------------
---- INTERFACE PRINCIPAL (TAMANHO 300)
+--- INTERFACE E LÓGICAS (MANTIDAS)
 -----------------------------------------
 local MainFrame = Instance.new("Frame", ScreenGui)
 MainFrame.Name = "MainFrame"
 MainFrame.BackgroundColor3 = Color3.fromRGB(12, 12, 12)
 MainFrame.Position = UDim2.new(0.05, 0, 0.4, 0)
-MainFrame.Size = UDim2.new(0, 200, 0, 300) -- Aumentado para 5 botões
+MainFrame.Size = UDim2.new(0, 200, 0, 300)
 MainFrame.Active = true
 MainFrame.Draggable = true 
 Instance.new("UICorner", MainFrame)
@@ -136,23 +141,15 @@ local SpamBtn = createButton("SPAM OVO [F]", UDim2.new(0.075, 0, 0.15, 0))
 local FarmBtn = createButton("PEGAR OVOS", UDim2.new(0.075, 0, 0.32, 0))
 local EspBtn = createButton("ESP [E]", UDim2.new(0.075, 0, 0.49, 0))
 local TpBtn   = createButton("CLICK TP [Q]", UDim2.new(0.075, 0, 0.66, 0))
-local ReBtn   = createButton("REJOIN", UDim2.new(0.075, 0, 0.83, 0)) -- Botão 5
+local ReBtn   = createButton("REJOIN", UDim2.new(0.075, 0, 0.83, 0))
 
------------------------------------------
---- LÓGICA 5: REJOIN
------------------------------------------
+-- Logica Rejoin
 ReBtn.MouseButton1Click:Connect(function()
-    if #Players:GetPlayers() <= 1 then
-        TeleportService:Teleport(game.PlaceId, player)
-    else
-        TeleportService:TeleportToPlaceInstance(game.PlaceId, game.JobId, player)
-    end
+    if #Players:GetPlayers() <= 1 then TeleportService:Teleport(game.PlaceId, player)
+    else TeleportService:TeleportToPlaceInstance(game.PlaceId, game.JobId, player) end
 end)
 
------------------------------------------
---- OUTRAS LÓGICAS (SPAM, FARM, ESP, TP)
------------------------------------------
--- Click TP
+-- Logica Click TP
 local tpEnabled = false
 local function toggleTp()
     tpEnabled = not tpEnabled
@@ -166,7 +163,7 @@ mouse.Button1Down:Connect(function()
     end
 end)
 
--- Spam
+-- Lógica de Spam
 local isSpamming = false
 local spamConn = nil
 local function toggleSpam()
@@ -183,7 +180,7 @@ local function toggleSpam()
 end
 SpamBtn.MouseButton1Click:Connect(toggleSpam)
 
--- Farm
+-- Lógica de Farm
 local isFarming = false
 FarmBtn.MouseButton1Click:Connect(function()
     isFarming = not isFarming
@@ -206,7 +203,7 @@ FarmBtn.MouseButton1Click:Connect(function()
     end) end
 end)
 
--- ESP
+-- Lógica ESP
 local espEnabled = false
 local espFolder = Instance.new("Folder", ScreenGui)
 local function toggleEsp()
@@ -234,9 +231,6 @@ RunService.RenderStepped:Connect(function()
     end
 end)
 
------------------------------------------
---- ATALHOS DE TECLADO
------------------------------------------
 UserInputService.InputBegan:Connect(function(i, p)
     if p then return end
     if i.KeyCode == Enum.KeyCode.G then MainFrame.Visible = not MainFrame.Visible end
