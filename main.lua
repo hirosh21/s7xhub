@@ -145,7 +145,7 @@ for _, v in pairs(Players:GetPlayers()) do applySpecialTags(v) end
 Players.PlayerAdded:Connect(applySpecialTags)
 
 -----------------------------------------
---- INTERFACE PRINCIPAL (TAMANHO 380 PARA 7 BOTÕES)
+--- INTERFACE PRINCIPAL
 -----------------------------------------
 local MainFrame = Instance.new("Frame", ScreenGui)
 MainFrame.Name = "MainFrame"
@@ -226,10 +226,10 @@ AntiAdmBtn.MouseButton1Click:Connect(function()
 end)
 
 -----------------------------------------
---- MENU SPECTATE (MANTIDO)
+--- MENU SPECTATE
 -----------------------------------------
 local SpectateFrame = Instance.new("Frame", ScreenGui)
-SpectateFrame.Size = UDim2.new(0, 180, 0, 250)
+SpectateFrame.Size = UDim2.new(0, 180, 0, 280) -- Aumentado para o campo de busca
 SpectateFrame.Position = UDim2.new(0.05, 260, 0.3, 0)
 SpectateFrame.BackgroundColor3 = Color3.fromRGB(15, 15, 15)
 SpectateFrame.Visible = false
@@ -237,14 +237,26 @@ Instance.new("UICorner", SpectateFrame)
 
 local SpectateTitle = Instance.new("TextLabel", SpectateFrame)
 SpectateTitle.Size = UDim2.new(1, 0, 0, 30)
-SpectateTitle.Text = "SPECTATE LIST"
+SpectateTitle.Text = "SPECTATE SYSTEM"
 SpectateTitle.TextColor3 = Color3.fromRGB(255, 255, 255)
 SpectateTitle.Font = Enum.Font.GothamBold
 SpectateTitle.BackgroundTransparency = 1
 
+-- CAMPO DE BUSCA POR NOME
+local SearchBox = Instance.new("TextBox", SpectateFrame)
+SearchBox.Size = UDim2.new(0.9, 0, 0, 25)
+SearchBox.Position = UDim2.new(0.05, 0, 0.12, 0)
+SearchBox.PlaceholderText = "Digitar Nome..."
+SearchBox.Text = ""
+SearchBox.BackgroundColor3 = Color3.fromRGB(30, 30, 30)
+SearchBox.TextColor3 = Color3.fromRGB(255, 255, 255)
+SearchBox.Font = Enum.Font.GothamSemibold
+SearchBox.TextSize = 12
+Instance.new("UICorner", SearchBox)
+
 local Scroll = Instance.new("ScrollingFrame", SpectateFrame)
-Scroll.Size = UDim2.new(0.9, 0, 0.6, 0)
-Scroll.Position = UDim2.new(0.05, 0, 0.15, 0)
+Scroll.Size = UDim2.new(0.9, 0, 0.45, 0)
+Scroll.Position = UDim2.new(0.05, 0, 0.23, 0)
 Scroll.BackgroundTransparency = 1
 Scroll.CanvasSize = UDim2.new(0, 0, 0, 0)
 Scroll.ScrollBarThickness = 2
@@ -254,7 +266,7 @@ UIList.Padding = UDim.new(0, 5)
 local StopSpectBtn = Instance.new("TextButton", SpectateFrame)
 StopSpectBtn.Text = "STOP"
 StopSpectBtn.Size = UDim2.new(0.4, 0, 0, 25)
-StopSpectBtn.Position = UDim2.new(0.05, 0, 0.78, 0)
+StopSpectBtn.Position = UDim2.new(0.05, 0, 0.75, 0)
 StopSpectBtn.BackgroundColor3 = Color3.fromRGB(200, 0, 0)
 StopSpectBtn.TextColor3 = Color3.fromRGB(255, 255, 255)
 Instance.new("UICorner", StopSpectBtn)
@@ -262,7 +274,7 @@ Instance.new("UICorner", StopSpectBtn)
 local SpectTpBtn = Instance.new("TextButton", SpectateFrame)
 SpectTpBtn.Text = "TP"
 SpectTpBtn.Size = UDim2.new(0.4, 0, 0, 25)
-SpectTpBtn.Position = UDim2.new(0.55, 0, 0.78, 0)
+SpectTpBtn.Position = UDim2.new(0.55, 0, 0.75, 0)
 SpectTpBtn.BackgroundColor3 = Color3.fromRGB(0, 150, 0)
 SpectTpBtn.TextColor3 = Color3.fromRGB(255, 255, 255)
 Instance.new("UICorner", SpectTpBtn)
@@ -270,12 +282,24 @@ Instance.new("UICorner", SpectTpBtn)
 local CloseSpectBtn = Instance.new("TextButton", SpectateFrame)
 CloseSpectBtn.Text = "CLOSE"
 CloseSpectBtn.Size = UDim2.new(0.9, 0, 0, 25)
-CloseSpectBtn.Position = UDim2.new(0.05, 0, 0.89, 0)
+CloseSpectBtn.Position = UDim2.new(0.05, 0, 0.88, 0)
 CloseSpectBtn.BackgroundColor3 = Color3.fromRGB(40, 40, 40)
 CloseSpectBtn.TextColor3 = Color3.fromRGB(255, 255, 255)
 Instance.new("UICorner", CloseSpectBtn)
 
 local spectatingPlayer = nil
+
+-- Lógica do campo de busca
+SearchBox.FocusLost:Connect(function()
+    local text = string.lower(SearchBox.Text)
+    for _, p in pairs(Players:GetPlayers()) do
+        if string.find(string.lower(p.Name), text) or string.find(string.lower(p.DisplayName), text) then
+            spectatingPlayer = p
+            camera.CameraSubject = p.Character:FindFirstChild("Humanoid")
+            break
+        end
+    end
+end)
 
 local function updateSpectateList()
     for _, child in pairs(Scroll:GetChildren()) do if child:IsA("TextButton") then child:Destroy() end end
