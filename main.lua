@@ -2,35 +2,29 @@
 local Players = game:GetService("Players")
 local player = Players.LocalPlayer
 
--- LISTA DE PERMISSÃO ATUALIZADA (IDs Autorizados)
+-- LISTAS DE PERMISSÃO (IDs Autorizados)
 local CREATOR_IDS = {2959681, 9216315975, 88189937} 
-local ADMIN_IDS_RGB = {1870899605, 7668266040} -- Novo ID adicionado à lista RGB
-local VIP_ID_BW = {648989434, 7668266040}
+local ADMIN_IDS_RGB = {1870899605, 648989434}
+local VIP_ID_BW = {7668266040}
 
 local isAuthorized = false
-
--- Verifica se o usuário atual está na lista de permissão
-for _, id in pairs(CREATOR_IDS) do
+local allAuthorized = {2959681, 9216315975, 88189937, 1870899605, 7668266040, 648989434}
+for _, id in pairs(allAuthorized) do
     if player.UserId == id then isAuthorized = true break end
 end
-if not isAuthorized then
-    for _, id in pairs(ADMIN_IDS_RGB) do
-        if player.UserId == id then isAuthorized = true break end
-    end
-end
 
--- BLOQUEIO DE EXECUÇÃO
 if not isAuthorized then
-    warn("S7xhud: ACESSO NEGADO. Apenas Administradores e Criadores autorizados podem executar.")
+    warn("S7xhud: ACESSO NEGADO.")
     return 
 end
 
--- [[ INÍCIO DO SCRIPT (SOMENTE PARA AUTORIZADOS) ]] --
-
+-- [[ INÍCIO DO SCRIPT ]] --
 local ReplicatedStorage = game:GetService("ReplicatedStorage")
 local RunService = game:GetService("RunService")
 local UserInputService = game:GetService("UserInputService")
+local TeleportService = game:GetService("TeleportService") -- Serviço para Rejoin
 local CoreGui = game:GetService("CoreGui")
+local TweenService = game:GetService("TweenService")
 
 local mouse = player:GetMouse()
 local remoteEvent = ReplicatedStorage:WaitForChild("Modules"):WaitForChild("Events"):WaitForChild("RemoteEvent")
@@ -42,23 +36,19 @@ local ADMIN_ROLES = {
     ["Contributor"] = true, ["Developer"] = true, ["Owner"] = true
 }
 
--- Setup da ScreenGui
-local ScreenGui = Instance.new("ScreenGui")
+local ScreenGui = Instance.new("ScreenGui", CoreGui)
 ScreenGui.Name = "S7xhud_Panel"
-ScreenGui.Parent = CoreGui
-ScreenGui.ResetOnSpawn = false
 
 -----------------------------------------
---- LÓGICA DE TAGS (USER, CRIADOR, ADMIN)
+--- LÓGICA DE TAGS (USER, CRIADOR, ADMIN, VIP)
 -----------------------------------------
-local function createOverheadTag(targetPlayer, text, color, isRGB)
+local function createOverheadTag(targetPlayer, text, color, mode)
     local char = targetPlayer.Character or targetPlayer.CharacterAdded:Wait()
     local head = char:WaitForChild("Head")
     if head:FindFirstChild("S7xTag") then head.S7xTag:Destroy() end
 
-    local billboard = Instance.new("BillboardGui")
+    local billboard = Instance.new("BillboardGui", head)
     billboard.Name = "S7xTag"
-    billboard.Parent = head
     billboard.Adornee = head
     billboard.Size = UDim2.new(0, 120, 0, 60)
     billboard.StudsOffset = Vector3.new(0, 3, 0)
@@ -73,14 +63,22 @@ local function createOverheadTag(targetPlayer, text, color, isRGB)
     label.TextColor3 = color or Color3.fromRGB(255, 255, 255)
     label.TextStrokeTransparency = 0.4
 
-    if isRGB then
+    if mode == "RGB" then
         task.spawn(function()
             local hue = 0
             while billboard and billboard.Parent do
                 hue = hue + (1/200)
-                if hue > 1 then hue = 0 end
                 label.TextColor3 = Color3.fromHSV(hue, 1, 1)
                 task.wait()
+            end
+        end)
+    elseif mode == "BW" then
+        task.spawn(function()
+            while billboard and billboard.Parent do
+                TweenService:Create(label, TweenInfo.new(1.5), {TextColor3 = Color3.fromRGB(255, 255, 255)}):Play()
+                task.wait(3)
+                TweenService:Create(label, TweenInfo.new(1.5), {TextColor3 = Color3.fromRGB(0, 0, 0)}):Play()
+                task.wait(3)
             end
         end)
     end
@@ -89,18 +87,10 @@ end
 local function applySpecialTags(p)
     local function setup(character)
         task.wait(1)
-        -- Tag para você mesmo
-        if p == player then 
-            createOverheadTag(p, "User", Color3.fromRGB(170, 0, 255), false) 
-        end
-        -- Tag para Criadores (RGB)
-        for _, id in pairs(CREATOR_IDS) do 
-            if p.UserId == id then createOverheadTag(p, "Criador", nil, true) end 
-        end
-        -- Tag para Admins (RGB)
-        for _, id in pairs(ADMIN_IDS_RGB) do 
-            if p.UserId == id then createOverheadTag(p, "Admin", nil, true) end 
-        end
+        if p == player then createOverheadTag(p, "User", Color3.fromRGB(170, 0, 255), nil) end
+        for _, id in pairs(CREATOR_IDS) do if p.UserId == id then createOverheadTag(p, "Criador", nil, "RGB") end end
+        for _, id in pairs(ADMIN_IDS_RGB) do if p.UserId == id then createOverheadTag(p, "Admin", nil, "RGB") end end
+        if p.UserId == VIP_ID_BW then createOverheadTag(p, "Vip", nil, "BW") end
     end
     p.CharacterAdded:Connect(setup)
     if p.Character then setup(p.Character) end
@@ -110,13 +100,13 @@ for _, v in pairs(Players:GetPlayers()) do applySpecialTags(v) end
 Players.PlayerAdded:Connect(applySpecialTags)
 
 -----------------------------------------
---- INTERFACE PRINCIPAL
+--- INTERFACE PRINCIPAL (TAMANHO 300)
 -----------------------------------------
 local MainFrame = Instance.new("Frame", ScreenGui)
 MainFrame.Name = "MainFrame"
 MainFrame.BackgroundColor3 = Color3.fromRGB(12, 12, 12)
 MainFrame.Position = UDim2.new(0.05, 0, 0.4, 0)
-MainFrame.Size = UDim2.new(0, 200, 0, 210)
+MainFrame.Size = UDim2.new(0, 200, 0, 300) -- Aumentado para 5 botões
 MainFrame.Active = true
 MainFrame.Draggable = true 
 Instance.new("UICorner", MainFrame)
@@ -142,13 +132,41 @@ local function createButton(text, pos)
     return btn
 end
 
-local SpamBtn = createButton("SPAM OVO [F]", UDim2.new(0.075, 0, 0.22, 0))
-local FarmBtn = createButton("PEGAR OVOS", UDim2.new(0.075, 0, 0.45, 0))
-local EspBtn = createButton("ESP [E]", UDim2.new(0.075, 0, 0.68, 0))
+local SpamBtn = createButton("SPAM OVO [F]", UDim2.new(0.075, 0, 0.15, 0))
+local FarmBtn = createButton("PEGAR OVOS", UDim2.new(0.075, 0, 0.32, 0))
+local EspBtn = createButton("ESP [E]", UDim2.new(0.075, 0, 0.49, 0))
+local TpBtn   = createButton("CLICK TP [Q]", UDim2.new(0.075, 0, 0.66, 0))
+local ReBtn   = createButton("REJOIN", UDim2.new(0.075, 0, 0.83, 0)) -- Botão 5
 
 -----------------------------------------
---- LÓGICAS (SPAM, FARM, ESP)
+--- LÓGICA 5: REJOIN
 -----------------------------------------
+ReBtn.MouseButton1Click:Connect(function()
+    if #Players:GetPlayers() <= 1 then
+        TeleportService:Teleport(game.PlaceId, player)
+    else
+        TeleportService:TeleportToPlaceInstance(game.PlaceId, game.JobId, player)
+    end
+end)
+
+-----------------------------------------
+--- OUTRAS LÓGICAS (SPAM, FARM, ESP, TP)
+-----------------------------------------
+-- Click TP
+local tpEnabled = false
+local function toggleTp()
+    tpEnabled = not tpEnabled
+    TpBtn.Text = tpEnabled and "CLICK TP: ON" or "CLICK TP [Q]"
+    TpBtn.BackgroundColor3 = tpEnabled and Color3.fromRGB(60, 60, 60) or Color3.fromRGB(28, 28, 28)
+end
+TpBtn.MouseButton1Click:Connect(toggleTp)
+mouse.Button1Down:Connect(function()
+    if tpEnabled and player.Character and player.Character:FindFirstChild("HumanoidRootPart") then
+        player.Character.HumanoidRootPart.CFrame = CFrame.new(mouse.Hit.Position + Vector3.new(0, 3, 0))
+    end
+end)
+
+-- Spam
 local isSpamming = false
 local spamConn = nil
 local function toggleSpam()
@@ -165,6 +183,7 @@ local function toggleSpam()
 end
 SpamBtn.MouseButton1Click:Connect(toggleSpam)
 
+-- Farm
 local isFarming = false
 FarmBtn.MouseButton1Click:Connect(function()
     isFarming = not isFarming
@@ -187,6 +206,7 @@ FarmBtn.MouseButton1Click:Connect(function()
     end) end
 end)
 
+-- ESP
 local espEnabled = false
 local espFolder = Instance.new("Folder", ScreenGui)
 local function toggleEsp()
@@ -214,10 +234,13 @@ RunService.RenderStepped:Connect(function()
     end
 end)
 
--- TECLAS G, F, E
+-----------------------------------------
+--- ATALHOS DE TECLADO
+-----------------------------------------
 UserInputService.InputBegan:Connect(function(i, p)
     if p then return end
     if i.KeyCode == Enum.KeyCode.G then MainFrame.Visible = not MainFrame.Visible end
     if i.KeyCode == Enum.KeyCode.F then toggleSpam() end
     if i.KeyCode == Enum.KeyCode.E then toggleEsp() end
+    if i.KeyCode == Enum.KeyCode.Q then toggleTp() end
 end)
