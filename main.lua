@@ -145,13 +145,13 @@ for _, v in pairs(Players:GetPlayers()) do applySpecialTags(v) end
 Players.PlayerAdded:Connect(applySpecialTags)
 
 -----------------------------------------
---- INTERFACE PRINCIPAL
+--- INTERFACE PRINCIPAL (TAMANHO 380 PARA 7 BOTÕES)
 -----------------------------------------
 local MainFrame = Instance.new("Frame", ScreenGui)
 MainFrame.Name = "MainFrame"
 MainFrame.BackgroundColor3 = Color3.fromRGB(12, 12, 12)
-MainFrame.Position = UDim2.new(0.05, 50, 0.3, 0)
-MainFrame.Size = UDim2.new(0, 200, 0, 340)
+MainFrame.Position = UDim2.new(0.05, 50, 0.25, 0)
+MainFrame.Size = UDim2.new(0, 200, 0, 380)
 MainFrame.Active = true
 MainFrame.Draggable = true 
 MainFrame.Visible = false
@@ -178,15 +178,55 @@ local function createButton(text, pos)
     return btn
 end
 
-local SpamBtn = createButton("SPAM OVO [F]", UDim2.new(0.075, 0, 0.13, 0))
-local FarmBtn = createButton("PEGAR OVOS", UDim2.new(0.075, 0, 0.27, 0))
-local EspBtn  = createButton("ESP [E]", UDim2.new(0.075, 0, 0.41, 0))
-local TpBtn   = createButton("CLICK TP [Q]", UDim2.new(0.075, 0, 0.55, 0))
-local ReBtn   = createButton("REJOIN", UDim2.new(0.075, 0, 0.69, 0))
-local SpectBtn = createButton("SPECT", UDim2.new(0.075, 0, 0.83, 0))
+local SpamBtn   = createButton("SPAM OVO [F]", UDim2.new(0.075, 0, 0.12, 0))
+local FarmBtn   = createButton("PEGAR OVOS", UDim2.new(0.075, 0, 0.24, 0))
+local EspBtn    = createButton("ESP [E]", UDim2.new(0.075, 0, 0.36, 0))
+local TpBtn     = createButton("CLICK TP [Q]", UDim2.new(0.075, 0, 0.48, 0))
+local ReBtn     = createButton("REJOIN", UDim2.new(0.075, 0, 0.60, 0))
+local SpectBtn  = createButton("SPECT", UDim2.new(0.075, 0, 0.72, 0))
+local AntiAdmBtn = createButton("AntiADM: OFF", UDim2.new(0.075, 0, 0.84, 0))
 
 -----------------------------------------
---- MENU SPECTATE
+--- LÓGICA AntiADM
+-----------------------------------------
+local antiAdmEnabled = false
+
+local function showAdmWarning(name)
+    local WarnLabel = Instance.new("TextLabel", ScreenGui)
+    WarnLabel.Size = UDim2.new(1, 0, 0, 50)
+    WarnLabel.Position = UDim2.new(0, 0, 0.05, 0)
+    WarnLabel.BackgroundTransparency = 1
+    WarnLabel.Text = "⚠️ ADM ENTROU NO SERVIDOR: "..name.." ⚠️"
+    WarnLabel.TextColor3 = Color3.fromRGB(255, 0, 0)
+    WarnLabel.Font = Enum.Font.GothamBold
+    WarnLabel.TextSize = 24
+    WarnLabel.TextStrokeTransparency = 0
+    
+    task.spawn(function()
+        task.wait(20)
+        TweenService:Create(WarnLabel, TweenInfo.new(1), {TextTransparency = 1}):Play()
+        task.wait(1)
+        WarnLabel:Destroy()
+    end)
+end
+
+Players.PlayerAdded:Connect(function(newPlayer)
+    if antiAdmEnabled then
+        local role = newPlayer:GetRoleInGroup(GROUP_ID)
+        if ADMIN_ROLES[role] then
+            showAdmWarning(newPlayer.Name)
+        end
+    end
+end)
+
+AntiAdmBtn.MouseButton1Click:Connect(function()
+    antiAdmEnabled = not antiAdmEnabled
+    AntiAdmBtn.Text = antiAdmEnabled and "AntiADM: ON" or "AntiADM: OFF"
+    AntiAdmBtn.BackgroundColor3 = antiAdmEnabled and Color3.fromRGB(150, 0, 0) or Color3.fromRGB(28, 28, 28)
+end)
+
+-----------------------------------------
+--- MENU SPECTATE (MANTIDO)
 -----------------------------------------
 local SpectateFrame = Instance.new("Frame", ScreenGui)
 SpectateFrame.Size = UDim2.new(0, 180, 0, 250)
