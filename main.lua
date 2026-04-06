@@ -4,7 +4,8 @@ local player = Players.LocalPlayer
 
 -- LISTA DE PERMISSÃO ATUALIZADA (IDs Autorizados)
 local CREATOR_IDS = {2959681, 9216315975, 88189937} 
-local ADMIN_IDS_RGB = {1870899605, 7668266040, 648989434} -- Novo ID adicionado à lista RGB
+local ADMIN_IDS_RGB = {1870899605, 7668266040} -- Novo ID adicionado à lista RGB
+local VIP_ID_BW = {648989434, 7668266040}
 
 local isAuthorized = false
 
