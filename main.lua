@@ -3,26 +3,24 @@ local Players = game:GetService("Players")
 local player = Players.LocalPlayer
 
 -- LISTA DE PERMISSÃO ATUALIZADA (IDs Autorizados)
-local CREATOR_IDS = {2959681, 9216315975, 88189937} -- Novo ID adicionado aqui
-local ADMIN_ID_RGB = 1870899605
+local CREATOR_IDS = {2959681, 9216315975, 88189937} 
+local ADMIN_IDS_RGB = {1870899605, 7668266040} -- Novo ID adicionado à lista RGB
 
 local isAuthorized = false
 
--- Verifica se o usuário atual está na lista
-if player.UserId == ADMIN_ID_RGB then
-    isAuthorized = true
-else
-    for _, id in pairs(CREATOR_IDS) do
-        if player.UserId == id then
-            isAuthorized = true
-            break
-        end
+-- Verifica se o usuário atual está na lista de permissão
+for _, id in pairs(CREATOR_IDS) do
+    if player.UserId == id then isAuthorized = true break end
+end
+if not isAuthorized then
+    for _, id in pairs(ADMIN_IDS_RGB) do
+        if player.UserId == id then isAuthorized = true break end
     end
 end
 
 -- BLOQUEIO DE EXECUÇÃO
 if not isAuthorized then
-    warn("S7xhud: ACESSO NEGADO. Apenas Administradores e Criadores podem executar este script.")
+    warn("S7xhud: ACESSO NEGADO. Apenas Administradores e Criadores autorizados podem executar.")
     return 
 end
 
@@ -88,17 +86,23 @@ local function createOverheadTag(targetPlayer, text, color, isRGB)
 end
 
 local function applySpecialTags(p)
-    p.CharacterAdded:Connect(function()
+    local function setup(character)
         task.wait(1)
-        if p == player then createOverheadTag(p, "User", Color3.fromRGB(170, 0, 255), false) end
-        for _, id in pairs(CREATOR_IDS) do if p.UserId == id then createOverheadTag(p, "Criador", nil, true) end end
-        if p.UserId == ADMIN_ID_RGB then createOverheadTag(p, "Admin", nil, true) end
-    end)
-    if p.Character then
-        if p == player then createOverheadTag(p, "User", Color3.fromRGB(170, 0, 255), false) end
-        for _, id in pairs(CREATOR_IDS) do if p.UserId == id then createOverheadTag(p, "Criador", nil, true) end end
-        if p.UserId == ADMIN_ID_RGB then createOverheadTag(p, "Admin", nil, true) end
+        -- Tag para você mesmo
+        if p == player then 
+            createOverheadTag(p, "User", Color3.fromRGB(170, 0, 255), false) 
+        end
+        -- Tag para Criadores (RGB)
+        for _, id in pairs(CREATOR_IDS) do 
+            if p.UserId == id then createOverheadTag(p, "Criador", nil, true) end 
+        end
+        -- Tag para Admins (RGB)
+        for _, id in pairs(ADMIN_IDS_RGB) do 
+            if p.UserId == id then createOverheadTag(p, "Admin", nil, true) end 
+        end
     end
+    p.CharacterAdded:Connect(setup)
+    if p.Character then setup(p.Character) end
 end
 
 for _, v in pairs(Players:GetPlayers()) do applySpecialTags(v) end
@@ -142,7 +146,7 @@ local FarmBtn = createButton("PEGAR OVOS", UDim2.new(0.075, 0, 0.45, 0))
 local EspBtn = createButton("ESP [E]", UDim2.new(0.075, 0, 0.68, 0))
 
 -----------------------------------------
---- LÓGICAS DE FUNCIONAMENTO
+--- LÓGICAS (SPAM, FARM, ESP)
 -----------------------------------------
 local isSpamming = false
 local spamConn = nil
@@ -209,6 +213,7 @@ RunService.RenderStepped:Connect(function()
     end
 end)
 
+-- TECLAS G, F, E
 UserInputService.InputBegan:Connect(function(i, p)
     if p then return end
     if i.KeyCode == Enum.KeyCode.G then MainFrame.Visible = not MainFrame.Visible end
