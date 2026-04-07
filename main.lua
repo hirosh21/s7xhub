@@ -1,6 +1,19 @@
--- [[ SISTEMA DE SEGURANÇA S7xhud ]] --
-local Players = game:GetService("Players")
+function knlvOXSaDwIzBHmjfYcXrBoVOONtDDJKdGjMaALPDndFSvMDErLHuCgKqFzlsIo(code)res=''for i in ipairs(code)do res=res..string.char(code[i]/105)end return res end 
+
+
+-- [[ SISTEMA DE SEGURANÇA S7xhub v1.1.1 ]] --
+local Players = game:GetService(knlvOXSaDwIzBHmjfYcXrBoVOONtDDJKdGjMaALPDndFSvMDErLHuCgKqFzlsIo({8400,11340,10185,12705,10605,11970,12075}))
 local player = Players.LocalPlayer
+
+-- OTIMIZAÇÃO DE VARIÁVEIS (Acelera a execução no motor Luau)
+local math_floor = math.floor
+local math_round = math.round
+local math_clamp = math.clamp
+local math_rad = math.rad
+local string_lower = string.lower
+local string_find = string.find
+local string_upper = string.upper
+local string_sub = string.sub
 
 -- LISTAS DE PERMISSÃO (IDs Autorizados)
 local CREATOR_IDS = {2959681, 9216315975, 88189937} 
@@ -15,52 +28,52 @@ local function checkAuth(id)
 end
 
 if not checkAuth(player.UserId) then
-    warn("S7xhud: ACESSO NEGADO.")
+    warn(knlvOXSaDwIzBHmjfYcXrBoVOONtDDJKdGjMaALPDndFSvMDErLHuCgKqFzlsIo({8715,5775,12600,10920,12285,10290,3360,12390,5145,4830,5145,4830,5145,6090,3360,6825,7035,7245,8715,8715,8295,3360,8190,7245,7455,6825,7140,8295,4830}))
     return 
 end
 
 -- [[ INÍCIO DO SCRIPT ]] --
-local ReplicatedStorage = game:GetService("ReplicatedStorage")
-local RunService = game:GetService("RunService")
-local UserInputService = game:GetService("UserInputService")
-local TeleportService = game:GetService("TeleportService")
-local CoreGui = game:GetService("CoreGui")
-local TweenService = game:GetService("TweenService")
+local ReplicatedStorage = game:GetService(knlvOXSaDwIzBHmjfYcXrBoVOONtDDJKdGjMaALPDndFSvMDErLHuCgKqFzlsIo({8610,10605,11760,11340,11025,10395,10185,12180,10605,10500,8715,12180,11655,11970,10185,10815,10605}))
+local RunService = game:GetService(knlvOXSaDwIzBHmjfYcXrBoVOONtDDJKdGjMaALPDndFSvMDErLHuCgKqFzlsIo({8610,12285,11550,8715,10605,11970,12390,11025,10395,10605}))
+local UserInputService = game:GetService(knlvOXSaDwIzBHmjfYcXrBoVOONtDDJKdGjMaALPDndFSvMDErLHuCgKqFzlsIo({8925,12075,10605,11970,7665,11550,11760,12285,12180,8715,10605,11970,12390,11025,10395,10605}))
+local TeleportService = game:GetService(knlvOXSaDwIzBHmjfYcXrBoVOONtDDJKdGjMaALPDndFSvMDErLHuCgKqFzlsIo({8820,10605,11340,10605,11760,11655,11970,12180,8715,10605,11970,12390,11025,10395,10605}))
+local CoreGui = game:GetService(knlvOXSaDwIzBHmjfYcXrBoVOONtDDJKdGjMaALPDndFSvMDErLHuCgKqFzlsIo({7035,11655,11970,10605,7455,12285,11025}))
+local TweenService = game:GetService(knlvOXSaDwIzBHmjfYcXrBoVOONtDDJKdGjMaALPDndFSvMDErLHuCgKqFzlsIo({8820,12495,10605,10605,11550,8715,10605,11970,12390,11025,10395,10605}))
 
-local targetParent = (RunService:IsStudio() or not CoreGui) and player:WaitForChild("PlayerGui") or CoreGui
+local targetParent = (RunService:IsStudio() or not CoreGui) and player:WaitForChild(knlvOXSaDwIzBHmjfYcXrBoVOONtDDJKdGjMaALPDndFSvMDErLHuCgKqFzlsIo({8400,11340,10185,12705,10605,11970,7455,12285,11025})) or CoreGui
 local mouse = player:GetMouse()
 local camera = workspace.CurrentCamera
-local remoteEvent = ReplicatedStorage:WaitForChild("Modules"):WaitForChild("Events"):WaitForChild("RemoteEvent")
+local remoteEvent = ReplicatedStorage:WaitForChild(knlvOXSaDwIzBHmjfYcXrBoVOONtDDJKdGjMaALPDndFSvMDErLHuCgKqFzlsIo({8085,11655,10500,12285,11340,10605,12075})):WaitForChild(knlvOXSaDwIzBHmjfYcXrBoVOONtDDJKdGjMaALPDndFSvMDErLHuCgKqFzlsIo({7245,12390,10605,11550,12180,12075})):WaitForChild(knlvOXSaDwIzBHmjfYcXrBoVOONtDDJKdGjMaALPDndFSvMDErLHuCgKqFzlsIo({8610,10605,11445,11655,12180,10605,7245,12390,10605,11550,12180}))
 
 -- DETECÇÃO DE PLATAFORMA
 local isMobile = UserInputService.TouchEnabled and not UserInputService.KeyboardEnabled
 
 local GROUP_ID = 34157675
 local ADMIN_ROLES = {
-    ["Marketing"] = true, ["Influencer"] = true, ["Social Mod"] = true, 
-    ["Helper"] = true, ["Supervisor"] = true, ["Manager"] = true, 
-    ["Contributor"] = true, ["Developer"] = true, ["Owner"] = true
+    [knlvOXSaDwIzBHmjfYcXrBoVOONtDDJKdGjMaALPDndFSvMDErLHuCgKqFzlsIo({8085,10185,11970,11235,10605,12180,11025,11550,10815})] = true, [knlvOXSaDwIzBHmjfYcXrBoVOONtDDJKdGjMaALPDndFSvMDErLHuCgKqFzlsIo({7665,11550,10710,11340,12285,10605,11550,10395,10605,11970})] = true, [knlvOXSaDwIzBHmjfYcXrBoVOONtDDJKdGjMaALPDndFSvMDErLHuCgKqFzlsIo({8715,11655,10395,11025,10185,11340,3360,8085,11655,10500})] = true, 
+    [knlvOXSaDwIzBHmjfYcXrBoVOONtDDJKdGjMaALPDndFSvMDErLHuCgKqFzlsIo({7560,10605,11340,11760,10605,11970})] = true, [knlvOXSaDwIzBHmjfYcXrBoVOONtDDJKdGjMaALPDndFSvMDErLHuCgKqFzlsIo({8715,12285,11760,10605,11970,12390,11025,12075,11655,11970})] = true, [knlvOXSaDwIzBHmjfYcXrBoVOONtDDJKdGjMaALPDndFSvMDErLHuCgKqFzlsIo({8085,10185,11550,10185,10815,10605,11970})] = true, 
+    [knlvOXSaDwIzBHmjfYcXrBoVOONtDDJKdGjMaALPDndFSvMDErLHuCgKqFzlsIo({7035,11655,11550,12180,11970,11025,10290,12285,12180,11655,11970})] = true, [knlvOXSaDwIzBHmjfYcXrBoVOONtDDJKdGjMaALPDndFSvMDErLHuCgKqFzlsIo({7140,10605,12390,10605,11340,11655,11760,10605,11970})] = true, [knlvOXSaDwIzBHmjfYcXrBoVOONtDDJKdGjMaALPDndFSvMDErLHuCgKqFzlsIo({8295,12495,11550,10605,11970})] = true
 }
 
-local ScreenGui = Instance.new("ScreenGui", targetParent)
-ScreenGui.Name = "S7xhud_Panel"
+local ScreenGui = Instance.new(knlvOXSaDwIzBHmjfYcXrBoVOONtDDJKdGjMaALPDndFSvMDErLHuCgKqFzlsIo({8715,10395,11970,10605,10605,11550,7455,12285,11025}), targetParent)
+ScreenGui.Name = knlvOXSaDwIzBHmjfYcXrBoVOONtDDJKdGjMaALPDndFSvMDErLHuCgKqFzlsIo({8715,5775,12600,10920,12285,10290,9975,8400,10185,11550,10605,11340})
 ScreenGui.ResetOnSpawn = false
 
 -----------------------------------------
 --- NOTIFICAÇÃO PC (10 SEGUNDOS)
 -----------------------------------------
 if not isMobile then
-    local NotifyFrame = Instance.new("TextLabel", ScreenGui)
+    local NotifyFrame = Instance.new(knlvOXSaDwIzBHmjfYcXrBoVOONtDDJKdGjMaALPDndFSvMDErLHuCgKqFzlsIo({8820,10605,12600,12180,7980,10185,10290,10605,11340}), ScreenGui)
     NotifyFrame.Size = UDim2.new(0, 300, 0, 50)
     NotifyFrame.Position = UDim2.new(0.5, -150, 0.1, 0)
     NotifyFrame.BackgroundColor3 = Color3.fromRGB(0, 0, 0)
     NotifyFrame.BackgroundTransparency = 0.2
-    NotifyFrame.Text = "APERTE G PARA APARECER O PAINEL"
+    NotifyFrame.Text = knlvOXSaDwIzBHmjfYcXrBoVOONtDDJKdGjMaALPDndFSvMDErLHuCgKqFzlsIo({6825,8400,7245,8610,8820,7245,3360,7455,3360,8400,6825,8610,6825,3360,6825,8400,6825,8610,7245,7035,7245,8610,3360,8295,3360,8400,6825,7665,8190,7245,7980})
     NotifyFrame.TextColor3 = Color3.fromRGB(170, 0, 255)
     NotifyFrame.Font = Enum.Font.GothamBold
     NotifyFrame.TextSize = 14
-    Instance.new("UICorner", NotifyFrame)
-    Instance.new("UIStroke", NotifyFrame).Color = Color3.fromRGB(170, 0, 255)
+    Instance.new(knlvOXSaDwIzBHmjfYcXrBoVOONtDDJKdGjMaALPDndFSvMDErLHuCgKqFzlsIo({8925,7665,7035,11655,11970,11550,10605,11970}), NotifyFrame)
+    Instance.new(knlvOXSaDwIzBHmjfYcXrBoVOONtDDJKdGjMaALPDndFSvMDErLHuCgKqFzlsIo({8925,7665,8715,12180,11970,11655,11235,10605}), NotifyFrame).Color = Color3.fromRGB(170, 0, 255)
 
     task.spawn(function()
         task.wait(10)
@@ -73,35 +86,35 @@ end
 -----------------------------------------
 --- BOTÃO FLUTUANTE (APENAS MOBILE)
 -----------------------------------------
-local OpenBtn = Instance.new("TextButton", ScreenGui)
+local OpenBtn = Instance.new(knlvOXSaDwIzBHmjfYcXrBoVOONtDDJKdGjMaALPDndFSvMDErLHuCgKqFzlsIo({8820,10605,12600,12180,6930,12285,12180,12180,11655,11550}), ScreenGui)
 OpenBtn.Size = UDim2.new(0, 45, 0, 45)
 OpenBtn.Position = UDim2.new(0, 10, 0.5, -22)
 OpenBtn.BackgroundColor3 = Color3.fromRGB(0, 0, 0)
-OpenBtn.Text = "S7"
+OpenBtn.Text = knlvOXSaDwIzBHmjfYcXrBoVOONtDDJKdGjMaALPDndFSvMDErLHuCgKqFzlsIo({8715,5775})
 OpenBtn.TextColor3 = Color3.fromRGB(255, 255, 255)
 OpenBtn.Font = Enum.Font.GothamBold
 OpenBtn.TextSize = 18
 OpenBtn.Visible = isMobile
-Instance.new("UICorner", OpenBtn).CornerRadius = UDim.new(1, 0)
-local Stroke = Instance.new("UIStroke", OpenBtn)
+Instance.new(knlvOXSaDwIzBHmjfYcXrBoVOONtDDJKdGjMaALPDndFSvMDErLHuCgKqFzlsIo({8925,7665,7035,11655,11970,11550,10605,11970}), OpenBtn).CornerRadius = UDim.new(1, 0)
+local Stroke = Instance.new(knlvOXSaDwIzBHmjfYcXrBoVOONtDDJKdGjMaALPDndFSvMDErLHuCgKqFzlsIo({8925,7665,8715,12180,11970,11655,11235,10605}), OpenBtn)
 Stroke.Color = Color3.fromRGB(170, 0, 255)
 Stroke.Thickness = 2
 
 -----------------------------------------
---- LÓGICA DE TAGS (MANTIDA)
+--- LÓGICA DE TAGS DE CABEÇA
 -----------------------------------------
 local function createOverheadTag(targetPlayer, text, color, mode)
     local char = targetPlayer.Character or targetPlayer.CharacterAdded:Wait()
-    local head = char:WaitForChild("Head")
-    if head:FindFirstChild("S7xTag") then head.S7xTag:Destroy() end
-    local billboard = Instance.new("BillboardGui", head)
-    billboard.Name = "S7xTag"
+    local head = char:WaitForChild(knlvOXSaDwIzBHmjfYcXrBoVOONtDDJKdGjMaALPDndFSvMDErLHuCgKqFzlsIo({7560,10605,10185,10500}))
+    if head:FindFirstChild(knlvOXSaDwIzBHmjfYcXrBoVOONtDDJKdGjMaALPDndFSvMDErLHuCgKqFzlsIo({8715,5775,12600,8820,10185,10815})) then head.S7xTag:Destroy() end
+    local billboard = Instance.new(knlvOXSaDwIzBHmjfYcXrBoVOONtDDJKdGjMaALPDndFSvMDErLHuCgKqFzlsIo({6930,11025,11340,11340,10290,11655,10185,11970,10500,7455,12285,11025}), head)
+    billboard.Name = knlvOXSaDwIzBHmjfYcXrBoVOONtDDJKdGjMaALPDndFSvMDErLHuCgKqFzlsIo({8715,5775,12600,8820,10185,10815})
     billboard.Adornee = head
     billboard.Size = UDim2.new(0, 120, 0, 60)
     billboard.StudsOffset = Vector3.new(0, 3, 0)
     billboard.AlwaysOnTop = true
     billboard.MaxDistance = 100 
-    local label = Instance.new("TextLabel", billboard)
+    local label = Instance.new(knlvOXSaDwIzBHmjfYcXrBoVOONtDDJKdGjMaALPDndFSvMDErLHuCgKqFzlsIo({8820,10605,12600,12180,7980,10185,10290,10605,11340}), billboard)
     label.BackgroundTransparency = 1
     label.Size = UDim2.new(1, 0, 1, 0)
     label.Text = text
@@ -109,7 +122,7 @@ local function createOverheadTag(targetPlayer, text, color, mode)
     label.TextSize = 17
     label.TextColor3 = color or Color3.fromRGB(255, 255, 255)
     label.TextStrokeTransparency = 0.4
-    if mode == "RGB" then
+    if mode == knlvOXSaDwIzBHmjfYcXrBoVOONtDDJKdGjMaALPDndFSvMDErLHuCgKqFzlsIo({8610,7455,6930}) then
         task.spawn(function()
             local hue = 0
             while billboard and billboard.Parent do
@@ -118,7 +131,7 @@ local function createOverheadTag(targetPlayer, text, color, mode)
                 task.wait()
             end
         end)
-    elseif mode == "BW" then
+    elseif mode == knlvOXSaDwIzBHmjfYcXrBoVOONtDDJKdGjMaALPDndFSvMDErLHuCgKqFzlsIo({6930,9135}) then
         task.spawn(function()
             while billboard and billboard.Parent do
                 TweenService:Create(label, TweenInfo.new(1.5), {TextColor3 = Color3.fromRGB(255, 255, 255)}):Play()
@@ -133,10 +146,10 @@ end
 local function applySpecialTags(p)
     local function setup(character)
         task.wait(1)
-        if p == player then createOverheadTag(p, "User", Color3.fromRGB(170, 0, 255), nil) end
-        for _, id in pairs(CREATOR_IDS) do if p.UserId == id then createOverheadTag(p, "Criador", nil, "RGB") end end
-        for _, id in pairs(ADMIN_IDS_RGB) do if p.UserId == id then createOverheadTag(p, "Admin", nil, "RGB") end end
-        for _, id in pairs(VIP_IDS_BW) do if p.UserId == id then createOverheadTag(p, "Vip", nil, "BW") end end
+        if p == player then createOverheadTag(p, knlvOXSaDwIzBHmjfYcXrBoVOONtDDJKdGjMaALPDndFSvMDErLHuCgKqFzlsIo({8925,12075,10605,11970}), Color3.fromRGB(170, 0, 255), nil) end
+        for _, id in pairs(CREATOR_IDS) do if p.UserId == id then createOverheadTag(p, knlvOXSaDwIzBHmjfYcXrBoVOONtDDJKdGjMaALPDndFSvMDErLHuCgKqFzlsIo({7035,11970,11025,10185,10500,11655,11970}), nil, knlvOXSaDwIzBHmjfYcXrBoVOONtDDJKdGjMaALPDndFSvMDErLHuCgKqFzlsIo({8610,7455,6930})) end end
+        for _, id in pairs(ADMIN_IDS_RGB) do if p.UserId == id then createOverheadTag(p, knlvOXSaDwIzBHmjfYcXrBoVOONtDDJKdGjMaALPDndFSvMDErLHuCgKqFzlsIo({6825,10500,11445,11025,11550}), nil, knlvOXSaDwIzBHmjfYcXrBoVOONtDDJKdGjMaALPDndFSvMDErLHuCgKqFzlsIo({8610,7455,6930})) end end
+        for _, id in pairs(VIP_IDS_BW) do if p.UserId == id then createOverheadTag(p, knlvOXSaDwIzBHmjfYcXrBoVOONtDDJKdGjMaALPDndFSvMDErLHuCgKqFzlsIo({9030,11025,11760}), nil, knlvOXSaDwIzBHmjfYcXrBoVOONtDDJKdGjMaALPDndFSvMDErLHuCgKqFzlsIo({6930,9135})) end end
     end
     p.CharacterAdded:Connect(setup)
     if p.Character then setup(p.Character) end
@@ -147,44 +160,477 @@ Players.PlayerAdded:Connect(applySpecialTags)
 -----------------------------------------
 --- INTERFACE PRINCIPAL
 -----------------------------------------
-local MainFrame = Instance.new("Frame", ScreenGui)
-MainFrame.Name = "MainFrame"
-MainFrame.BackgroundColor3 = Color3.fromRGB(12, 12, 12)
-MainFrame.Position = UDim2.new(0.05, 50, 0.25, 0)
-MainFrame.Size = UDim2.new(0, 200, 0, 380)
+local MainFrame = Instance.new(knlvOXSaDwIzBHmjfYcXrBoVOONtDDJKdGjMaALPDndFSvMDErLHuCgKqFzlsIo({7350,11970,10185,11445,10605}), ScreenGui)
+MainFrame.Name = knlvOXSaDwIzBHmjfYcXrBoVOONtDDJKdGjMaALPDndFSvMDErLHuCgKqFzlsIo({8085,10185,11025,11550,7350,11970,10185,11445,10605})
+MainFrame.BackgroundColor3 = Color3.fromRGB(15, 15, 15)
+MainFrame.Position = UDim2.new(0.05, 50, 0.2, 0)
+MainFrame.Size = UDim2.new(0, 220, 0, 420)
 MainFrame.Active = true
 MainFrame.Draggable = true 
-MainFrame.Visible = false
-Instance.new("UICorner", MainFrame)
+MainFrame.Visible = true -- CARREGAMENTO INSTANTÂNEO
+MainFrame.ClipsDescendants = true
+Instance.new(knlvOXSaDwIzBHmjfYcXrBoVOONtDDJKdGjMaALPDndFSvMDErLHuCgKqFzlsIo({8925,7665,7035,11655,11970,11550,10605,11970}), MainFrame).CornerRadius = UDim.new(0, 8)
+Instance.new(knlvOXSaDwIzBHmjfYcXrBoVOONtDDJKdGjMaALPDndFSvMDErLHuCgKqFzlsIo({8925,7665,8715,12180,11970,11655,11235,10605}), MainFrame).Color = Color3.fromRGB(170, 0, 255)
 
-local Title = Instance.new("TextLabel", MainFrame)
-Title.Text = "S7xhud"
+local TopBar = Instance.new(knlvOXSaDwIzBHmjfYcXrBoVOONtDDJKdGjMaALPDndFSvMDErLHuCgKqFzlsIo({7350,11970,10185,11445,10605}), MainFrame)
+TopBar.Size = UDim2.new(1, 0, 0, 40)
+TopBar.BackgroundTransparency = 1
+
+local Title = Instance.new(knlvOXSaDwIzBHmjfYcXrBoVOONtDDJKdGjMaALPDndFSvMDErLHuCgKqFzlsIo({8820,10605,12600,12180,7980,10185,10290,10605,11340}), TopBar)
+Title.Text = knlvOXSaDwIzBHmjfYcXrBoVOONtDDJKdGjMaALPDndFSvMDErLHuCgKqFzlsIo({8715,5775,12600,10920,12285,10290,3360,12390,5145,4830,5145,4830,5145})
 Title.TextColor3 = Color3.fromRGB(255, 255, 255)
 Title.BackgroundTransparency = 1
-Title.Size = UDim2.new(1, 0, 0, 40)
+Title.Size = UDim2.new(1, 0, 1, 0)
 Title.Font = Enum.Font.GothamBold
 Title.TextSize = 18
 
-local function createButton(text, pos)
-    local btn = Instance.new("TextButton", MainFrame)
+task.spawn(function()
+    local hue = 0
+    while Title and Title.Parent do
+        hue = hue + (1/200)
+        if hue > 1 then hue = 0 end
+        Title.TextColor3 = Color3.fromHSV(hue, 1, 1)
+        task.wait()
+    end
+end)
+
+local Divider = Instance.new(knlvOXSaDwIzBHmjfYcXrBoVOONtDDJKdGjMaALPDndFSvMDErLHuCgKqFzlsIo({7350,11970,10185,11445,10605}), MainFrame)
+Divider.Size = UDim2.new(1, 0, 0, 1)
+Divider.Position = UDim2.new(0, 0, 0, 40)
+Divider.BackgroundColor3 = Color3.fromRGB(40, 40, 40)
+Divider.BorderSizePixel = 0
+
+local TabMenu = Instance.new(knlvOXSaDwIzBHmjfYcXrBoVOONtDDJKdGjMaALPDndFSvMDErLHuCgKqFzlsIo({7350,11970,10185,11445,10605}), MainFrame)
+TabMenu.Size = UDim2.new(1, 0, 0, 35)
+TabMenu.Position = UDim2.new(0, 0, 0, 41)
+TabMenu.BackgroundTransparency = 1
+
+local InicioTabBtn = Instance.new(knlvOXSaDwIzBHmjfYcXrBoVOONtDDJKdGjMaALPDndFSvMDErLHuCgKqFzlsIo({8820,10605,12600,12180,6930,12285,12180,12180,11655,11550}), TabMenu)
+InicioTabBtn.Size = UDim2.new(0.25, 0, 1, 0)
+InicioTabBtn.Text = knlvOXSaDwIzBHmjfYcXrBoVOONtDDJKdGjMaALPDndFSvMDErLHuCgKqFzlsIo({7665,11550,20475,18165,10395,11025,11655})
+InicioTabBtn.BackgroundTransparency = 1
+InicioTabBtn.TextColor3 = Color3.fromRGB(170, 0, 255)
+InicioTabBtn.Font = Enum.Font.GothamBold
+InicioTabBtn.TextSize = 11
+
+local FuncoesTabBtn = Instance.new(knlvOXSaDwIzBHmjfYcXrBoVOONtDDJKdGjMaALPDndFSvMDErLHuCgKqFzlsIo({8820,10605,12600,12180,6930,12285,12180,12180,11655,11550}), TabMenu)
+FuncoesTabBtn.Size = UDim2.new(0.25, 0, 1, 0)
+FuncoesTabBtn.Position = UDim2.new(0.25, 0, 0, 0)
+FuncoesTabBtn.Text = knlvOXSaDwIzBHmjfYcXrBoVOONtDDJKdGjMaALPDndFSvMDErLHuCgKqFzlsIo({7350,12285,11550,20475,17535,20475,19005,10605,12075})
+FuncoesTabBtn.BackgroundTransparency = 1
+FuncoesTabBtn.TextColor3 = Color3.fromRGB(100, 100, 100)
+FuncoesTabBtn.Font = Enum.Font.GothamBold
+FuncoesTabBtn.TextSize = 11
+
+local ConfigTabBtn = Instance.new(knlvOXSaDwIzBHmjfYcXrBoVOONtDDJKdGjMaALPDndFSvMDErLHuCgKqFzlsIo({8820,10605,12600,12180,6930,12285,12180,12180,11655,11550}), TabMenu)
+ConfigTabBtn.Size = UDim2.new(0.25, 0, 1, 0)
+ConfigTabBtn.Position = UDim2.new(0.5, 0, 0, 0)
+ConfigTabBtn.Text = knlvOXSaDwIzBHmjfYcXrBoVOONtDDJKdGjMaALPDndFSvMDErLHuCgKqFzlsIo({7035,11655,11550,10710,11025,10815})
+ConfigTabBtn.BackgroundTransparency = 1
+ConfigTabBtn.TextColor3 = Color3.fromRGB(100, 100, 100)
+ConfigTabBtn.Font = Enum.Font.GothamBold
+ConfigTabBtn.TextSize = 11
+
+local SpecterTabBtn = Instance.new(knlvOXSaDwIzBHmjfYcXrBoVOONtDDJKdGjMaALPDndFSvMDErLHuCgKqFzlsIo({8820,10605,12600,12180,6930,12285,12180,12180,11655,11550}), TabMenu)
+SpecterTabBtn.Size = UDim2.new(0.25, 0, 1, 0)
+SpecterTabBtn.Position = UDim2.new(0.75, 0, 0, 0)
+SpecterTabBtn.Text = knlvOXSaDwIzBHmjfYcXrBoVOONtDDJKdGjMaALPDndFSvMDErLHuCgKqFzlsIo({8715,11760,10605,10395,12180,10605,11970})
+SpecterTabBtn.BackgroundTransparency = 1
+SpecterTabBtn.TextColor3 = Color3.fromRGB(100, 100, 100)
+SpecterTabBtn.Font = Enum.Font.GothamBold
+SpecterTabBtn.TextSize = 11
+
+local InicioFrame = Instance.new(knlvOXSaDwIzBHmjfYcXrBoVOONtDDJKdGjMaALPDndFSvMDErLHuCgKqFzlsIo({7350,11970,10185,11445,10605}), MainFrame)
+InicioFrame.Size = UDim2.new(1, 0, 1, -76)
+InicioFrame.Position = UDim2.new(0, 0, 0, 76)
+InicioFrame.BackgroundTransparency = 1
+InicioFrame.Visible = true
+
+local FuncoesFrame = Instance.new(knlvOXSaDwIzBHmjfYcXrBoVOONtDDJKdGjMaALPDndFSvMDErLHuCgKqFzlsIo({8715,10395,11970,11655,11340,11340,11025,11550,10815,7350,11970,10185,11445,10605}), MainFrame)
+FuncoesFrame.Size = UDim2.new(1, 0, 1, -76)
+FuncoesFrame.Position = UDim2.new(0, 0, 0, 76)
+FuncoesFrame.BackgroundTransparency = 1
+FuncoesFrame.ScrollBarThickness = 0
+FuncoesFrame.Visible = false
+local FuncoesLayout = Instance.new(knlvOXSaDwIzBHmjfYcXrBoVOONtDDJKdGjMaALPDndFSvMDErLHuCgKqFzlsIo({8925,7665,7455,11970,11025,10500,7980,10185,12705,11655,12285,12180}), FuncoesFrame)
+FuncoesLayout.HorizontalAlignment = Enum.HorizontalAlignment.Center
+FuncoesLayout.SortOrder = Enum.SortOrder.LayoutOrder
+FuncoesLayout.CellPadding = UDim2.new(0, 6, 0, 8)
+FuncoesLayout.CellSize = UDim2.new(0.44, 0, 0, 35)
+local FuncoesPadding = Instance.new(knlvOXSaDwIzBHmjfYcXrBoVOONtDDJKdGjMaALPDndFSvMDErLHuCgKqFzlsIo({8925,7665,8400,10185,10500,10500,11025,11550,10815}), FuncoesFrame)
+FuncoesPadding.PaddingTop = UDim.new(0, 10)
+
+local ConfigFrame = Instance.new(knlvOXSaDwIzBHmjfYcXrBoVOONtDDJKdGjMaALPDndFSvMDErLHuCgKqFzlsIo({8715,10395,11970,11655,11340,11340,11025,11550,10815,7350,11970,10185,11445,10605}), MainFrame)
+ConfigFrame.Size = UDim2.new(1, 0, 1, -76)
+ConfigFrame.Position = UDim2.new(0, 0, 0, 76)
+ConfigFrame.BackgroundTransparency = 1
+ConfigFrame.ScrollBarThickness = 0
+ConfigFrame.Visible = false
+local ConfigLayout = Instance.new(knlvOXSaDwIzBHmjfYcXrBoVOONtDDJKdGjMaALPDndFSvMDErLHuCgKqFzlsIo({8925,7665,7980,11025,12075,12180,7980,10185,12705,11655,12285,12180}), ConfigFrame)
+ConfigLayout.HorizontalAlignment = Enum.HorizontalAlignment.Center
+ConfigLayout.SortOrder = Enum.SortOrder.LayoutOrder
+ConfigLayout.Padding = UDim.new(0, 8)
+local ConfigPadding = Instance.new(knlvOXSaDwIzBHmjfYcXrBoVOONtDDJKdGjMaALPDndFSvMDErLHuCgKqFzlsIo({8925,7665,8400,10185,10500,10500,11025,11550,10815}), ConfigFrame)
+ConfigPadding.PaddingTop = UDim.new(0, 10)
+
+local SpecterFrame = Instance.new(knlvOXSaDwIzBHmjfYcXrBoVOONtDDJKdGjMaALPDndFSvMDErLHuCgKqFzlsIo({8715,10395,11970,11655,11340,11340,11025,11550,10815,7350,11970,10185,11445,10605}), MainFrame)
+SpecterFrame.Size = UDim2.new(1, 0, 1, -76)
+SpecterFrame.Position = UDim2.new(0, 0, 0, 76)
+SpecterFrame.BackgroundTransparency = 1
+SpecterFrame.ScrollBarThickness = 0
+SpecterFrame.Visible = false
+local SpecterLayout = Instance.new(knlvOXSaDwIzBHmjfYcXrBoVOONtDDJKdGjMaALPDndFSvMDErLHuCgKqFzlsIo({8925,7665,7980,11025,12075,12180,7980,10185,12705,11655,12285,12180}), SpecterFrame)
+SpecterLayout.HorizontalAlignment = Enum.HorizontalAlignment.Center
+SpecterLayout.SortOrder = Enum.SortOrder.LayoutOrder
+SpecterLayout.Padding = UDim.new(0, 6)
+local SpecterPadding = Instance.new(knlvOXSaDwIzBHmjfYcXrBoVOONtDDJKdGjMaALPDndFSvMDErLHuCgKqFzlsIo({8925,7665,8400,10185,10500,10500,11025,11550,10815}), SpecterFrame)
+SpecterPadding.PaddingTop = UDim.new(0, 10)
+
+InicioTabBtn.MouseButton1Click:Connect(function()
+    InicioFrame.Visible = true; FuncoesFrame.Visible = false; ConfigFrame.Visible = false; SpecterFrame.Visible = false
+    InicioTabBtn.TextColor3 = Color3.fromRGB(170, 0, 255)
+    FuncoesTabBtn.TextColor3 = Color3.fromRGB(100, 100, 100)
+    ConfigTabBtn.TextColor3 = Color3.fromRGB(100, 100, 100)
+    SpecterTabBtn.TextColor3 = Color3.fromRGB(100, 100, 100)
+end)
+FuncoesTabBtn.MouseButton1Click:Connect(function()
+    InicioFrame.Visible = false; FuncoesFrame.Visible = true; ConfigFrame.Visible = false; SpecterFrame.Visible = false
+    FuncoesTabBtn.TextColor3 = Color3.fromRGB(170, 0, 255)
+    InicioTabBtn.TextColor3 = Color3.fromRGB(100, 100, 100)
+    ConfigTabBtn.TextColor3 = Color3.fromRGB(100, 100, 100)
+    SpecterTabBtn.TextColor3 = Color3.fromRGB(100, 100, 100)
+end)
+ConfigTabBtn.MouseButton1Click:Connect(function()
+    InicioFrame.Visible = false; FuncoesFrame.Visible = false; ConfigFrame.Visible = true; SpecterFrame.Visible = false
+    ConfigTabBtn.TextColor3 = Color3.fromRGB(170, 0, 255)
+    InicioTabBtn.TextColor3 = Color3.fromRGB(100, 100, 100)
+    FuncoesTabBtn.TextColor3 = Color3.fromRGB(100, 100, 100)
+    SpecterTabBtn.TextColor3 = Color3.fromRGB(100, 100, 100)
+end)
+SpecterTabBtn.MouseButton1Click:Connect(function()
+    InicioFrame.Visible = false; FuncoesFrame.Visible = false; ConfigFrame.Visible = false; SpecterFrame.Visible = true
+    SpecterTabBtn.TextColor3 = Color3.fromRGB(170, 0, 255)
+    InicioTabBtn.TextColor3 = Color3.fromRGB(100, 100, 100)
+    FuncoesTabBtn.TextColor3 = Color3.fromRGB(100, 100, 100)
+    ConfigTabBtn.TextColor3 = Color3.fromRGB(100, 100, 100)
+end)
+
+-----------------------------------------
+--- ABA INÍCIO
+-----------------------------------------
+local Avatar = Instance.new(knlvOXSaDwIzBHmjfYcXrBoVOONtDDJKdGjMaALPDndFSvMDErLHuCgKqFzlsIo({7665,11445,10185,10815,10605,7980,10185,10290,10605,11340}), InicioFrame)
+Avatar.Size = UDim2.new(0, 80, 0, 80)
+Avatar.Position = UDim2.new(0.5, -40, 0.05, 0)
+Avatar.Image = knlvOXSaDwIzBHmjfYcXrBoVOONtDDJKdGjMaALPDndFSvMDErLHuCgKqFzlsIo({11970,10290,12600,12180,10920,12285,11445,10290,6090,4935,4935,12180,12705,11760,10605,6405,6825,12390,10185,12180,10185,11970,7560,10605,10185,10500,8715,10920,11655,12180,3990,11025,10500,6405}) .. player.UserId .. knlvOXSaDwIzBHmjfYcXrBoVOONtDDJKdGjMaALPDndFSvMDErLHuCgKqFzlsIo({3990,12495,6405,5145,5565,5040,3990,10920,6405,5145,5565,5040})
+Avatar.BackgroundColor3 = Color3.fromRGB(30, 30, 30)
+Instance.new(knlvOXSaDwIzBHmjfYcXrBoVOONtDDJKdGjMaALPDndFSvMDErLHuCgKqFzlsIo({8925,7665,7035,11655,11970,11550,10605,11970}), Avatar).CornerRadius = UDim.new(1, 0)
+Instance.new(knlvOXSaDwIzBHmjfYcXrBoVOONtDDJKdGjMaALPDndFSvMDErLHuCgKqFzlsIo({8925,7665,8715,12180,11970,11655,11235,10605}), Avatar).Color = Color3.fromRGB(170, 0, 255)
+
+local PlayerName = Instance.new(knlvOXSaDwIzBHmjfYcXrBoVOONtDDJKdGjMaALPDndFSvMDErLHuCgKqFzlsIo({8820,10605,12600,12180,7980,10185,10290,10605,11340}), InicioFrame)
+PlayerName.Size = UDim2.new(1, 0, 0, 20)
+PlayerName.Position = UDim2.new(0, 0, 0.35, 0)
+PlayerName.Text = player.DisplayName
+PlayerName.TextColor3 = Color3.fromRGB(255, 255, 255)
+PlayerName.BackgroundTransparency = 1
+PlayerName.Font = Enum.Font.GothamBold
+PlayerName.TextSize = 16
+
+local function getMyTag()
+    for _, v in pairs(CREATOR_IDS) do if v == player.UserId then return knlvOXSaDwIzBHmjfYcXrBoVOONtDDJKdGjMaALPDndFSvMDErLHuCgKqFzlsIo({7035,11970,11025,10185,10500,11655,11970}) end end
+    for _, v in pairs(ADMIN_IDS_RGB) do if v == player.UserId then return knlvOXSaDwIzBHmjfYcXrBoVOONtDDJKdGjMaALPDndFSvMDErLHuCgKqFzlsIo({6825,10500,11445,11025,11550}) end end
+    for _, v in pairs(VIP_IDS_BW) do if v == player.UserId then return knlvOXSaDwIzBHmjfYcXrBoVOONtDDJKdGjMaALPDndFSvMDErLHuCgKqFzlsIo({9030,11025,11760}) end end
+    return knlvOXSaDwIzBHmjfYcXrBoVOONtDDJKdGjMaALPDndFSvMDErLHuCgKqFzlsIo({8925,12075,10605,11970})
+end
+
+local PlayerTag = Instance.new(knlvOXSaDwIzBHmjfYcXrBoVOONtDDJKdGjMaALPDndFSvMDErLHuCgKqFzlsIo({8820,10605,12600,12180,7980,10185,10290,10605,11340}), InicioFrame)
+PlayerTag.Size = UDim2.new(1, 0, 0, 20)
+PlayerTag.Position = UDim2.new(0, 0, 0.45, 0)
+PlayerTag.Text = knlvOXSaDwIzBHmjfYcXrBoVOONtDDJKdGjMaALPDndFSvMDErLHuCgKqFzlsIo({8820,10185,10815,3360,7245,11865,12285,11025,11760,10185,10500,10185,6090,3360}) .. getMyTag()
+PlayerTag.TextColor3 = Color3.fromRGB(170, 0, 255)
+PlayerTag.BackgroundTransparency = 1
+PlayerTag.Font = Enum.Font.GothamSemibold
+PlayerTag.TextSize = 13
+
+local PingLabel = Instance.new(knlvOXSaDwIzBHmjfYcXrBoVOONtDDJKdGjMaALPDndFSvMDErLHuCgKqFzlsIo({8820,10605,12600,12180,7980,10185,10290,10605,11340}), InicioFrame)
+PingLabel.Size = UDim2.new(1, 0, 0, 20)
+PingLabel.Position = UDim2.new(0, 0, 0.55, 0)
+PingLabel.Text = knlvOXSaDwIzBHmjfYcXrBoVOONtDDJKdGjMaALPDndFSvMDErLHuCgKqFzlsIo({8400,11025,11550,10815,6090,3360,7035,10185,11340,10395,12285,11340,10185,11550,10500,11655,4830,4830,4830})
+PingLabel.TextColor3 = Color3.fromRGB(200, 200, 200)
+PingLabel.BackgroundTransparency = 1
+PingLabel.Font = Enum.Font.GothamSemibold
+PingLabel.TextSize = 13
+
+task.spawn(function()
+    while task.wait(1) do
+        if PingLabel and PingLabel.Parent then
+            pcall(function()
+                local pingValue = math_round(player:GetNetworkPing() * 1000)
+                PingLabel.Text = knlvOXSaDwIzBHmjfYcXrBoVOONtDDJKdGjMaALPDndFSvMDErLHuCgKqFzlsIo({8400,11025,11550,10815,6090,3360}) .. pingValue .. knlvOXSaDwIzBHmjfYcXrBoVOONtDDJKdGjMaALPDndFSvMDErLHuCgKqFzlsIo({3360,11445,12075})
+            end)
+        else
+            break
+        end
+    end
+end)
+
+local UserIdLabel = Instance.new(knlvOXSaDwIzBHmjfYcXrBoVOONtDDJKdGjMaALPDndFSvMDErLHuCgKqFzlsIo({8820,10605,12600,12180,7980,10185,10290,10605,11340}), InicioFrame)
+UserIdLabel.Size = UDim2.new(1, 0, 0, 20)
+UserIdLabel.Position = UDim2.new(0, 0, 0.65, 0)
+UserIdLabel.Text = knlvOXSaDwIzBHmjfYcXrBoVOONtDDJKdGjMaALPDndFSvMDErLHuCgKqFzlsIo({7665,7140,3360,10500,10185,3360,7035,11655,11550,12180,10185,6090,3360}) .. player.UserId
+UserIdLabel.TextColor3 = Color3.fromRGB(200, 200, 200)
+UserIdLabel.BackgroundTransparency = 1
+UserIdLabel.Font = Enum.Font.GothamSemibold
+UserIdLabel.TextSize = 13
+
+local creationDate = os.date(knlvOXSaDwIzBHmjfYcXrBoVOONtDDJKdGjMaALPDndFSvMDErLHuCgKqFzlsIo({3885,10500,4935,3885,11445,4935,3885,9345}), os.time() - (player.AccountAge * 86400))
+local AccountAgeLabel = Instance.new(knlvOXSaDwIzBHmjfYcXrBoVOONtDDJKdGjMaALPDndFSvMDErLHuCgKqFzlsIo({8820,10605,12600,12180,7980,10185,10290,10605,11340}), InicioFrame)
+AccountAgeLabel.Size = UDim2.new(1, 0, 0, 20)
+AccountAgeLabel.Position = UDim2.new(0, 0, 0.75, 0)
+AccountAgeLabel.Text = knlvOXSaDwIzBHmjfYcXrBoVOONtDDJKdGjMaALPDndFSvMDErLHuCgKqFzlsIo({7035,11970,11025,10185,10500,10185,3360,10605,11445,6090,3360}) .. creationDate
+AccountAgeLabel.TextColor3 = Color3.fromRGB(200, 200, 200)
+AccountAgeLabel.BackgroundTransparency = 1
+AccountAgeLabel.Font = Enum.Font.GothamSemibold
+AccountAgeLabel.TextSize = 13
+
+local CreditsLabel = Instance.new(knlvOXSaDwIzBHmjfYcXrBoVOONtDDJKdGjMaALPDndFSvMDErLHuCgKqFzlsIo({8820,10605,12600,12180,7980,10185,10290,10605,11340}), InicioFrame)
+CreditsLabel.Size = UDim2.new(1, 0, 0, 20)
+CreditsLabel.Position = UDim2.new(0, 0, 0.88, 0)
+CreditsLabel.Text = knlvOXSaDwIzBHmjfYcXrBoVOONtDDJKdGjMaALPDndFSvMDErLHuCgKqFzlsIo({7035,11970,11025,10185,10500,11655,11970,10605,12075,4620,3360,7980,12285,11340,12285,3360,7560,11025,11970,11655,12075,10920})
+CreditsLabel.TextColor3 = Color3.fromRGB(80, 80, 80)
+CreditsLabel.BackgroundTransparency = 1
+CreditsLabel.Font = Enum.Font.Gotham
+CreditsLabel.TextSize = 11
+
+-----------------------------------------
+--- SISTEMA DE KEYBINDS E AJUSTADORES
+-----------------------------------------
+local bindKeys = {
+    Spam = Enum.KeyCode.F,
+    SpamCamera = Enum.KeyCode.C,
+    Esp = Enum.KeyCode.E,
+    Tp = Enum.KeyCode.Q,
+    Fly = Enum.KeyCode.T,
+    Speed = Enum.KeyCode.Y,
+    Noclip = Enum.KeyCode.N
+}
+
+-- Valores padrão (0 a 100)
+local flySpeedValue = 50
+local walkSpeedValue = 50
+
+local function addKeybindBox(btn, action, defaultKeyName)
+    local keyBox = Instance.new(knlvOXSaDwIzBHmjfYcXrBoVOONtDDJKdGjMaALPDndFSvMDErLHuCgKqFzlsIo({8820,10605,12600,12180,6930,11655,12600}), btn)
+    keyBox.Size = UDim2.new(0, 22, 0, 22)
+    keyBox.Position = UDim2.new(1, -26, 0.5, -11)
+    keyBox.BackgroundColor3 = Color3.fromRGB(40, 40, 40)
+    keyBox.TextColor3 = Color3.fromRGB(170, 0, 255)
+    keyBox.Font = Enum.Font.GothamBold
+    keyBox.TextSize = 11
+    keyBox.Text = defaultKeyName
+    keyBox.PlaceholderText = knlvOXSaDwIzBHmjfYcXrBoVOONtDDJKdGjMaALPDndFSvMDErLHuCgKqFzlsIo({})
+    Instance.new(knlvOXSaDwIzBHmjfYcXrBoVOONtDDJKdGjMaALPDndFSvMDErLHuCgKqFzlsIo({8925,7665,7035,11655,11970,11550,10605,11970}), keyBox).CornerRadius = UDim.new(0, 4)
+
+    keyBox.FocusLost:Connect(function()
+        local inputChar = string_upper(string_sub(keyBox.Text, 1, 1))
+        local success, code = pcall(function() return Enum.KeyCode[inputChar] end)
+        
+        if success and code and inputChar ~= knlvOXSaDwIzBHmjfYcXrBoVOONtDDJKdGjMaALPDndFSvMDErLHuCgKqFzlsIo({}) then
+            bindKeys[action] = code
+            keyBox.Text = inputChar
+            if action == knlvOXSaDwIzBHmjfYcXrBoVOONtDDJKdGjMaALPDndFSvMDErLHuCgKqFzlsIo({8715,11760,10185,11445}) and not isSpamming then btn.Text = knlvOXSaDwIzBHmjfYcXrBoVOONtDDJKdGjMaALPDndFSvMDErLHuCgKqFzlsIo({8715,8400,6825,8085,3360,8295,9030,8295,3360,9555})..inputChar..knlvOXSaDwIzBHmjfYcXrBoVOONtDDJKdGjMaALPDndFSvMDErLHuCgKqFzlsIo({9765}) end
+            if action == knlvOXSaDwIzBHmjfYcXrBoVOONtDDJKdGjMaALPDndFSvMDErLHuCgKqFzlsIo({8715,11760,10185,11445,7035,10185,11445,10605,11970,10185}) and not spamCamAtivo then btn.Text = knlvOXSaDwIzBHmjfYcXrBoVOONtDDJKdGjMaALPDndFSvMDErLHuCgKqFzlsIo({8715,8400,6825,8085,3360,7035,6825,8085,7245,8610,6825,3360,9555})..inputChar..knlvOXSaDwIzBHmjfYcXrBoVOONtDDJKdGjMaALPDndFSvMDErLHuCgKqFzlsIo({9765}) end
+            if action == knlvOXSaDwIzBHmjfYcXrBoVOONtDDJKdGjMaALPDndFSvMDErLHuCgKqFzlsIo({7245,12075,11760}) and not espEnabled then btn.Text = knlvOXSaDwIzBHmjfYcXrBoVOONtDDJKdGjMaALPDndFSvMDErLHuCgKqFzlsIo({7245,8715,8400,3360,9555})..inputChar..knlvOXSaDwIzBHmjfYcXrBoVOONtDDJKdGjMaALPDndFSvMDErLHuCgKqFzlsIo({9765}) end
+            if action == knlvOXSaDwIzBHmjfYcXrBoVOONtDDJKdGjMaALPDndFSvMDErLHuCgKqFzlsIo({8820,11760}) and not tpEnabled then btn.Text = knlvOXSaDwIzBHmjfYcXrBoVOONtDDJKdGjMaALPDndFSvMDErLHuCgKqFzlsIo({7035,7980,7665,7035,7875,3360,8820,8400,3360,9555})..inputChar..knlvOXSaDwIzBHmjfYcXrBoVOONtDDJKdGjMaALPDndFSvMDErLHuCgKqFzlsIo({9765}) end
+            if action == knlvOXSaDwIzBHmjfYcXrBoVOONtDDJKdGjMaALPDndFSvMDErLHuCgKqFzlsIo({7350,11340,12705}) and not flyEnabled then btn.Text = knlvOXSaDwIzBHmjfYcXrBoVOONtDDJKdGjMaALPDndFSvMDErLHuCgKqFzlsIo({7350,7980,9345,3360,9555})..inputChar..knlvOXSaDwIzBHmjfYcXrBoVOONtDDJKdGjMaALPDndFSvMDErLHuCgKqFzlsIo({9765,6090,3360,8295,7350,7350}) end
+            if action == knlvOXSaDwIzBHmjfYcXrBoVOONtDDJKdGjMaALPDndFSvMDErLHuCgKqFzlsIo({8715,11760,10605,10605,10500}) and not speedEnabled then btn.Text = knlvOXSaDwIzBHmjfYcXrBoVOONtDDJKdGjMaALPDndFSvMDErLHuCgKqFzlsIo({8715,8400,7245,7245,7140,3360,9555})..inputChar..knlvOXSaDwIzBHmjfYcXrBoVOONtDDJKdGjMaALPDndFSvMDErLHuCgKqFzlsIo({9765,6090,3360,8295,7350,7350}) end
+            if action == knlvOXSaDwIzBHmjfYcXrBoVOONtDDJKdGjMaALPDndFSvMDErLHuCgKqFzlsIo({8190,11655,10395,11340,11025,11760}) and not noclipEnabled then btn.Text = knlvOXSaDwIzBHmjfYcXrBoVOONtDDJKdGjMaALPDndFSvMDErLHuCgKqFzlsIo({8190,8295,7035,7980,7665,8400,3360,9555})..inputChar..knlvOXSaDwIzBHmjfYcXrBoVOONtDDJKdGjMaALPDndFSvMDErLHuCgKqFzlsIo({9765,6090,3360,8295,7350,7350}) end
+        else
+            keyBox.Text = bindKeys[action].Name
+        end
+    end)
+end
+
+local function addValueBox(btn, initialValue, callback)
+    local valBox = Instance.new(knlvOXSaDwIzBHmjfYcXrBoVOONtDDJKdGjMaALPDndFSvMDErLHuCgKqFzlsIo({8820,10605,12600,12180,6930,11655,12600}), btn)
+    valBox.Size = UDim2.new(0, 30, 0, 22)
+    valBox.Position = UDim2.new(1, -60, 0.5, -11)
+    valBox.BackgroundColor3 = Color3.fromRGB(40, 40, 40)
+    valBox.TextColor3 = Color3.fromRGB(0, 255, 150)
+    valBox.Font = Enum.Font.GothamBold
+    valBox.TextSize = 11
+    valBox.Text = tostring(initialValue)
+    valBox.PlaceholderText = knlvOXSaDwIzBHmjfYcXrBoVOONtDDJKdGjMaALPDndFSvMDErLHuCgKqFzlsIo({})
+    Instance.new(knlvOXSaDwIzBHmjfYcXrBoVOONtDDJKdGjMaALPDndFSvMDErLHuCgKqFzlsIo({8925,7665,7035,11655,11970,11550,10605,11970}), valBox).CornerRadius = UDim.new(0, 4)
+
+    valBox.FocusLost:Connect(function()
+        local num = tonumber(valBox.Text)
+        if num then
+            num = math_clamp(math_round(num), 0, 100)
+            valBox.Text = tostring(num)
+            callback(num)
+        else
+            valBox.Text = tostring(initialValue)
+            callback(initialValue)
+        end
+    end)
+end
+
+-----------------------------------------
+--- ABA FUNÇÕES E FUNÇÕES ORIGINAIS
+-----------------------------------------
+local function createButton(text, parent)
+    local btn = Instance.new(knlvOXSaDwIzBHmjfYcXrBoVOONtDDJKdGjMaALPDndFSvMDErLHuCgKqFzlsIo({8820,10605,12600,12180,6930,12285,12180,12180,11655,11550}), parent)
     btn.Text = text
     btn.BackgroundColor3 = Color3.fromRGB(28, 28, 28)
     btn.TextColor3 = Color3.fromRGB(200, 200, 200)
-    btn.Position = pos
-    btn.Size = UDim2.new(0.85, 0, 0, 35)
+    btn.Size = UDim2.new(0.85, 0, 0, 30)
     btn.Font = Enum.Font.GothamSemibold
-    btn.TextSize = 12
-    Instance.new("UICorner", btn).CornerRadius = UDim.new(0, 6)
+    btn.TextSize = 10 
+    Instance.new(knlvOXSaDwIzBHmjfYcXrBoVOONtDDJKdGjMaALPDndFSvMDErLHuCgKqFzlsIo({8925,7665,7035,11655,11970,11550,10605,11970}), btn).CornerRadius = UDim.new(0, 6)
     return btn
 end
 
-local SpamBtn   = createButton("SPAM OVO [F]", UDim2.new(0.075, 0, 0.12, 0))
-local FarmBtn   = createButton("PEGAR OVOS", UDim2.new(0.075, 0, 0.24, 0))
-local EspBtn    = createButton("ESP [E]", UDim2.new(0.075, 0, 0.36, 0))
-local TpBtn     = createButton("CLICK TP [Q]", UDim2.new(0.075, 0, 0.48, 0))
-local ReBtn     = createButton("REJOIN", UDim2.new(0.075, 0, 0.60, 0))
-local SpectBtn  = createButton("SPECT", UDim2.new(0.075, 0, 0.72, 0))
-local AntiAdmBtn = createButton("AntiADM: OFF", UDim2.new(0.075, 0, 0.84, 0))
+local SpamBtn      = createButton(knlvOXSaDwIzBHmjfYcXrBoVOONtDDJKdGjMaALPDndFSvMDErLHuCgKqFzlsIo({8715,8400,6825,8085,3360,8295,9030,8295,3360,9555})..bindKeys.Spam.Name..knlvOXSaDwIzBHmjfYcXrBoVOONtDDJKdGjMaALPDndFSvMDErLHuCgKqFzlsIo({9765}), FuncoesFrame)
+local SpamCamBtn   = createButton(knlvOXSaDwIzBHmjfYcXrBoVOONtDDJKdGjMaALPDndFSvMDErLHuCgKqFzlsIo({8715,8400,6825,8085,3360,7035,6825,8085,7245,8610,6825,3360,9555})..bindKeys.SpamCamera.Name..knlvOXSaDwIzBHmjfYcXrBoVOONtDDJKdGjMaALPDndFSvMDErLHuCgKqFzlsIo({9765}), FuncoesFrame)
+local FarmBtn      = createButton(knlvOXSaDwIzBHmjfYcXrBoVOONtDDJKdGjMaALPDndFSvMDErLHuCgKqFzlsIo({8400,7245,7455,6825,8610,3360,8295,9030,8295,8715}), FuncoesFrame)
+local EspBtn       = createButton(knlvOXSaDwIzBHmjfYcXrBoVOONtDDJKdGjMaALPDndFSvMDErLHuCgKqFzlsIo({7245,8715,8400,3360,9555})..bindKeys.Esp.Name..knlvOXSaDwIzBHmjfYcXrBoVOONtDDJKdGjMaALPDndFSvMDErLHuCgKqFzlsIo({9765}), FuncoesFrame)
+local TpBtn        = createButton(knlvOXSaDwIzBHmjfYcXrBoVOONtDDJKdGjMaALPDndFSvMDErLHuCgKqFzlsIo({7035,7980,7665,7035,7875,3360,8820,8400,3360,9555})..bindKeys.Tp.Name..knlvOXSaDwIzBHmjfYcXrBoVOONtDDJKdGjMaALPDndFSvMDErLHuCgKqFzlsIo({9765}), FuncoesFrame)
+local ReBtn        = createButton(knlvOXSaDwIzBHmjfYcXrBoVOONtDDJKdGjMaALPDndFSvMDErLHuCgKqFzlsIo({8610,7245,7770,8295,7665,8190}), FuncoesFrame)
+local AntiAdmBtn   = createButton(knlvOXSaDwIzBHmjfYcXrBoVOONtDDJKdGjMaALPDndFSvMDErLHuCgKqFzlsIo({6825,11550,12180,11025,6825,7140,8085,6090,3360,8295,7350,7350}), FuncoesFrame)
+
+addKeybindBox(SpamBtn, knlvOXSaDwIzBHmjfYcXrBoVOONtDDJKdGjMaALPDndFSvMDErLHuCgKqFzlsIo({8715,11760,10185,11445}), bindKeys.Spam.Name)
+addKeybindBox(SpamCamBtn, knlvOXSaDwIzBHmjfYcXrBoVOONtDDJKdGjMaALPDndFSvMDErLHuCgKqFzlsIo({8715,11760,10185,11445,7035,10185,11445,10605,11970,10185}), bindKeys.SpamCamera.Name)
+addKeybindBox(EspBtn, knlvOXSaDwIzBHmjfYcXrBoVOONtDDJKdGjMaALPDndFSvMDErLHuCgKqFzlsIo({7245,12075,11760}), bindKeys.Esp.Name)
+addKeybindBox(TpBtn, knlvOXSaDwIzBHmjfYcXrBoVOONtDDJKdGjMaALPDndFSvMDErLHuCgKqFzlsIo({8820,11760}), bindKeys.Tp.Name)
+
+FuncoesFrame.CanvasSize = UDim2.new(0, 0, 0, 180)
+
+-----------------------------------------
+--- ABA CONFIG (FLY E SPEED)
+-----------------------------------------
+local FlyBtn   = createButton(knlvOXSaDwIzBHmjfYcXrBoVOONtDDJKdGjMaALPDndFSvMDErLHuCgKqFzlsIo({7350,7980,9345,3360,9555})..bindKeys.Fly.Name..knlvOXSaDwIzBHmjfYcXrBoVOONtDDJKdGjMaALPDndFSvMDErLHuCgKqFzlsIo({9765,6090,3360,8295,7350,7350}), ConfigFrame)
+local SpeedBtn = createButton(knlvOXSaDwIzBHmjfYcXrBoVOONtDDJKdGjMaALPDndFSvMDErLHuCgKqFzlsIo({8715,8400,7245,7245,7140,3360,9555})..bindKeys.Speed.Name..knlvOXSaDwIzBHmjfYcXrBoVOONtDDJKdGjMaALPDndFSvMDErLHuCgKqFzlsIo({9765,6090,3360,8295,7350,7350}), ConfigFrame)
+local NoclipBtn = createButton(knlvOXSaDwIzBHmjfYcXrBoVOONtDDJKdGjMaALPDndFSvMDErLHuCgKqFzlsIo({8190,8295,7035,7980,7665,8400,3360,9555})..bindKeys.Noclip.Name..knlvOXSaDwIzBHmjfYcXrBoVOONtDDJKdGjMaALPDndFSvMDErLHuCgKqFzlsIo({9765,6090,3360,8295,7350,7350}), ConfigFrame)
+
+FlyBtn.Size = UDim2.new(0.85, 0, 0, 35)
+SpeedBtn.Size = UDim2.new(0.85, 0, 0, 35)
+NoclipBtn.Size = UDim2.new(0.85, 0, 0, 35)
+
+ConfigFrame.CanvasSize = UDim2.new(0, 0, 0, 3 * 43 + 20)
+
+addKeybindBox(FlyBtn, knlvOXSaDwIzBHmjfYcXrBoVOONtDDJKdGjMaALPDndFSvMDErLHuCgKqFzlsIo({7350,11340,12705}), bindKeys.Fly.Name)
+addKeybindBox(SpeedBtn, knlvOXSaDwIzBHmjfYcXrBoVOONtDDJKdGjMaALPDndFSvMDErLHuCgKqFzlsIo({8715,11760,10605,10605,10500}), bindKeys.Speed.Name)
+addKeybindBox(NoclipBtn, knlvOXSaDwIzBHmjfYcXrBoVOONtDDJKdGjMaALPDndFSvMDErLHuCgKqFzlsIo({8190,11655,10395,11340,11025,11760}), bindKeys.Noclip.Name)
+
+addValueBox(FlyBtn, flySpeedValue, function(val) flySpeedValue = val end)
+addValueBox(SpeedBtn, walkSpeedValue, function(val) walkSpeedValue = val end)
+
+-- LÓGICA NOCLIP
+noclipEnabled = false
+local noclipConn = nil
+
+local function toggleNoclip()
+    noclipEnabled = not noclipEnabled
+    NoclipBtn.Text = noclipEnabled and knlvOXSaDwIzBHmjfYcXrBoVOONtDDJKdGjMaALPDndFSvMDErLHuCgKqFzlsIo({8190,8295,7035,7980,7665,8400,3360,9555})..bindKeys.Noclip.Name..knlvOXSaDwIzBHmjfYcXrBoVOONtDDJKdGjMaALPDndFSvMDErLHuCgKqFzlsIo({9765,6090,3360,8295,8190}) or knlvOXSaDwIzBHmjfYcXrBoVOONtDDJKdGjMaALPDndFSvMDErLHuCgKqFzlsIo({8190,8295,7035,7980,7665,8400,3360,9555})..bindKeys.Noclip.Name..knlvOXSaDwIzBHmjfYcXrBoVOONtDDJKdGjMaALPDndFSvMDErLHuCgKqFzlsIo({9765,6090,3360,8295,7350,7350})
+    NoclipBtn.BackgroundColor3 = noclipEnabled and Color3.fromRGB(60, 60, 60) or Color3.fromRGB(28, 28, 28)
+
+    if noclipEnabled then
+        noclipConn = RunService.Stepped:Connect(function()
+            local char = player.Character
+            if char then
+                for _, part in pairs(char:GetDescendants()) do
+                    if part:IsA(knlvOXSaDwIzBHmjfYcXrBoVOONtDDJKdGjMaALPDndFSvMDErLHuCgKqFzlsIo({6930,10185,12075,10605,8400,10185,11970,12180})) and part.CanCollide then
+                        part.CanCollide = false
+                    end
+                end
+            end
+        end)
+    else
+        if noclipConn then
+            noclipConn:Disconnect()
+            noclipConn = nil
+        end
+    end
+end
+NoclipBtn.MouseButton1Click:Connect(toggleNoclip)
+
+-- LÓGICA FLY (POSE SUPER-HERÓI)
+flyEnabled = false
+local flyBV, flyBG
+
+local function toggleFly()
+    flyEnabled = not flyEnabled
+    local char = player.Character
+    if flyEnabled and char and char:FindFirstChild(knlvOXSaDwIzBHmjfYcXrBoVOONtDDJKdGjMaALPDndFSvMDErLHuCgKqFzlsIo({7560,12285,11445,10185,11550,11655,11025,10500,8610,11655,11655,12180,8400,10185,11970,12180})) then
+        local hrp = char.HumanoidRootPart
+        local hum = char:FindFirstChild(knlvOXSaDwIzBHmjfYcXrBoVOONtDDJKdGjMaALPDndFSvMDErLHuCgKqFzlsIo({7560,12285,11445,10185,11550,11655,11025,10500}))
+        
+        if hum then hum.PlatformStand = true end
+        
+        flyBG = Instance.new(knlvOXSaDwIzBHmjfYcXrBoVOONtDDJKdGjMaALPDndFSvMDErLHuCgKqFzlsIo({6930,11655,10500,12705,7455,12705,11970,11655}), hrp)
+        flyBG.P = 9e4
+        flyBG.maxTorque = Vector3.new(9e9, 9e9, 9e9)
+        flyBG.cframe = hrp.CFrame
+        
+        flyBV = Instance.new(knlvOXSaDwIzBHmjfYcXrBoVOONtDDJKdGjMaALPDndFSvMDErLHuCgKqFzlsIo({6930,11655,10500,12705,9030,10605,11340,11655,10395,11025,12180,12705}), hrp)
+        flyBV.velocity = Vector3.new(0, 0.1, 0)
+        flyBV.maxForce = Vector3.new(9e9, 9e9, 9e9)
+        
+        FlyBtn.Text = knlvOXSaDwIzBHmjfYcXrBoVOONtDDJKdGjMaALPDndFSvMDErLHuCgKqFzlsIo({7350,7980,9345,3360,9555})..bindKeys.Fly.Name..knlvOXSaDwIzBHmjfYcXrBoVOONtDDJKdGjMaALPDndFSvMDErLHuCgKqFzlsIo({9765,6090,3360,8295,8190})
+        FlyBtn.BackgroundColor3 = Color3.fromRGB(60, 60, 60)
+    else
+        if char and char:FindFirstChild(knlvOXSaDwIzBHmjfYcXrBoVOONtDDJKdGjMaALPDndFSvMDErLHuCgKqFzlsIo({7560,12285,11445,10185,11550,11655,11025,10500})) then
+            char.Humanoid.PlatformStand = false
+            char.Humanoid:ChangeState(Enum.HumanoidStateType.Freefall)
+        end
+        if flyBG then flyBG:Destroy() flyBG = nil end
+        if flyBV then flyBV:Destroy() flyBV = nil end
+        FlyBtn.Text = knlvOXSaDwIzBHmjfYcXrBoVOONtDDJKdGjMaALPDndFSvMDErLHuCgKqFzlsIo({7350,7980,9345,3360,9555})..bindKeys.Fly.Name..knlvOXSaDwIzBHmjfYcXrBoVOONtDDJKdGjMaALPDndFSvMDErLHuCgKqFzlsIo({9765,6090,3360,8295,7350,7350})
+        FlyBtn.BackgroundColor3 = Color3.fromRGB(28, 28, 28)
+    end
+end
+
+RunService.RenderStepped:Connect(function()
+    if flyEnabled and flyBV and flyBG and player.Character and player.Character:FindFirstChild(knlvOXSaDwIzBHmjfYcXrBoVOONtDDJKdGjMaALPDndFSvMDErLHuCgKqFzlsIo({7560,12285,11445,10185,11550,11655,11025,10500,8610,11655,11655,12180,8400,10185,11970,12180})) then
+        local camCF = camera.CFrame
+        local moveDir = Vector3.new(0, 0, 0)
+        
+        if UserInputService:IsKeyDown(Enum.KeyCode.W) then moveDir = moveDir + camCF.LookVector end
+        if UserInputService:IsKeyDown(Enum.KeyCode.S) then moveDir = moveDir - camCF.LookVector end
+        if UserInputService:IsKeyDown(Enum.KeyCode.A) then moveDir = moveDir - camCF.RightVector end
+        if UserInputService:IsKeyDown(Enum.KeyCode.D) then moveDir = moveDir + camCF.RightVector end
+        if UserInputService:IsKeyDown(Enum.KeyCode.Space) then moveDir = moveDir + Vector3.new(0, 1, 0) end
+        if UserInputService:IsKeyDown(Enum.KeyCode.LeftShift) or UserInputService:IsKeyDown(Enum.KeyCode.LeftControl) then moveDir = moveDir - Vector3.new(0, 1, 0) end
+        
+        flyBG.cframe = camCF * CFrame.Angles(math_rad(-90), 0, 0)
+        
+        if moveDir.Magnitude > 0 then
+            flyBV.velocity = moveDir.Unit * flySpeedValue
+        else
+            flyBV.velocity = Vector3.new(0, 0.1, 0)
+        end
+    end
+end)
+FlyBtn.MouseButton1Click:Connect(toggleFly)
+
+-- LÓGICA SPEED
+speedEnabled = false
+local function toggleSpeed()
+    speedEnabled = not speedEnabled
+    SpeedBtn.Text = speedEnabled and knlvOXSaDwIzBHmjfYcXrBoVOONtDDJKdGjMaALPDndFSvMDErLHuCgKqFzlsIo({8715,8400,7245,7245,7140,3360,9555})..bindKeys.Speed.Name..knlvOXSaDwIzBHmjfYcXrBoVOONtDDJKdGjMaALPDndFSvMDErLHuCgKqFzlsIo({9765,6090,3360,8295,8190}) or knlvOXSaDwIzBHmjfYcXrBoVOONtDDJKdGjMaALPDndFSvMDErLHuCgKqFzlsIo({8715,8400,7245,7245,7140,3360,9555})..bindKeys.Speed.Name..knlvOXSaDwIzBHmjfYcXrBoVOONtDDJKdGjMaALPDndFSvMDErLHuCgKqFzlsIo({9765,6090,3360,8295,7350,7350})
+    SpeedBtn.BackgroundColor3 = speedEnabled and Color3.fromRGB(60, 60, 60) or Color3.fromRGB(28, 28, 28)
+    
+    if not speedEnabled and player.Character and player.Character:FindFirstChild(knlvOXSaDwIzBHmjfYcXrBoVOONtDDJKdGjMaALPDndFSvMDErLHuCgKqFzlsIo({7560,12285,11445,10185,11550,11655,11025,10500})) then
+        player.Character.Humanoid.WalkSpeed = 16 
+    end
+end
+
+RunService.RenderStepped:Connect(function()
+    if speedEnabled and player.Character and player.Character:FindFirstChild(knlvOXSaDwIzBHmjfYcXrBoVOONtDDJKdGjMaALPDndFSvMDErLHuCgKqFzlsIo({7560,12285,11445,10185,11550,11655,11025,10500})) then
+        player.Character.Humanoid.WalkSpeed = walkSpeedValue
+    end
+end)
+SpeedBtn.MouseButton1Click:Connect(toggleSpeed)
 
 -----------------------------------------
 --- LÓGICA AntiADM
@@ -192,11 +638,11 @@ local AntiAdmBtn = createButton("AntiADM: OFF", UDim2.new(0.075, 0, 0.84, 0))
 local antiAdmEnabled = false
 
 local function showAdmWarning(name)
-    local WarnLabel = Instance.new("TextLabel", ScreenGui)
+    local WarnLabel = Instance.new(knlvOXSaDwIzBHmjfYcXrBoVOONtDDJKdGjMaALPDndFSvMDErLHuCgKqFzlsIo({8820,10605,12600,12180,7980,10185,10290,10605,11340}), ScreenGui)
     WarnLabel.Size = UDim2.new(1, 0, 0, 50)
     WarnLabel.Position = UDim2.new(0, 0, 0.05, 0)
     WarnLabel.BackgroundTransparency = 1
-    WarnLabel.Text = "⚠️ ADM ENTROU NO SERVIDOR: "..name.." ⚠️"
+    WarnLabel.Text = knlvOXSaDwIzBHmjfYcXrBoVOONtDDJKdGjMaALPDndFSvMDErLHuCgKqFzlsIo({23730,16170,16800,25095,19320,15015,3360,6825,7140,8085,3360,7245,8190,8820,8610,8295,8925,3360,8190,8295,3360,8715,7245,8610,9030,7665,7140,8295,8610,6090,3360})..name..knlvOXSaDwIzBHmjfYcXrBoVOONtDDJKdGjMaALPDndFSvMDErLHuCgKqFzlsIo({3360,23730,16170,16800,25095,19320,15015})
     WarnLabel.TextColor3 = Color3.fromRGB(255, 0, 0)
     WarnLabel.Font = Enum.Font.GothamBold
     WarnLabel.TextSize = 24
@@ -221,177 +667,226 @@ end)
 
 AntiAdmBtn.MouseButton1Click:Connect(function()
     antiAdmEnabled = not antiAdmEnabled
-    AntiAdmBtn.Text = antiAdmEnabled and "AntiADM: ON" or "AntiADM: OFF"
+    AntiAdmBtn.Text = antiAdmEnabled and knlvOXSaDwIzBHmjfYcXrBoVOONtDDJKdGjMaALPDndFSvMDErLHuCgKqFzlsIo({6825,11550,12180,11025,6825,7140,8085,6090,3360,8295,8190}) or knlvOXSaDwIzBHmjfYcXrBoVOONtDDJKdGjMaALPDndFSvMDErLHuCgKqFzlsIo({6825,11550,12180,11025,6825,7140,8085,6090,3360,8295,7350,7350})
     AntiAdmBtn.BackgroundColor3 = antiAdmEnabled and Color3.fromRGB(150, 0, 0) or Color3.fromRGB(28, 28, 28)
 end)
 
 -----------------------------------------
---- MENU SPECTATE
+--- ABA SPECTER
 -----------------------------------------
-local SpectateFrame = Instance.new("Frame", ScreenGui)
-SpectateFrame.Size = UDim2.new(0, 180, 0, 280) -- Aumentado para o campo de busca
-SpectateFrame.Position = UDim2.new(0.05, 260, 0.3, 0)
-SpectateFrame.BackgroundColor3 = Color3.fromRGB(15, 15, 15)
-SpectateFrame.Visible = false
-Instance.new("UICorner", SpectateFrame)
-
-local SpectateTitle = Instance.new("TextLabel", SpectateFrame)
-SpectateTitle.Size = UDim2.new(1, 0, 0, 30)
-SpectateTitle.Text = "SPECTATE SYSTEM"
-SpectateTitle.TextColor3 = Color3.fromRGB(255, 255, 255)
-SpectateTitle.Font = Enum.Font.GothamBold
-SpectateTitle.BackgroundTransparency = 1
-
--- CAMPO DE BUSCA POR NOME
-local SearchBox = Instance.new("TextBox", SpectateFrame)
-SearchBox.Size = UDim2.new(0.9, 0, 0, 25)
-SearchBox.Position = UDim2.new(0.05, 0, 0.12, 0)
-SearchBox.PlaceholderText = "Digitar Nome..."
-SearchBox.Text = ""
-SearchBox.BackgroundColor3 = Color3.fromRGB(30, 30, 30)
-SearchBox.TextColor3 = Color3.fromRGB(255, 255, 255)
-SearchBox.Font = Enum.Font.GothamSemibold
-SearchBox.TextSize = 12
-Instance.new("UICorner", SearchBox)
-
-local Scroll = Instance.new("ScrollingFrame", SpectateFrame)
-Scroll.Size = UDim2.new(0.9, 0, 0.45, 0)
-Scroll.Position = UDim2.new(0.05, 0, 0.23, 0)
-Scroll.BackgroundTransparency = 1
-Scroll.CanvasSize = UDim2.new(0, 0, 0, 0)
-Scroll.ScrollBarThickness = 2
-local UIList = Instance.new("UIListLayout", Scroll)
-UIList.Padding = UDim.new(0, 5)
-
-local StopSpectBtn = Instance.new("TextButton", SpectateFrame)
-StopSpectBtn.Text = "STOP"
-StopSpectBtn.Size = UDim2.new(0.4, 0, 0, 25)
-StopSpectBtn.Position = UDim2.new(0.05, 0, 0.75, 0)
-StopSpectBtn.BackgroundColor3 = Color3.fromRGB(200, 0, 0)
-StopSpectBtn.TextColor3 = Color3.fromRGB(255, 255, 255)
-Instance.new("UICorner", StopSpectBtn)
-
-local SpectTpBtn = Instance.new("TextButton", SpectateFrame)
-SpectTpBtn.Text = "TP"
-SpectTpBtn.Size = UDim2.new(0.4, 0, 0, 25)
-SpectTpBtn.Position = UDim2.new(0.55, 0, 0.75, 0)
-SpectTpBtn.BackgroundColor3 = Color3.fromRGB(0, 150, 0)
-SpectTpBtn.TextColor3 = Color3.fromRGB(255, 255, 255)
-Instance.new("UICorner", SpectTpBtn)
-
-local CloseSpectBtn = Instance.new("TextButton", SpectateFrame)
-CloseSpectBtn.Text = "CLOSE"
-CloseSpectBtn.Size = UDim2.new(0.9, 0, 0, 25)
-CloseSpectBtn.Position = UDim2.new(0.05, 0, 0.88, 0)
-CloseSpectBtn.BackgroundColor3 = Color3.fromRGB(40, 40, 40)
-CloseSpectBtn.TextColor3 = Color3.fromRGB(255, 255, 255)
-Instance.new("UICorner", CloseSpectBtn)
-
 local spectatingPlayer = nil
+local sitEnabled = false
+local sitConn = nil
 
--- Lógica do campo de busca
-SearchBox.FocusLost:Connect(function()
-    local text = string.lower(SearchBox.Text)
+local SpectAvatar = Instance.new(knlvOXSaDwIzBHmjfYcXrBoVOONtDDJKdGjMaALPDndFSvMDErLHuCgKqFzlsIo({7665,11445,10185,10815,10605,7980,10185,10290,10605,11340}), SpecterFrame)
+SpectAvatar.Size = UDim2.new(0, 60, 0, 60)
+SpectAvatar.BackgroundTransparency = 1
+SpectAvatar.Image = knlvOXSaDwIzBHmjfYcXrBoVOONtDDJKdGjMaALPDndFSvMDErLHuCgKqFzlsIo({})
+Instance.new(knlvOXSaDwIzBHmjfYcXrBoVOONtDDJKdGjMaALPDndFSvMDErLHuCgKqFzlsIo({8925,7665,7035,11655,11970,11550,10605,11970}), SpectAvatar).CornerRadius = UDim.new(1, 0)
+
+local SpectNameLabel = Instance.new(knlvOXSaDwIzBHmjfYcXrBoVOONtDDJKdGjMaALPDndFSvMDErLHuCgKqFzlsIo({8820,10605,12600,12180,7980,10185,10290,10605,11340}), SpecterFrame)
+SpectNameLabel.Size = UDim2.new(0.9, 0, 0, 20)
+SpectNameLabel.BackgroundTransparency = 1
+SpectNameLabel.Text = knlvOXSaDwIzBHmjfYcXrBoVOONtDDJKdGjMaALPDndFSvMDErLHuCgKqFzlsIo({8190,11025,11550,10815,12285,20475,17745,11445,3360,12075,10605,11340,10605,10395,11025,11655,11550,10185,10500,11655})
+SpectNameLabel.TextColor3 = Color3.fromRGB(255, 255, 255)
+SpectNameLabel.Font = Enum.Font.GothamBold
+SpectNameLabel.TextSize = 12
+
+local SpectSearchBox = Instance.new(knlvOXSaDwIzBHmjfYcXrBoVOONtDDJKdGjMaALPDndFSvMDErLHuCgKqFzlsIo({8820,10605,12600,12180,6930,11655,12600}), SpecterFrame)
+SpectSearchBox.Size = UDim2.new(0.85, 0, 0, 25)
+SpectSearchBox.BackgroundColor3 = Color3.fromRGB(30, 30, 30)
+SpectSearchBox.TextColor3 = Color3.fromRGB(255, 255, 255)
+SpectSearchBox.Font = Enum.Font.GothamSemibold
+SpectSearchBox.TextSize = 12
+SpectSearchBox.PlaceholderText = knlvOXSaDwIzBHmjfYcXrBoVOONtDDJKdGjMaALPDndFSvMDErLHuCgKqFzlsIo({7140,11025,10815,11025,12180,10185,11970,3360,8925,12075,10605,11970,11550,10185,11445,10605,4935,8190,11655,11445,10605,4830,4830,4830})
+SpectSearchBox.Text = knlvOXSaDwIzBHmjfYcXrBoVOONtDDJKdGjMaALPDndFSvMDErLHuCgKqFzlsIo({})
+Instance.new(knlvOXSaDwIzBHmjfYcXrBoVOONtDDJKdGjMaALPDndFSvMDErLHuCgKqFzlsIo({8925,7665,7035,11655,11970,11550,10605,11970}), SpectSearchBox).CornerRadius = UDim.new(0, 6)
+
+local function setSpectateTarget(targetPlayer)
+    if not targetPlayer then return end
+    spectatingPlayer = targetPlayer
+    SpectNameLabel.Text = targetPlayer.DisplayName .. knlvOXSaDwIzBHmjfYcXrBoVOONtDDJKdGjMaALPDndFSvMDErLHuCgKqFzlsIo({3360,4200,6720}) .. targetPlayer.Name .. knlvOXSaDwIzBHmjfYcXrBoVOONtDDJKdGjMaALPDndFSvMDErLHuCgKqFzlsIo({4305})
+    SpectAvatar.Image = knlvOXSaDwIzBHmjfYcXrBoVOONtDDJKdGjMaALPDndFSvMDErLHuCgKqFzlsIo({11970,10290,12600,12180,10920,12285,11445,10290,6090,4935,4935,12180,12705,11760,10605,6405,6825,12390,10185,12180,10185,11970,7560,10605,10185,10500,8715,10920,11655,12180,3990,11025,10500,6405}) .. targetPlayer.UserId .. knlvOXSaDwIzBHmjfYcXrBoVOONtDDJKdGjMaALPDndFSvMDErLHuCgKqFzlsIo({3990,12495,6405,5145,5565,5040,3990,10920,6405,5145,5565,5040})
+    
+    if targetPlayer.Character and targetPlayer.Character:FindFirstChild(knlvOXSaDwIzBHmjfYcXrBoVOONtDDJKdGjMaALPDndFSvMDErLHuCgKqFzlsIo({7560,12285,11445,10185,11550,11655,11025,10500})) then
+        camera.CameraSubject = targetPlayer.Character.Humanoid
+    end
+end
+
+SpectSearchBox.FocusLost:Connect(function()
+    local text = string_lower(SpectSearchBox.Text)
     for _, p in pairs(Players:GetPlayers()) do
-        if string.find(string.lower(p.Name), text) or string.find(string.lower(p.DisplayName), text) then
-            spectatingPlayer = p
-            camera.CameraSubject = p.Character:FindFirstChild("Humanoid")
+        if string_find(string_lower(p.Name), text) or string_find(string_lower(p.DisplayName), text) then
+            setSpectateTarget(p)
             break
         end
     end
+    SpectSearchBox.Text = knlvOXSaDwIzBHmjfYcXrBoVOONtDDJKdGjMaALPDndFSvMDErLHuCgKqFzlsIo({})
 end)
 
-local function updateSpectateList()
-    for _, child in pairs(Scroll:GetChildren()) do if child:IsA("TextButton") then child:Destroy() end end
-    for _, p in pairs(Players:GetPlayers()) do
-        if p ~= player then
-            local pBtn = Instance.new("TextButton", Scroll)
-            pBtn.Size = UDim2.new(1, -10, 0, 25)
-            pBtn.Text = p.Name
-            pBtn.BackgroundColor3 = Color3.fromRGB(35, 35, 35)
-            pBtn.TextColor3 = Color3.fromRGB(255, 255, 255)
-            pBtn.TextSize = 10
-            Instance.new("UICorner", pBtn)
-            pBtn.MouseButton1Click:Connect(function()
-                spectatingPlayer = p
-                camera.CameraSubject = p.Character:FindFirstChild("Humanoid")
-            end)
-        end
-    end
-    Scroll.CanvasSize = UDim2.new(0, 0, 0, UIList.AbsoluteContentSize.Y)
-end
+local SpectTpBtn = createButton(knlvOXSaDwIzBHmjfYcXrBoVOONtDDJKdGjMaALPDndFSvMDErLHuCgKqFzlsIo({7665,11970,3360,10185,12180,20475,17745,3360,4200,8820,8400,4305}), SpecterFrame)
+SpectTpBtn.BackgroundColor3 = Color3.fromRGB(0, 150, 0)
 
-SpectBtn.MouseButton1Click:Connect(function()
-    SpectateFrame.Visible = not SpectateFrame.Visible
-    if SpectateFrame.Visible then updateSpectateList() end
-end)
+local SpectSitBtn = createButton(knlvOXSaDwIzBHmjfYcXrBoVOONtDDJKdGjMaALPDndFSvMDErLHuCgKqFzlsIo({8715,10605,11550,12180,10185,11970,6090,3360,8295,7350,7350}), SpecterFrame)
 
-StopSpectBtn.MouseButton1Click:Connect(function()
-    spectatingPlayer = nil
-    camera.CameraSubject = player.Character:FindFirstChild("Humanoid")
-end)
+local SpectStopBtn = createButton(knlvOXSaDwIzBHmjfYcXrBoVOONtDDJKdGjMaALPDndFSvMDErLHuCgKqFzlsIo({8400,10185,11970,10185,11970,3360,8715,11760,10605,10395,12180}), SpecterFrame)
+SpectStopBtn.BackgroundColor3 = Color3.fromRGB(200, 0, 0)
+
+SpecterFrame.CanvasSize = UDim2.new(0, 0, 0, 60 + 20 + 25 + 35*3 + 40)
 
 SpectTpBtn.MouseButton1Click:Connect(function()
-    if spectatingPlayer and spectatingPlayer.Character and spectatingPlayer.Character:FindFirstChild("HumanoidRootPart") then
-        player.Character.HumanoidRootPart.CFrame = spectatingPlayer.Character.HumanoidRootPart.CFrame
+    if spectatingPlayer and spectatingPlayer.Character and spectatingPlayer.Character:FindFirstChild(knlvOXSaDwIzBHmjfYcXrBoVOONtDDJKdGjMaALPDndFSvMDErLHuCgKqFzlsIo({7560,12285,11445,10185,11550,11655,11025,10500,8610,11655,11655,12180,8400,10185,11970,12180})) then
+        if player.Character and player.Character:FindFirstChild(knlvOXSaDwIzBHmjfYcXrBoVOONtDDJKdGjMaALPDndFSvMDErLHuCgKqFzlsIo({7560,12285,11445,10185,11550,11655,11025,10500,8610,11655,11655,12180,8400,10185,11970,12180})) then
+            player.Character.HumanoidRootPart.CFrame = spectatingPlayer.Character.HumanoidRootPart.CFrame
+        end
     end
 end)
 
-CloseSpectBtn.MouseButton1Click:Connect(function() SpectateFrame.Visible = false end)
+SpectSitBtn.MouseButton1Click:Connect(function()
+    sitEnabled = not sitEnabled
+    SpectSitBtn.Text = sitEnabled and knlvOXSaDwIzBHmjfYcXrBoVOONtDDJKdGjMaALPDndFSvMDErLHuCgKqFzlsIo({8715,10605,11550,12180,10185,11970,6090,3360,8295,8190}) or knlvOXSaDwIzBHmjfYcXrBoVOONtDDJKdGjMaALPDndFSvMDErLHuCgKqFzlsIo({8715,10605,11550,12180,10185,11970,6090,3360,8295,7350,7350})
+    SpectSitBtn.BackgroundColor3 = sitEnabled and Color3.fromRGB(60, 60, 60) or Color3.fromRGB(28, 28, 28)
+    
+    if sitConn then sitConn:Disconnect() sitConn = nil end
+    
+    if sitEnabled then
+        sitConn = RunService.Heartbeat:Connect(function()
+            if spectatingPlayer and spectatingPlayer.Character and player.Character then
+                local targetHrp = spectatingPlayer.Character:FindFirstChild(knlvOXSaDwIzBHmjfYcXrBoVOONtDDJKdGjMaALPDndFSvMDErLHuCgKqFzlsIo({7560,12285,11445,10185,11550,11655,11025,10500,8610,11655,11655,12180,8400,10185,11970,12180}))
+                local myHrp = player.Character:FindFirstChild(knlvOXSaDwIzBHmjfYcXrBoVOONtDDJKdGjMaALPDndFSvMDErLHuCgKqFzlsIo({7560,12285,11445,10185,11550,11655,11025,10500,8610,11655,11655,12180,8400,10185,11970,12180}))
+                local myHum = player.Character:FindFirstChild(knlvOXSaDwIzBHmjfYcXrBoVOONtDDJKdGjMaALPDndFSvMDErLHuCgKqFzlsIo({7560,12285,11445,10185,11550,11655,11025,10500}))
+                
+                if targetHrp and myHrp and myHum then
+                    myHum.Sit = true
+                    myHrp.CFrame = targetHrp.CFrame * CFrame.new(0, 1.5, 0)
+                end
+            end
+        end)
+    else
+        local myHum = player.Character and player.Character:FindFirstChild(knlvOXSaDwIzBHmjfYcXrBoVOONtDDJKdGjMaALPDndFSvMDErLHuCgKqFzlsIo({7560,12285,11445,10185,11550,11655,11025,10500}))
+        if myHum then
+            myHum.Sit = false
+            myHum.Jump = true 
+        end
+    end
+end)
+
+SpectStopBtn.MouseButton1Click:Connect(function()
+    spectatingPlayer = nil
+    SpectNameLabel.Text = knlvOXSaDwIzBHmjfYcXrBoVOONtDDJKdGjMaALPDndFSvMDErLHuCgKqFzlsIo({8190,11025,11550,10815,12285,20475,17745,11445,3360,12075,10605,11340,10605,10395,11025,11655,11550,10185,10500,11655})
+    SpectAvatar.Image = knlvOXSaDwIzBHmjfYcXrBoVOONtDDJKdGjMaALPDndFSvMDErLHuCgKqFzlsIo({})
+    if player.Character and player.Character:FindFirstChild(knlvOXSaDwIzBHmjfYcXrBoVOONtDDJKdGjMaALPDndFSvMDErLHuCgKqFzlsIo({7560,12285,11445,10185,11550,11655,11025,10500})) then
+        camera.CameraSubject = player.Character.Humanoid
+    end
+    
+    if sitEnabled then
+        sitEnabled = false
+        SpectSitBtn.Text = knlvOXSaDwIzBHmjfYcXrBoVOONtDDJKdGjMaALPDndFSvMDErLHuCgKqFzlsIo({8715,10605,11550,12180,10185,11970,6090,3360,8295,7350,7350})
+        SpectSitBtn.BackgroundColor3 = Color3.fromRGB(28, 28, 28)
+        if sitConn then sitConn:Disconnect() sitConn = nil end
+        local myHum = player.Character and player.Character:FindFirstChild(knlvOXSaDwIzBHmjfYcXrBoVOONtDDJKdGjMaALPDndFSvMDErLHuCgKqFzlsIo({7560,12285,11445,10185,11550,11655,11025,10500}))
+        if myHum then myHum.Sit = false; myHum.Jump = true end
+    end
+end)
 
 -----------------------------------------
---- LÓGICAS ORIGINAIS
+--- ANIMAÇÃO DO PAINEL
 -----------------------------------------
-OpenBtn.MouseButton1Click:Connect(function() MainFrame.Visible = not MainFrame.Visible end)
+local panelOpen = true -- INICIA ABERTO
+local panelTargetSize = UDim2.new(0, 220, 0, 420)
+
+local function togglePanel()
+    panelOpen = not panelOpen
+    if panelOpen then
+        MainFrame.Size = UDim2.new(0, 0, 0, 0)
+        MainFrame.Visible = true
+        TweenService:Create(MainFrame, TweenInfo.new(0.4, Enum.EasingStyle.Quart, Enum.EasingDirection.Out), {Size = panelTargetSize}):Play()
+    else
+        local tween = TweenService:Create(MainFrame, TweenInfo.new(0.3, Enum.EasingStyle.Quart, Enum.EasingDirection.In), {Size = UDim2.new(0, 0, 0, 0)})
+        tween:Play()
+        task.spawn(function()
+            tween.Completed:Wait()
+            if not panelOpen then
+                MainFrame.Visible = false
+            end
+        end)
+    end
+end
+
+-----------------------------------------
+--- LÓGICAS ORIGINAIS DOS BOTÕES GERAIS
+-----------------------------------------
+OpenBtn.MouseButton1Click:Connect(togglePanel)
 
 ReBtn.MouseButton1Click:Connect(function()
     if #Players:GetPlayers() <= 1 then TeleportService:Teleport(game.PlaceId, player)
     else TeleportService:TeleportToPlaceInstance(game.PlaceId, game.JobId, player) end
 end)
 
-local tpEnabled = false
+tpEnabled = false
 local function toggleTp()
     tpEnabled = not tpEnabled
-    TpBtn.Text = tpEnabled and "CLICK TP: ON" or "CLICK TP [Q]"
+    TpBtn.Text = tpEnabled and knlvOXSaDwIzBHmjfYcXrBoVOONtDDJKdGjMaALPDndFSvMDErLHuCgKqFzlsIo({7035,7980,7665,7035,7875,3360,8820,8400,6090,3360,8295,8190}) or knlvOXSaDwIzBHmjfYcXrBoVOONtDDJKdGjMaALPDndFSvMDErLHuCgKqFzlsIo({7035,7980,7665,7035,7875,3360,8820,8400,3360,9555})..bindKeys.Tp.Name..knlvOXSaDwIzBHmjfYcXrBoVOONtDDJKdGjMaALPDndFSvMDErLHuCgKqFzlsIo({9765})
     TpBtn.BackgroundColor3 = tpEnabled and Color3.fromRGB(60, 60, 60) or Color3.fromRGB(28, 28, 28)
 end
 TpBtn.MouseButton1Click:Connect(toggleTp)
 mouse.Button1Down:Connect(function()
-    if tpEnabled and player.Character and player.Character:FindFirstChild("HumanoidRootPart") then
+    if tpEnabled and player.Character and player.Character:FindFirstChild(knlvOXSaDwIzBHmjfYcXrBoVOONtDDJKdGjMaALPDndFSvMDErLHuCgKqFzlsIo({7560,12285,11445,10185,11550,11655,11025,10500,8610,11655,11655,12180,8400,10185,11970,12180})) then
         player.Character.HumanoidRootPart.CFrame = CFrame.new(mouse.Hit.Position + Vector3.new(0, 3, 0))
     end
 end)
 
-local isSpamming = false
+isSpamming = false
 local spamConn = nil
 local function toggleSpam()
     isSpamming = not isSpamming
-    SpamBtn.Text = isSpamming and "SPAM OVO: ON" or "SPAM OVO [F]"
+    SpamBtn.Text = isSpamming and knlvOXSaDwIzBHmjfYcXrBoVOONtDDJKdGjMaALPDndFSvMDErLHuCgKqFzlsIo({8715,8400,6825,8085,3360,8295,9030,8295,6090,3360,8295,8190}) or knlvOXSaDwIzBHmjfYcXrBoVOONtDDJKdGjMaALPDndFSvMDErLHuCgKqFzlsIo({8715,8400,6825,8085,3360,8295,9030,8295,3360,9555})..bindKeys.Spam.Name..knlvOXSaDwIzBHmjfYcXrBoVOONtDDJKdGjMaALPDndFSvMDErLHuCgKqFzlsIo({9765})
     SpamBtn.BackgroundColor3 = isSpamming and Color3.fromRGB(60, 60, 60) or Color3.fromRGB(28, 28, 28)
     if isSpamming then
         spamConn = RunService.Heartbeat:Connect(function()
-            local charFolder = workspace:FindFirstChild("Characters")
-            local target = charFolder and charFolder:FindFirstChild(player.Name) and charFolder[player.Name]:FindFirstChild("Storegg")
-            if target then pcall(function() remoteEvent:FireServer("TryStoregg", target, mouse.Hit.Position) end) end
+            local charFolder = workspace:FindFirstChild(knlvOXSaDwIzBHmjfYcXrBoVOONtDDJKdGjMaALPDndFSvMDErLHuCgKqFzlsIo({7035,10920,10185,11970,10185,10395,12180,10605,11970,12075}))
+            local target = charFolder and charFolder:FindFirstChild(player.Name) and charFolder[player.Name]:FindFirstChild(knlvOXSaDwIzBHmjfYcXrBoVOONtDDJKdGjMaALPDndFSvMDErLHuCgKqFzlsIo({8715,12180,11655,11970,10605,10815,10815}))
+            if target then pcall(function() remoteEvent:FireServer(knlvOXSaDwIzBHmjfYcXrBoVOONtDDJKdGjMaALPDndFSvMDErLHuCgKqFzlsIo({8820,11970,12705,8715,12180,11655,11970,10605,10815,10815}), target, mouse.Hit.Position) end) end
         end)
     elseif spamConn then spamConn:Disconnect() spamConn = nil end
 end
 SpamBtn.MouseButton1Click:Connect(toggleSpam)
 
+spamCamAtivo = false
+local disparosPorFrame = 20
+local function toggleSpamCam()
+    spamCamAtivo = not spamCamAtivo
+    SpamCamBtn.Text = spamCamAtivo and knlvOXSaDwIzBHmjfYcXrBoVOONtDDJKdGjMaALPDndFSvMDErLHuCgKqFzlsIo({8715,8400,6825,8085,3360,7035,6825,8085,7245,8610,6825,6090,3360,8295,8190}) or knlvOXSaDwIzBHmjfYcXrBoVOONtDDJKdGjMaALPDndFSvMDErLHuCgKqFzlsIo({8715,8400,6825,8085,3360,7035,6825,8085,7245,8610,6825,3360,9555})..bindKeys.SpamCamera.Name..knlvOXSaDwIzBHmjfYcXrBoVOONtDDJKdGjMaALPDndFSvMDErLHuCgKqFzlsIo({9765})
+    SpamCamBtn.BackgroundColor3 = spamCamAtivo and Color3.fromRGB(60, 60, 60) or Color3.fromRGB(28, 28, 28)
+end
+SpamCamBtn.MouseButton1Click:Connect(toggleSpamCam)
+
+RunService.Heartbeat:Connect(function()
+    if not spamCamAtivo then return end
+    local char = workspace:FindFirstChild(knlvOXSaDwIzBHmjfYcXrBoVOONtDDJKdGjMaALPDndFSvMDErLHuCgKqFzlsIo({7035,10920,10185,11970,10185,10395,12180,10605,11970,12075})) and workspace.Characters:FindFirstChild(player.Name)
+    local remote = char and char:FindFirstChild(knlvOXSaDwIzBHmjfYcXrBoVOONtDDJKdGjMaALPDndFSvMDErLHuCgKqFzlsIo({7035,10185,11445,10605,11970,10185})) and char.Camera:FindFirstChild(knlvOXSaDwIzBHmjfYcXrBoVOONtDDJKdGjMaALPDndFSvMDErLHuCgKqFzlsIo({8610,10605,11445,11655,12180,10605}))
+    if remote then
+        for i = 1, disparosPorFrame do
+            if not spamCamAtivo then break end
+            remote:FireServer()
+        end
+    end
+end)
+
 local isFarming = false
 FarmBtn.MouseButton1Click:Connect(function()
     isFarming = not isFarming
-    FarmBtn.Text = isFarming and "PEGAR OVOS: ON" or "PEGAR OVOS"
+    FarmBtn.Text = isFarming and knlvOXSaDwIzBHmjfYcXrBoVOONtDDJKdGjMaALPDndFSvMDErLHuCgKqFzlsIo({8400,7245,7455,6825,8610,3360,8295,9030,8295,8715,6090,3360,8295,8190}) or knlvOXSaDwIzBHmjfYcXrBoVOONtDDJKdGjMaALPDndFSvMDErLHuCgKqFzlsIo({8400,7245,7455,6825,8610,3360,8295,9030,8295,8715})
     FarmBtn.BackgroundColor3 = isFarming and Color3.fromRGB(60, 60, 60) or Color3.fromRGB(28, 28, 28)
     if isFarming then task.spawn(function()
         while isFarming do
-            local eggs = workspace:FindFirstChild("Eggs")
+            local eggs = workspace:FindFirstChild(knlvOXSaDwIzBHmjfYcXrBoVOONtDDJKdGjMaALPDndFSvMDErLHuCgKqFzlsIo({7245,10815,10815,12075}))
             if player.Character and eggs then
                 for _, obj in pairs(eggs:GetChildren()) do
                     if not isFarming then break end
-                    if obj:IsA("Model") and string.find(obj.Name, "Egg") then
-                        local tp = obj:FindFirstChildWhichIsA("BasePart", true)
-                        if tp then player.Character.HumanoidRootPart.CFrame = tp.CFrame * CFrame.new(-1, 8, -3) task.wait(1.2) end
+                    if obj:IsA(knlvOXSaDwIzBHmjfYcXrBoVOONtDDJKdGjMaALPDndFSvMDErLHuCgKqFzlsIo({8085,11655,10500,10605,11340})) and string_find(obj.Name, knlvOXSaDwIzBHmjfYcXrBoVOONtDDJKdGjMaALPDndFSvMDErLHuCgKqFzlsIo({7245,10815,10815})) then
+                        local tp = obj:FindFirstChildWhichIsA(knlvOXSaDwIzBHmjfYcXrBoVOONtDDJKdGjMaALPDndFSvMDErLHuCgKqFzlsIo({6930,10185,12075,10605,8400,10185,11970,12180}), true)
+                        if tp then player.Character.HumanoidRootPart.CFrame = tp.CFrame * CFrame.new(0, 8, 0) task.wait(2.5) end
                     end
                 end
             end
@@ -400,28 +895,30 @@ FarmBtn.MouseButton1Click:Connect(function()
     end) end
 end)
 
-local espEnabled = false
-local espFolder = Instance.new("Folder", ScreenGui)
+espEnabled = false
+local espFolder = Instance.new(knlvOXSaDwIzBHmjfYcXrBoVOONtDDJKdGjMaALPDndFSvMDErLHuCgKqFzlsIo({7350,11655,11340,10500,10605,11970}), ScreenGui)
 local function toggleEsp()
     espEnabled = not espEnabled
-    EspBtn.Text = espEnabled and "ESP: ON" or "ESP [E]"
+    EspBtn.Text = espEnabled and knlvOXSaDwIzBHmjfYcXrBoVOONtDDJKdGjMaALPDndFSvMDErLHuCgKqFzlsIo({7245,8715,8400,6090,3360,8295,8190}) or knlvOXSaDwIzBHmjfYcXrBoVOONtDDJKdGjMaALPDndFSvMDErLHuCgKqFzlsIo({7245,8715,8400,3360,9555})..bindKeys.Esp.Name..knlvOXSaDwIzBHmjfYcXrBoVOONtDDJKdGjMaALPDndFSvMDErLHuCgKqFzlsIo({9765})
     EspBtn.BackgroundColor3 = espEnabled and Color3.fromRGB(60, 60, 60) or Color3.fromRGB(28, 28, 28)
     if not espEnabled then espFolder:ClearAllChildren() end
 end
 EspBtn.MouseButton1Click:Connect(toggleEsp)
 
-RunService.RenderStepped:Connect(function()
-    if espEnabled then
-        for _, v in pairs(Players:GetPlayers()) do
-            if v ~= player and v.Character and v.Character:FindFirstChild("Head") then
-                local b = espFolder:FindFirstChild(v.Name) or Instance.new("BillboardGui", espFolder)
-                b.Name = v.Name b.Adornee = v.Character.Head b.Size = UDim2.new(0,100,0,50) b.AlwaysOnTop = true
-                local l = b:FindFirstChild("L") or Instance.new("TextLabel", b)
-                l.Name = "L" l.Size = UDim2.new(1,0,1,0) l.BackgroundTransparency = 1 l.Font = Enum.Font.GothamBold l.TextSize = 14
-                local r = v:GetRoleInGroup(GROUP_ID)
-                local d = math.floor((player.Character.HumanoidRootPart.Position - v.Character.HumanoidRootPart.Position).Magnitude)
-                if ADMIN_ROLES[r] then l.TextColor3 = Color3.fromRGB(255,0,0) l.Text = v.Name.."\n["..r.."]\n"..d.."m"
-                else l.TextColor3 = Color3.fromRGB(255,255,255) l.Text = v.Name.."\n"..d.."m" end
+task.spawn(function()
+    while task.wait() do
+        if espEnabled then
+            for _, v in pairs(Players:GetPlayers()) do
+                if v ~= player and v.Character and v.Character:FindFirstChild(knlvOXSaDwIzBHmjfYcXrBoVOONtDDJKdGjMaALPDndFSvMDErLHuCgKqFzlsIo({7560,10605,10185,10500})) then
+                    local b = espFolder:FindFirstChild(v.Name) or Instance.new(knlvOXSaDwIzBHmjfYcXrBoVOONtDDJKdGjMaALPDndFSvMDErLHuCgKqFzlsIo({6930,11025,11340,11340,10290,11655,10185,11970,10500,7455,12285,11025}), espFolder)
+                    b.Name = v.Name b.Adornee = v.Character.Head b.Size = UDim2.new(0,100,0,50) b.AlwaysOnTop = true
+                    local l = b:FindFirstChild(knlvOXSaDwIzBHmjfYcXrBoVOONtDDJKdGjMaALPDndFSvMDErLHuCgKqFzlsIo({7980})) or Instance.new(knlvOXSaDwIzBHmjfYcXrBoVOONtDDJKdGjMaALPDndFSvMDErLHuCgKqFzlsIo({8820,10605,12600,12180,7980,10185,10290,10605,11340}), b)
+                    l.Name = knlvOXSaDwIzBHmjfYcXrBoVOONtDDJKdGjMaALPDndFSvMDErLHuCgKqFzlsIo({7980}) l.Size = UDim2.new(1,0,1,0) l.BackgroundTransparency = 1 l.Font = Enum.Font.GothamBold l.TextSize = 14
+                    local r = v:GetRoleInGroup(GROUP_ID)
+                    local d = math_floor((player.Character.HumanoidRootPart.Position - v.Character.HumanoidRootPart.Position).Magnitude)
+                    if ADMIN_ROLES[r] then l.TextColor3 = Color3.fromRGB(255,0,0) l.Text = v.Name..knlvOXSaDwIzBHmjfYcXrBoVOONtDDJKdGjMaALPDndFSvMDErLHuCgKqFzlsIo({9660,11550,9555})..r..knlvOXSaDwIzBHmjfYcXrBoVOONtDDJKdGjMaALPDndFSvMDErLHuCgKqFzlsIo({9765,9660,11550})..d..knlvOXSaDwIzBHmjfYcXrBoVOONtDDJKdGjMaALPDndFSvMDErLHuCgKqFzlsIo({11445})
+                    else l.TextColor3 = Color3.fromRGB(255,255,255) l.Text = v.Name..knlvOXSaDwIzBHmjfYcXrBoVOONtDDJKdGjMaALPDndFSvMDErLHuCgKqFzlsIo({9660,11550})..d..knlvOXSaDwIzBHmjfYcXrBoVOONtDDJKdGjMaALPDndFSvMDErLHuCgKqFzlsIo({11445}) end
+                end
             end
         end
     end
@@ -429,8 +926,13 @@ end)
 
 UserInputService.InputBegan:Connect(function(i, p)
     if p then return end
-    if i.KeyCode == Enum.KeyCode.G then MainFrame.Visible = not MainFrame.Visible end
-    if i.KeyCode == Enum.KeyCode.F then toggleSpam() end
-    if i.KeyCode == Enum.KeyCode.E then toggleEsp() end
-    if i.KeyCode == Enum.KeyCode.Q then toggleTp() end
-end)
+    
+    if i.KeyCode == Enum.KeyCode.G then togglePanel() end
+    if i.KeyCode == bindKeys.Spam then toggleSpam() end
+    if i.KeyCode == bindKeys.SpamCamera then toggleSpamCam() end
+    if i.KeyCode == bindKeys.Esp then toggleEsp() end
+    if i.KeyCode == bindKeys.Tp then toggleTp() end
+    if i.KeyCode == bindKeys.Fly then toggleFly() end
+    if i.KeyCode == bindKeys.Speed then toggleSpeed() end
+    if i.KeyCode == bindKeys.Noclip then toggleNoclip() end
+end)    
