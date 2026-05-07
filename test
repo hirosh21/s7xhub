@@ -7484,4 +7484,4 @@ UserInputService.InputBegan:Connect(function(i, p)
         local lockStatus = currentPTarget and "LOCKED: " .. currentPTarget.Name or "UNLOCKED"
         if type(S7xNotify) == "function" then S7xNotify("REMOTE FLING", lockStatus) end
     end
-end)
+end) 
