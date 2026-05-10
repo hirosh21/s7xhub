@@ -50,6 +50,109 @@ pcall(function()
     pcall(function() game:GetService("VoiceChatInternal"):PublishPause(false) end)
     pcall(function() game:GetService("VoiceChatService"):SetMicMuted(false) end)
 end)
+-----------------------------------------
+--- MOTOR DE OTIMIZAÇÃO SILENCIOSA (S7X BACKGROUND OPTIMIZER)
+--- Reduz Lag da CPU, Ping e RAM sem alterar NENHUM detalhe visual do mapa!
+-----------------------------------------
+task.spawn(function()
+    pcall(function()
+        -- 1. Otimização de Rede e Latência (Força o ping a estabilizar)
+        pcall(function() settings().Network.IncomingReplicationLag = 0 end)
+        
+        -- 2. Alívio do Motor Físico do Roblox
+        if workspace:FindFirstChild("Terrain") then
+            -- Reduz a sobrecarga de física do cenário nativo
+            workspace.InterpolationThrottling = Enum.InterpolationThrottlingMode.Enable
+        end
+
+        -- 3. Função de Varredura Furtiva
+        local function s7xSilentOptimize()
+            for _, v in ipairs(workspace:GetDescendants()) do
+                -- Alívio de Renderização: Tira o peso de sombras APENAS de peças que já são invisíveis
+                if v:IsA("BasePart") then
+                    if v.Transparency >= 1 and v.CastShadow then
+                        v.CastShadow = false
+                    end
+                    
+                    -- Alívio de CPU: Se a peça for solta e estiver caindo pro void, apagamos antes do servidor calcular
+                    if not v.Anchored and v.Position.Y < workspace.FallenPartsDestroyHeight + 50 then
+                        if not game.Players:GetPlayerFromCharacter(v.Parent) then
+                            v:Destroy()
+                        end
+                    end
+                end
+            end
+        end
+        
+        -- Executa a primeira varredura profunda no momento que injeta o script
+        s7xSilentOptimize()
+        
+        -- Inicia o "Gari de Memória": a cada 30 segundos ele limpa o lixo físico sem dar lag na tela
+        while task.wait(30) do
+            pcall(s7xSilentOptimize)
+        end
+    end)
+end)
+
+-----------------------------------------
+--- ADVANCED MODULE HOOKING (0 LOCAIS NO ESCOPO PRINCIPAL)
+--- BLINDAGEM ANTI-CRASH PARA O CONSOLE F9
+-----------------------------------------
+task.spawn(function()
+    pcall(function()
+        local RS = game:GetService("ReplicatedStorage")
+        
+        -- Função interna para não gastar variáveis locais do script inteiro
+        local function blindarModulo(nomeDoModulo)
+            local modulo = RS:FindFirstChild(nomeDoModulo, true)
+            if not modulo or not modulo:IsA("ModuleScript") then return end
+            
+            local sucesso, req = pcall(require, modulo)
+            if not sucesso or type(req) ~= "table" then return end
+            
+            -- Libera a tabela para edição caso o executor exija
+            if setreadonly then pcall(setreadonly, req, false) end
+            
+            for chave, funcao in pairs(req) do
+                if type(funcao) == "function" then
+                    if hookfunction then
+                        -- Interceptação profunda na memória (Bypass Definitivo)
+                        local velhaFuncao; velhaFuncao = hookfunction(funcao, function(...)
+                            local s, r = pcall(velhaFuncao, ...)
+                            if not s then return nil end
+                            return r
+                        end)
+                    else
+                        -- Fallback para executors mais simples
+                        local velhaFuncao = funcao
+                        req[chave] = function(...)
+                            local s, r = pcall(velhaFuncao, ...)
+                            if not s then return nil end
+                            return r
+                        end
+                    end
+                end
+            end
+            
+            -- Bloqueia a tabela novamente por segurança
+            if setreadonly then pcall(setreadonly, req, true) end
+        end
+        
+        -- Aplica a blindagem cirúrgica nos módulos que estão floodando o console
+        blindarModulo("EffectsController")
+        blindarModulo("Cardboard")
+    end)
+end)
+
+-- OTIMIZAÇÃO DE VARIÁVEIS (Respeitando estritamente o limite de 200 locais)
+local math_floor = math.floor
+local math_round = math.round
+local math_clamp = math.clamp
+local math_rad = math.rad
+local string_lower = string.lower
+local string_find = string.find
+local string_upper = string.upper
+local string_sub = string.sub
 
 -----------------------------------------
 --- SISTEMA FIREBASE ULTRA PROFISSIONAL
@@ -939,6 +1042,10 @@ task.spawn(function()
         end
     end
 end)
+
+-----------------------------------------
+--- RENDERIZADOR VISUAL DE TAGS (RESPAWN FIX & ENGLISH UI)
+-----------------------------------------
  -----------------------------------------
 --- RENDERIZADOR VISUAL DE TAGS (CAIXA ALTA/BAIXA ORIGINAL)
 -----------------------------------------
@@ -1279,21 +1386,24 @@ _G.TagRenderConnection = game:GetService("RunService").RenderStepped:Connect(fun
     end
 end)
 
------------------------------------------
---- INTERFACE PRINCIPAL (CENTRALIZADA E PROPORCIONAL)
------------------------------------------
 GUI.MainFrame = Instance.new("Frame", GUI.ScreenGui)
 GUI.MainFrame.Name = "S7x_PanelFrame"
 GUI.MainFrame.BackgroundColor3 = Color3.fromRGB(15, 15, 20) 
 
--- Centralização matemática exata: Tamanho expandido para caber tudo sem esmagar
-GUI.MainFrame.Size = UDim2.new(0, 380, 0, 330) 
--- Posição = Metade da tela (0.5) MENOS a metade do tamanho do painel (-290 e -265)
-GUI.MainFrame.Position = UDim2.new(0.5, -290, 0.5, -265) 
+-- Mantemos o tamanho exato de PC para NÃO quebrar a UI
+GUI.MainFrame.Size = UDim2.new(0, 530, 0, 480) 
+GUI.MainFrame.Position = UDim2.new(0.5, -265, 0.5, -240) 
 
 GUI.MainFrame.Active = true
 GUI.MainFrame.Draggable = true 
-GUI.MainFrame.ClipsDescendants = false
+GUI.MainFrame.ClipsDescendants = true 
+
+-- [A MÁGICA DO MOBILE]
+local isMobile = game:GetService("UserInputService").TouchEnabled and not game:GetService("UserInputService").KeyboardEnabled
+
+GUI.UIScale = Instance.new("UIScale", GUI.MainFrame)
+-- Se for mobile, ele reduz o visual do painel inteiro em 35% de forma proporcional
+GUI.UIScale.Scale = isMobile and 0.65 or 1
 
 local MainCorner = Instance.new("UICorner", GUI.MainFrame)
 MainCorner.CornerRadius = UDim.new(0, 10) 
@@ -2548,36 +2658,35 @@ for _, t in pairs(tabs) do
     end
 end
 
+local panelOpen = false
+
 local function togglePanel()
     panelOpen = not panelOpen
     if panelOpen then
-        GUI.MainFrame.Size = UDim2.new(0, 0, 0, 0)
-        GUI.MainFrame.Position = UDim2.new(0.5, 0, 0.5, 0)
         GUI.MainFrame.Visible = true
+        GUI.MainFrame.Active = true -- Bloqueia o toque atrás do painel apenas quando aberto
         
         pcall(function()
-            game:GetService("TweenService"):Create(GUI.MainFrame, TweenInfo.new(0.4, Enum.EasingStyle.Quart, Enum.EasingDirection.Out), {
-                Size = panelTargetSize,
-                Position = UDim2.new(0.5, -290, 0.5, -265)
+            GUI.UIScale.Scale = 0
+            local targetScale = isMobile and 0.65 or 1
+            game:GetService("TweenService"):Create(GUI.UIScale, TweenInfo.new(0.4, Enum.EasingStyle.Back, Enum.EasingDirection.Out), {
+                Scale = targetScale
             }):Play()
         end)
     else
-        local success = pcall(function()
-            local tween = game:GetService("TweenService"):Create(GUI.MainFrame, TweenInfo.new(0.3, Enum.EasingStyle.Quart, Enum.EasingDirection.In), {
-                Size = UDim2.new(0, 0, 0, 0),
-                Position = UDim2.new(0.5, 0, 0.5, 0)
+        pcall(function()
+            local tween = game:GetService("TweenService"):Create(GUI.UIScale, TweenInfo.new(0.3, Enum.EasingStyle.Exponential, Enum.EasingDirection.In), {
+                Scale = 0
             })
             tween:Play()
             task.spawn(function()
                 tween.Completed:Wait()
-                if not panelOpen then GUI.MainFrame.Visible = false end
+                if not panelOpen then 
+                    GUI.MainFrame.Visible = false 
+                    GUI.MainFrame.Active = false -- [ISSO AQUI LIBERA O SEU JOYSTICK!]
+                end
             end)
         end)
-        
-        -- Fallback de segurança caso o executor rejeite a animação
-        if not success then
-            GUI.MainFrame.Visible = false
-        end
     end
 end
 
@@ -7406,4 +7515,3 @@ UserInputService.InputBegan:Connect(function(i, p)
         if type(S7xNotify) == "function" then S7xNotify("REMOTE FLING", lockStatus) end
     end
 end)
-
