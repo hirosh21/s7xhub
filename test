@@ -1448,7 +1448,7 @@ GUI.Title.TextSize = 16
 GUI.Title.TextXAlignment = Enum.TextXAlignment.Center
 
 GUI.VersionLabel = Instance.new("TextLabel", GUI.TopBar)
-GUI.VersionLabel.Text = "v1.1.23" -- VERSÃO ATUALIZADA
+GUI.VersionLabel.Text = "v1.1.25" -- VERSÃO ATUALIZADA
 GUI.VersionLabel.TextColor3 = Color3.fromRGB(170, 0, 255)
 GUI.VersionLabel.BackgroundTransparency = 1
 GUI.VersionLabel.Size = UDim2.new(0, 60, 1, 0)
