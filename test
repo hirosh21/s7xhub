@@ -7675,3 +7675,55 @@ UserInputService.InputBegan:Connect(function(i, p)
         if type(S7xNotify) == "function" then S7xNotify("REMOTE FLING", lockStatus) end
     end
 end)
+
+-----------------------------------------
+--- PATCH DEFINITIVO MOBILE V3 (TOUCH RESTORE & ANTI-FREEZE)
+--- Restaura 100% dos botões e mantém a câmera livre
+-----------------------------------------
+task.spawn(function()
+    -- Espera a interface carregar por completo para não quebrar nada
+    task.wait(0.5) 
+    
+    local sg = GUI and GUI.ScreenGui
+    if sg then
+        -- Ignora a barra preta do celular e protege contra morte
+        sg.IgnoreGuiInset = true 
+        sg.ResetOnSpawn = false
+
+        -- Varredura Cirúrgica
+        for _, obj in pairs(sg:GetDescendants()) do
+            -- 1. Removemos a trava 'Modal' que congela a câmera do Roblox
+            pcall(function() obj.Modal = false end)
+            
+            -- 2. A MÁGICA: Restaura a vida de todos os botões!
+            -- Se for botão de clique (texto ou imagem), TEM que ficar Active = true
+            if obj:IsA("TextButton") or obj:IsA("ImageButton") then
+                obj.Active = true
+            
+            -- 3. LIMPEZA: Apenas Frames que são puramente fundos transparentes são desativados
+            elseif obj:IsA("Frame") then
+                -- Se o frame for totalmente invisível e não for um container de lista, o dedo atravessa
+                if obj.BackgroundTransparency >= 0.99 and not obj:FindFirstChildOfClass("UIListLayout") and not obj:FindFirstChildOfClass("UIGridLayout") then
+                    obj.Active = false
+                end
+            end
+        end
+        
+        -- 4. Blindagem dos containers principais (Garante que você consiga arrastar o menu)
+        if GUI.MainFrame then GUI.MainFrame.Active = true end
+        if GUI.OpenBtn then GUI.OpenBtn.Active = true end
+        if GUI.SpecterFrame then GUI.SpecterFrame.Active = true end
+        if GUI.AdminFrame then GUI.AdminFrame.Active = true end
+        if GUI.ConfigFrame then GUI.ConfigFrame.Active = true end
+    end
+
+    -- 5. Força a Câmera a resetar e seguir o jogador
+    pcall(function()
+        local cam = workspace.CurrentCamera
+        cam.CameraType = Enum.CameraType.Custom
+        local char = game.Players.LocalPlayer.Character
+        if char and char:FindFirstChild("Humanoid") then
+            cam.CameraSubject = char.Humanoid
+        end
+    end)
+end)
