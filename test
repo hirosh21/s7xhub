@@ -15,24 +15,40 @@ local HttpService = game:GetService("HttpService")
 local ReplicatedStorage = game:GetService("ReplicatedStorage")
 
 -----------------------------------------
---- SISTEMA ANTI-DUPLICAÇÃO (SEGURANÇA ABSOLUTA)
+--- MASTER KILL SWITCH (ANIQUILADOR DE DUPLICATAS)
+--- Destrói loops antigos e memória de painéis injetados duas vezes
 -----------------------------------------
 pcall(function()
+    -- 1. Destruição de Interface
     local RS = game:GetService("RunService")
     local CG = game:GetService("CoreGui")
     local LP = game:GetService("Players").LocalPlayer
-    
     local coreParent = (RS:IsStudio() or not CG) and LP:WaitForChild("PlayerGui") or CG
     
-    local oldUIs = {"S7xhub_Panel", "S7xSelfMuteGui", "S7xMicWidget", "MinimalFarm", "S7xSpyUI_Supreme"}
+    local oldUIs = {"S7xhub_Panel", "S7xSelfMuteGui", "S7xM7MicWidget", "S7xMicWidget", "MinimalFarm", "S7xSpyUI_Supreme", "NeonFishingV43"}
     for _, ui in ipairs(coreParent:GetChildren()) do
         if table.find(oldUIs, ui.Name) then ui:Destroy() end
     end
 
-    local activeLoops = {"TagEnforcer", "TagRenderConnection", "EmoteSpeedConn", "S7xUIClearConn", "rtxLockLoop"}
+    -- 2. Matador de Loops Globais (Aniquila tudo que ficou rodando na memória)
+    local activeLoops = {
+        "TagEnforcer", "TagRenderConnection", "EmoteSpeedConn", "S7xUIClearConn", "rtxLockLoop", 
+        "S7xStealthLoop", "S7x_FC_Loop", "S7xTargetAttach", "S7xViewConn", "RemoteFlingConn"
+    }
+    
     for _, loopName in ipairs(activeLoops) do
-        if _G[loopName] then pcall(function() _G[loopName]:Disconnect() end); _G[loopName] = nil end
+        if _G[loopName] then 
+            pcall(function() _G[loopName]:Disconnect() end)
+            _G[loopName] = nil 
+        end
     end
+    
+    -- 3. Restaura o estado normal do jogo antes de iniciar o novo painel
+    _G.AntiBanVcEnabled = false
+    _G.S7xSyncEmoteEnabled = false
+    _G.ChatSpySupremeEnabled = false
+    pcall(function() game:GetService("VoiceChatInternal"):PublishPause(false) end)
+    pcall(function() game:GetService("VoiceChatService"):SetMicMuted(false) end)
 end)
 -----------------------------------------
 --- MOTOR DE OTIMIZAÇÃO SILENCIOSA (S7X BACKGROUND OPTIMIZER)
@@ -659,25 +675,6 @@ GUI.ScreenGui.ResetOnSpawn = false
 
 _G.S7xTagVisible = true 
 
-if not isMobile then
-    GUI.NotifyFrame = Instance.new("TextLabel", GUI.ScreenGui)
-    GUI.NotifyFrame.Size = UDim2.new(0, 350, 0, 50)
-    GUI.NotifyFrame.Position = UDim2.new(0.5, -175, 0.1, 0)
-    GUI.NotifyFrame.BackgroundColor3 = Color3.fromRGB(0, 0, 0)
-    GUI.NotifyFrame.BackgroundTransparency = 0.2
-    GUI.NotifyFrame.Text = "PRESS G TO OPEN AND CLOSE THE PANEL"
-    GUI.NotifyFrame.TextColor3 = Color3.fromRGB(170, 0, 255)
-    GUI.NotifyFrame.Font = Enum.Font.GothamBold
-    GUI.NotifyFrame.TextSize = 14
-    Instance.new("UICorner", GUI.NotifyFrame)
-    Instance.new("UIStroke", GUI.NotifyFrame).Color = Color3.fromRGB(170, 0, 255)
-    task.spawn(function()
-        task.wait(13)
-        TweenService:Create(GUI.NotifyFrame, TweenInfo.new(1), {TextTransparency = 1, BackgroundTransparency = 1}):Play()
-        task.wait(1)
-        GUI.NotifyFrame:Destroy()
-    end)
-end
 
 GUI.OpenBtn = Instance.new("TextButton", GUI.ScreenGui)
 GUI.OpenBtn.Size = UDim2.new(0, 45, 0, 45)
@@ -1712,204 +1709,293 @@ GUI.ServersLayout:GetPropertyChangedSignal("AbsoluteContentSize"):Connect(functi
     GUI.ServersFrame.CanvasSize = UDim2.new(0, 0, 0, GUI.ServersLayout.AbsoluteContentSize.Y + 20)
 end)
 
+-----------------------------------------
+--- PAYWALL DA ABA ULTIMATE (REMAKE: TEMA ROXO/NEON S7X)
+--- 0 Locals para proteger o limite de 200
+-----------------------------------------
 GUI.UltimateBlockFrame = Instance.new("TextButton", GUI.MainFrame)
 GUI.UltimateBlockFrame.Text = ""
 GUI.UltimateBlockFrame.AutoButtonColor = false
--- Recuo corrigido para a tela de Bloqueio não vazar
 GUI.UltimateBlockFrame.Size = UDim2.new(1, -132, 1, -50)
 GUI.UltimateBlockFrame.Position = UDim2.new(0, 132, 0, 50)
-GUI.UltimateBlockFrame.BackgroundColor3 = Color3.fromRGB(0, 0, 0)
-GUI.UltimateBlockFrame.BackgroundTransparency = 0.5
+GUI.UltimateBlockFrame.BackgroundColor3 = Color3.fromRGB(12, 10, 16) 
+GUI.UltimateBlockFrame.BackgroundTransparency = 0.15
 GUI.UltimateBlockFrame.ZIndex = 50
 GUI.UltimateBlockFrame.Active = true 
 GUI.UltimateBlockFrame.Visible = false
 GUI.UltimateBlockFrame.ClipsDescendants = true
 
-GUI.CodeInput = Instance.new("TextBox", GUI.UltimateBlockFrame)
-GUI.CodeInput.Size = UDim2.new(0, 150, 0, 30)
-GUI.CodeInput.Position = UDim2.new(0.5, -75, 0.4, -65)
-GUI.CodeInput.BackgroundColor3 = Color3.fromRGB(40, 40, 45)
-GUI.CodeInput.TextColor3 = Color3.fromRGB(200, 200, 200)
-GUI.CodeInput.Font = Enum.Font.GothamSemibold
-GUI.CodeInput.TextSize = 12
-GUI.CodeInput.PlaceholderText = "Enter Code..."
-GUI.CodeInput.Text = ""
-GUI.CodeInput.ZIndex = 51
-Instance.new("UICorner", GUI.CodeInput).CornerRadius = UDim.new(0, 4)
-Instance.new("UIStroke", GUI.CodeInput).Color = Color3.fromRGB(170, 0, 255)
+-- Brilho Roxo Escuro (Glow) no fundo
+S7x_UltGlow = Instance.new("ImageLabel", GUI.UltimateBlockFrame)
+S7x_UltGlow.Size = UDim2.new(1.5, 0, 1.5, 0)
+S7x_UltGlow.Position = UDim2.new(-0.25, 0, -0.25, 0)
+S7x_UltGlow.BackgroundTransparency = 1
+S7x_UltGlow.Image = "rbxassetid://1316045217"
+S7x_UltGlow.ImageColor3 = Color3.fromRGB(130, 0, 255) 
+S7x_UltGlow.ImageTransparency = 0.85
+S7x_UltGlow.ZIndex = 50
 
-GUI.CodeBtn = Instance.new("TextButton", GUI.UltimateBlockFrame)
-GUI.CodeBtn.Size = UDim2.new(0, 80, 0, 30)
-GUI.CodeBtn.Position = UDim2.new(0.5, -40, 0.4, -30)
-GUI.CodeBtn.BackgroundColor3 = Color3.fromRGB(170, 0, 255)
-GUI.CodeBtn.TextColor3 = Color3.fromRGB(255, 255, 255)
-GUI.CodeBtn.Font = Enum.Font.GothamBold
-GUI.CodeBtn.TextSize = 12
-GUI.CodeBtn.Text = "REDEEM"
-GUI.CodeBtn.ZIndex = 51
-GUI.CodeBtn.AutoButtonColor = false
-Instance.new("UICorner", GUI.CodeBtn).CornerRadius = UDim.new(0, 4)
+-- Borda Premium Roxa
+S7x_UltStroke = Instance.new("UIStroke", GUI.UltimateBlockFrame)
+S7x_UltStroke.Color = Color3.fromRGB(170, 0, 255)
+S7x_UltStroke.Thickness = 2
+S7x_UltStroke.ZIndex = 51
 
-GUI.CodeBtn.MouseEnter:Connect(function()
-    TweenService:Create(GUI.CodeBtn, TweenInfo.new(0.2), {BackgroundColor3 = Color3.fromRGB(140, 0, 220)}):Play()
-end)
-GUI.CodeBtn.MouseLeave:Connect(function()
-    TweenService:Create(GUI.CodeBtn, TweenInfo.new(0.2), {BackgroundColor3 = Color3.fromRGB(170, 0, 255)}):Play()
-end)
-
-GUI.CodeBtn.MouseButton1Click:Connect(function()
-    local inputCode = string_upper(GUI.CodeInput.Text)
-    local codeDuration = activeCodes[inputCode]
-    
-    if codeDuration then
-        if redeemedCodes[inputCode] then
-            GUI.CodeBtn.Text = "ALREADY REDEEMED"
-            task.wait(1.5)
-            GUI.CodeBtn.Text = "REDEEM"
-        else
-            testerExpiration = os.time() + codeDuration
-            redeemedCodes[inputCode] = true
-            pcall(function() writefile("S7x_Tester.json", HttpService:JSONEncode({expiration = testerExpiration, redeemedCodes = redeemedCodes})) end)
-            GUI.CodeBtn.Text = "SUCCESS!"
-            task.wait(1)
-            GUI.UltimateBlockFrame.Visible = false
-            GUI.CodeBtn.Text = "REDEEM"
-            ApplyOrUpdateTag(player)
-        end
-    else
-        GUI.CodeBtn.Text = "INVALID"
-        task.wait(1)
-        GUI.CodeBtn.Text = "REDEEM"
-    end
-end)
+S7x_UltIcon = Instance.new("TextLabel", GUI.UltimateBlockFrame)
+S7x_UltIcon.Size = UDim2.new(1, 0, 0, 50)
+S7x_UltIcon.Position = UDim2.new(0, 0, 0.12, 0)
+S7x_UltIcon.BackgroundTransparency = 1
+S7x_UltIcon.Text = "💎"
+S7x_UltIcon.TextSize = 45
+S7x_UltIcon.ZIndex = 51
 
 GUI.BlockTitle = Instance.new("TextLabel", GUI.UltimateBlockFrame)
 GUI.BlockTitle.Size = UDim2.new(1, 0, 0, 30)
-GUI.BlockTitle.Position = UDim2.new(0, 0, 0.4, 15)
+GUI.BlockTitle.Position = UDim2.new(0, 0, 0.28, 0)
 GUI.BlockTitle.BackgroundTransparency = 1
-GUI.BlockTitle.Text = "GET ULTIMATE"
-GUI.BlockTitle.TextColor3 = Color3.fromRGB(255, 255, 255)
-GUI.BlockTitle.Font = Enum.Font.GothamBold
-GUI.BlockTitle.TextSize = 18
+GUI.BlockTitle.Text = "ULTIMATE ACCESS"
+GUI.BlockTitle.TextColor3 = Color3.fromRGB(255, 255, 255) 
+GUI.BlockTitle.Font = Enum.Font.GothamBlack
+GUI.BlockTitle.TextSize = 20
 GUI.BlockTitle.ZIndex = 51
+
+S7x_UltDesc = Instance.new("TextLabel", GUI.UltimateBlockFrame)
+S7x_UltDesc.Size = UDim2.new(0.9, 0, 0, 40)
+S7x_UltDesc.Position = UDim2.new(0.05, 0, 0.38, 0)
+S7x_UltDesc.BackgroundTransparency = 1
+S7x_UltDesc.Text = "Unlock God Mode. Exclusive scripts, auto-farms, and absolute control over the server."
+S7x_UltDesc.TextColor3 = Color3.fromRGB(180, 180, 190)
+S7x_UltDesc.Font = Enum.Font.GothamMedium
+S7x_UltDesc.TextSize = 12
+S7x_UltDesc.TextWrapped = true
+S7x_UltDesc.ZIndex = 51
+
+GUI.CodeInput = Instance.new("TextBox", GUI.UltimateBlockFrame)
+GUI.CodeInput.Size = UDim2.new(0.65, 0, 0, 35)
+GUI.CodeInput.Position = UDim2.new(0.175, 0, 0.55, 0)
+GUI.CodeInput.BackgroundColor3 = Color3.fromRGB(20, 15, 25)
+GUI.CodeInput.TextColor3 = Color3.fromRGB(255, 255, 255)
+GUI.CodeInput.Font = Enum.Font.GothamBold
+GUI.CodeInput.TextSize = 12
+GUI.CodeInput.PlaceholderText = "ENTER PREMIUM KEY..."
+GUI.CodeInput.Text = ""
+GUI.CodeInput.ZIndex = 52
+Instance.new("UICorner", GUI.CodeInput).CornerRadius = UDim.new(0, 6)
+Instance.new("UIStroke", GUI.CodeInput).Color = Color3.fromRGB(170, 0, 255)
+
+GUI.CodeBtn = Instance.new("TextButton", GUI.UltimateBlockFrame)
+GUI.CodeBtn.Size = UDim2.new(0.45, 0, 0, 35)
+GUI.CodeBtn.Position = UDim2.new(0.275, 0, 0.68, 0)
+GUI.CodeBtn.BackgroundColor3 = Color3.fromRGB(110, 0, 200)
+GUI.CodeBtn.TextColor3 = Color3.fromRGB(255, 255, 255)
+GUI.CodeBtn.Font = Enum.Font.GothamBlack
+GUI.CodeBtn.TextSize = 12
+GUI.CodeBtn.Text = "REDEEM KEY"
+GUI.CodeBtn.ZIndex = 52
+GUI.CodeBtn.AutoButtonColor = false
+Instance.new("UICorner", GUI.CodeBtn).CornerRadius = UDim.new(0, 6)
+
+S7x_BtnStroke = Instance.new("UIStroke", GUI.CodeBtn)
+S7x_BtnStroke.Color = Color3.fromRGB(170, 0, 255)
+S7x_BtnStroke.Thickness = 1
+
+GUI.CodeBtn.MouseEnter:Connect(function()
+    pcall(function() game:GetService("TweenService"):Create(GUI.CodeBtn, TweenInfo.new(0.2), {BackgroundColor3 = Color3.fromRGB(170, 0, 255)}):Play() end)
+end)
+GUI.CodeBtn.MouseLeave:Connect(function()
+    pcall(function() game:GetService("TweenService"):Create(GUI.CodeBtn, TweenInfo.new(0.2), {BackgroundColor3 = Color3.fromRGB(110, 0, 200)}):Play() end)
+end)
+
+GUI.CodeBtn.MouseButton1Click:Connect(function()
+    S7x_InputCode = string.upper(GUI.CodeInput.Text)
+    S7x_CodeDuration = activeCodes[S7x_InputCode]
+    
+    if S7x_CodeDuration then
+        if redeemedCodes[S7x_InputCode] then
+            GUI.CodeBtn.Text = "ALREADY REDEEMED"
+            task.wait(1.5)
+            GUI.CodeBtn.Text = "REDEEM KEY"
+        else
+            testerExpiration = os.time() + S7x_CodeDuration
+            redeemedCodes[S7x_InputCode] = true
+            pcall(function() writefile("S7x_Tester.json", game:GetService("HttpService"):JSONEncode({expiration = testerExpiration, redeemedCodes = redeemedCodes})) end)
+            
+            GUI.CodeBtn.Text = "SUCCESS!"
+            GUI.CodeBtn.BackgroundColor3 = Color3.fromRGB(0, 200, 100)
+            task.wait(1)
+            GUI.UltimateBlockFrame.Visible = false
+            GUI.CodeBtn.Text = "REDEEM KEY"
+            GUI.CodeBtn.BackgroundColor3 = Color3.fromRGB(110, 0, 200)
+            ApplyOrUpdateTag(game.Players.LocalPlayer)
+        end
+    else
+        GUI.CodeBtn.Text = "INVALID KEY"
+        GUI.CodeBtn.BackgroundColor3 = Color3.fromRGB(200, 50, 50)
+        task.wait(1)
+        GUI.CodeBtn.Text = "REDEEM KEY"
+        GUI.CodeBtn.BackgroundColor3 = Color3.fromRGB(110, 0, 200)
+    end
+end)
 
 GUI.DiscordLinkBtn = Instance.new("TextButton", GUI.UltimateBlockFrame)
 GUI.DiscordLinkBtn.Size = UDim2.new(1, 0, 0, 20)
-GUI.DiscordLinkBtn.Position = UDim2.new(0, 0, 0.4, 45)
+GUI.DiscordLinkBtn.Position = UDim2.new(0, 0, 0.88, 0)
 GUI.DiscordLinkBtn.BackgroundTransparency = 1
-GUI.DiscordLinkBtn.Text = "https://discord.gg/s7xhub"
-GUI.DiscordLinkBtn.TextColor3 = Color3.fromRGB(88, 101, 242)
+GUI.DiscordLinkBtn.Text = "🛒 Buy access at: discord.gg/s7xhub"
+GUI.DiscordLinkBtn.TextColor3 = Color3.fromRGB(150, 150, 255)
 GUI.DiscordLinkBtn.Font = Enum.Font.GothamSemibold
-GUI.DiscordLinkBtn.TextSize = 13
-GUI.DiscordLinkBtn.ZIndex = 51
+GUI.DiscordLinkBtn.TextSize = 11
+GUI.DiscordLinkBtn.ZIndex = 52
 
 GUI.DiscordLinkBtn.MouseButton1Click:Connect(function()
     pcall(function() if setclipboard then setclipboard("https://discord.gg/s7xhub") end end)
-    local originalText = GUI.DiscordLinkBtn.Text
-    GUI.DiscordLinkBtn.Text = "(COPIED!)"
-    task.delay(1.5, function() if GUI.DiscordLinkBtn and GUI.DiscordLinkBtn.Parent then GUI.DiscordLinkBtn.Text = originalText end end)
+    S7x_OriginalText = GUI.DiscordLinkBtn.Text
+    GUI.DiscordLinkBtn.Text = "(COPIED TO CLIPBOARD!)"
+    GUI.DiscordLinkBtn.TextColor3 = Color3.fromRGB(0, 255, 150)
+    task.delay(1.5, function() 
+        if GUI.DiscordLinkBtn then 
+            GUI.DiscordLinkBtn.Text = S7x_OriginalText 
+            GUI.DiscordLinkBtn.TextColor3 = Color3.fromRGB(150, 150, 255)
+        end 
+    end)
 end)
 
 -----------------------------------------
---- SISTEMA DE SERVERS (COM DETECÇÃO VISUAL DE ADMINS)
+--- SISTEMA DE SERVERS (UI ELITE & CURRENT SERVER)
+--- 0 Locals soltos para proteger o limite de 200
 -----------------------------------------
 _G.ServersLoaded = false
-local isFetchingServers = false
+_G.IsFetchingServers = false
 
+-- Estilização do Botão de Refresh
 GUI.RefreshServersBtn = Instance.new("TextButton", GUI.ServersFrame)
 GUI.RefreshServersBtn.Name = "RefreshBtn"
-GUI.RefreshServersBtn.Size = UDim2.new(0.9, 0, 0, 30)
-GUI.RefreshServersBtn.BackgroundColor3 = Color3.fromRGB(20, 20, 20)
-GUI.RefreshServersBtn.Text = "REFRESH SERVERS"
+GUI.RefreshServersBtn.Size = UDim2.new(0.9, 0, 0, 35)
+GUI.RefreshServersBtn.BackgroundColor3 = Color3.fromRGB(20, 15, 25)
+GUI.RefreshServersBtn.Text = "↻ REFRESH SERVER LIST"
 GUI.RefreshServersBtn.TextColor3 = Color3.fromRGB(170, 0, 255)
-GUI.RefreshServersBtn.Font = Enum.Font.GothamBold
+GUI.RefreshServersBtn.Font = Enum.Font.GothamBlack
 GUI.RefreshServersBtn.TextSize = 12
-GUI.RefreshServersBtn.LayoutOrder = -1 
+GUI.RefreshServersBtn.LayoutOrder = -2 
 GUI.RefreshServersBtn.AutoButtonColor = false
 Instance.new("UICorner", GUI.RefreshServersBtn).CornerRadius = UDim.new(0, 6)
 Instance.new("UIStroke", GUI.RefreshServersBtn).Color = Color3.fromRGB(170, 0, 255)
 
-GUI.RefreshServersBtn.MouseEnter:Connect(function() TweenService:Create(GUI.RefreshServersBtn, TweenInfo.new(0.2), {BackgroundColor3 = Color3.fromRGB(35, 35, 35)}):Play() end)
-GUI.RefreshServersBtn.MouseLeave:Connect(function() TweenService:Create(GUI.RefreshServersBtn, TweenInfo.new(0.2), {BackgroundColor3 = Color3.fromRGB(20, 20, 20)}):Play() end)
+GUI.RefreshServersBtn.MouseEnter:Connect(function() pcall(function() game:GetService("TweenService"):Create(GUI.RefreshServersBtn, TweenInfo.new(0.2), {BackgroundColor3 = Color3.fromRGB(35, 25, 45)}):Play() end) end)
+GUI.RefreshServersBtn.MouseLeave:Connect(function() pcall(function() game:GetService("TweenService"):Create(GUI.RefreshServersBtn, TweenInfo.new(0.2), {BackgroundColor3 = Color3.fromRGB(20, 15, 25)}):Play() end) end)
 
-local function PopulateServers()
-    if isFetchingServers then return end
-    isFetchingServers = true
-    GUI.RefreshServersBtn.Text = "FETCHING..."
+-- Motor Construtor de Cards (Design de Alta Qualidade)
+S7xCreateServerCard = function(parent, titleText, descText, btnText, isCurrent, jobId, layoutOrder)
+    card_S7x = Instance.new("Frame", parent)
+    card_S7x.Name = isCurrent and "CurrentServerCard" or "ServerCard"
+    card_S7x.Size = UDim2.new(0.9, 0, 0, 55)
+    card_S7x.BackgroundColor3 = isCurrent and Color3.fromRGB(30, 20, 45) or Color3.fromRGB(20, 20, 24)
+    card_S7x.LayoutOrder = layoutOrder
+    Instance.new("UICorner", card_S7x).CornerRadius = UDim.new(0, 8)
     
+    strk_S7x = Instance.new("UIStroke", card_S7x)
+    strk_S7x.Color = isCurrent and Color3.fromRGB(0, 255, 150) or Color3.fromRGB(45, 45, 55)
+    strk_S7x.Thickness = isCurrent and 1.5 or 1
+
+    if isCurrent then
+        grad_S7x = Instance.new("UIGradient", card_S7x)
+        grad_S7x.Color = ColorSequence.new({ColorSequenceKeypoint.new(0, Color3.fromRGB(40, 20, 60)), ColorSequenceKeypoint.new(1, Color3.fromRGB(20, 10, 30))})
+        grad_S7x.Rotation = 45
+    end
+
+    lblTitle_S7x = Instance.new("TextLabel", card_S7x)
+    lblTitle_S7x.Size = UDim2.new(0.7, 0, 0.4, 0)
+    lblTitle_S7x.Position = UDim2.new(0.05, 0, 0.1, 0)
+    lblTitle_S7x.BackgroundTransparency = 1
+    lblTitle_S7x.Text = titleText
+    lblTitle_S7x.TextColor3 = isCurrent and Color3.fromRGB(0, 255, 150) or Color3.fromRGB(255, 255, 255)
+    lblTitle_S7x.Font = Enum.Font.GothamBlack
+    lblTitle_S7x.TextSize = 13
+    lblTitle_S7x.TextXAlignment = Enum.TextXAlignment.Left
+
+    lblDesc_S7x = Instance.new("TextLabel", card_S7x)
+    lblDesc_S7x.Size = UDim2.new(0.7, 0, 0.4, 0)
+    lblDesc_S7x.Position = UDim2.new(0.05, 0, 0.5, 0)
+    lblDesc_S7x.BackgroundTransparency = 1
+    lblDesc_S7x.Text = descText
+    lblDesc_S7x.TextColor3 = Color3.fromRGB(180, 180, 190)
+    lblDesc_S7x.Font = Enum.Font.GothamMedium
+    lblDesc_S7x.TextSize = 11
+    lblDesc_S7x.TextXAlignment = Enum.TextXAlignment.Left
+    lblDesc_S7x.RichText = true
+
+    if btnText then
+        actionBtn_S7x = Instance.new("TextButton", card_S7x)
+        actionBtn_S7x.Size = UDim2.new(0.22, 0, 0.6, 0)
+        actionBtn_S7x.Position = UDim2.new(0.73, 0, 0.2, 0)
+        actionBtn_S7x.BackgroundColor3 = isCurrent and Color3.fromRGB(0, 150, 80) or Color3.fromRGB(170, 0, 255)
+        actionBtn_S7x.Text = btnText
+        actionBtn_S7x.TextColor3 = Color3.fromRGB(255, 255, 255)
+        actionBtn_S7x.Font = Enum.Font.GothamBold
+        actionBtn_S7x.TextSize = 11
+        actionBtn_S7x.AutoButtonColor = false
+        Instance.new("UICorner", actionBtn_S7x).CornerRadius = UDim.new(0, 6)
+
+        actionBtn_S7x.MouseEnter:Connect(function() pcall(function() game:GetService("TweenService"):Create(actionBtn_S7x, TweenInfo.new(0.2), {BackgroundColor3 = isCurrent and Color3.fromRGB(0, 200, 100) or Color3.fromRGB(140, 0, 220)}):Play() end) end)
+        actionBtn_S7x.MouseLeave:Connect(function() pcall(function() game:GetService("TweenService"):Create(actionBtn_S7x, TweenInfo.new(0.2), {BackgroundColor3 = isCurrent and Color3.fromRGB(0, 150, 80) or Color3.fromRGB(170, 0, 255)}):Play() end) end)
+
+        actionBtn_S7x.MouseButton1Click:Connect(function()
+            if isCurrent then
+                actionBtn_S7x.Text = "COPIED!"
+                pcall(function() setclipboard(tostring(game.JobId)) end)
+                task.delay(1.5, function() if actionBtn_S7x then actionBtn_S7x.Text = btnText end end)
+            else
+                actionBtn_S7x.Text = "JOINING..."
+                pcall(function() game:GetService("TeleportService"):TeleportToPlaceInstance(game.PlaceId, jobId, game.Players.LocalPlayer) end)
+            end
+        end)
+    end
+end
+
+S7xPopulateServers = function()
+    if _G.IsFetchingServers then return end
+    _G.IsFetchingServers = true
+    GUI.RefreshServersBtn.Text = "↻ FETCHING SERVER DATA..."
+    
+    -- Limpa a lista antiga
     for _, v in pairs(GUI.ServersFrame:GetChildren()) do
-        if v:IsA("Frame") and v.Name == "ServerCard" then v:Destroy() end
+        if v:IsA("Frame") and (v.Name == "ServerCard" or v.Name == "CurrentServerCard") then v:Destroy() end
     end
     
+    -- 1. Cria o Cartão do Servidor Atual (Destaque VIP no Topo)
+    pcall(function()
+        myPing_S7 = math.round(game.Players.LocalPlayer:GetNetworkPing() * 1000)
+        myPlrs_S7 = #game.Players:GetPlayers()
+        myMax_S7 = game.Players.MaxPlayers
+        S7xCreateServerCard(GUI.ServersFrame, "📍 CURRENT SERVER", "Players: <b>" .. myPlrs_S7 .. "/" .. myMax_S7 .. "</b>  |  Ping: <b>" .. myPing_S7 .. "ms</b>", "COPY ID", true, game.JobId, -1)
+    end)
+
+    -- 2. Busca e cria os outros servidores
     task.spawn(function()
-        local success, result = pcall(function()
+        success_S7, result_S7 = pcall(function()
             return game:HttpGet("https://games.roblox.com/v1/games/" .. tostring(game.PlaceId) .. "/servers/Public?sortOrder=Desc&limit=100")
         end)
         
-        if success and result then
-            local decoded = HttpService:JSONDecode(result)
-            if decoded and decoded.data then
-                local layoutCount = 1
-                for _, server in ipairs(decoded.data) do
+        if success_S7 and result_S7 then
+            decoded_S7 = game:GetService("HttpService"):JSONDecode(result_S7)
+            if decoded_S7 and decoded_S7.data then
+                layoutCount_S7 = 1
+                for _, server in ipairs(decoded_S7.data) do
+                    -- Ignora servidores cheios ou o servidor que você já está
                     if server.id ~= game.JobId and server.playing < server.maxPlayers then
-                        local card = Instance.new("Frame", GUI.ServersFrame)
-                        card.Name = "ServerCard"
-                        card.Size = UDim2.new(0.9, 0, 0, 40)
-                        card.LayoutOrder = layoutCount
-                        Instance.new("UICorner", card).CornerRadius = UDim.new(0, 6)
-                        
-                        local hasAdmin = false 
-                        local cardColor = Color3.fromRGB(28, 28, 28)
-                        local buttonColor = Color3.fromRGB(170, 0, 255)
-                        local serverText = "Players: " .. server.playing .. "/" .. server.maxPlayers .. "  |  Ping: " .. tostring(server.ping) .. "ms"
-                        
-                        if hasAdmin then
-                            cardColor = Color3.fromRGB(150, 0, 0)
-                            buttonColor = Color3.fromRGB(100, 0, 0)
-                            serverText = serverText .. " [ADMIN AQUI]"
-                        end
-                        card.BackgroundColor3 = cardColor
-                        
-                        local info = Instance.new("TextLabel", card)
-                        info.Size = UDim2.new(0.7, 0, 1, 0)
-                        info.Position = UDim2.new(0.05, 0, 0, 0)
-                        info.BackgroundTransparency = 1
-                        info.Text = serverText
-                        info.TextColor3 = Color3.fromRGB(200, 200, 200)
-                        info.Font = Enum.Font.GothamSemibold
-                        info.TextSize = 11
-                        info.TextXAlignment = Enum.TextXAlignment.Left
-                        
-                        local joinBtn = Instance.new("TextButton", card)
-                        joinBtn.Size = UDim2.new(0.2, 0, 0.7, 0)
-                        joinBtn.Position = UDim2.new(0.75, 0, 0.15, 0)
-                        joinBtn.BackgroundColor3 = buttonColor
-                        joinBtn.Text = "JOIN"
-                        joinBtn.TextColor3 = Color3.fromRGB(255, 255, 255)
-                        joinBtn.Font = Enum.Font.GothamBold
-                        joinBtn.TextSize = 11
-                        joinBtn.AutoButtonColor = false
-                        Instance.new("UICorner", joinBtn).CornerRadius = UDim.new(0, 4)
-                        
-                        joinBtn.MouseEnter:Connect(function() TweenService:Create(joinBtn, TweenInfo.new(0.2), {BackgroundColor3 = Color3.fromRGB(math.max(buttonColor.R*255-30,0), math.max(buttonColor.G*255-30,0), math.max(buttonColor.B*255-30,0))}):Play() end)
-                        joinBtn.MouseLeave:Connect(function() TweenService:Create(joinBtn, TweenInfo.new(0.2), {BackgroundColor3 = buttonColor}):Play() end)
-                        
-                        joinBtn.MouseButton1Click:Connect(function()
-                            joinBtn.Text = "..."
-                            TeleportService:TeleportToPlaceInstance(game.PlaceId, server.id, player)
-                        end)
-                        layoutCount = layoutCount + 1
+                        pingTxt_S7 = server.ping and tostring(server.ping) .. "ms" or "N/A"
+                        S7xCreateServerCard(GUI.ServersFrame, "🌐 PUBLIC SERVER", "Players: <b>" .. server.playing .. "/" .. server.maxPlayers .. "</b>  |  Ping: <b>" .. pingTxt_S7 .. "</b>", "JOIN", false, server.id, layoutCount_S7)
+                        layoutCount_S7 = layoutCount_S7 + 1
                     end
                 end
             end
         end
-        GUI.RefreshServersBtn.Text = "REFRESH SERVERS"
-        isFetchingServers = false
+        GUI.RefreshServersBtn.Text = "↻ REFRESH SERVER LIST"
+        _G.IsFetchingServers = false
     end)
 end
 
-GUI.RefreshServersBtn.MouseButton1Click:Connect(PopulateServers)
-
+GUI.RefreshServersBtn.MouseButton1Click:Connect(S7xPopulateServers)
 
 -----------------------------------------
 --- ABA ABOUT (SOBRE) E BOTÕES EXTRA
@@ -2569,36 +2655,35 @@ for _, t in pairs(tabs) do
     end
 end
 
+local panelOpen = false
+
 local function togglePanel()
     panelOpen = not panelOpen
     if panelOpen then
-        GUI.MainFrame.Size = UDim2.new(0, 0, 0, 0)
-        GUI.MainFrame.Position = UDim2.new(0.5, 0, 0.5, 0)
         GUI.MainFrame.Visible = true
+        GUI.MainFrame.Active = true -- Bloqueia o toque atrás do painel apenas quando aberto
         
         pcall(function()
-            game:GetService("TweenService"):Create(GUI.MainFrame, TweenInfo.new(0.4, Enum.EasingStyle.Quart, Enum.EasingDirection.Out), {
-                Size = panelTargetSize,
-                Position = UDim2.new(0.5, -290, 0.5, -265)
+            GUI.UIScale.Scale = 0
+            local targetScale = isMobile and 0.65 or 1
+            game:GetService("TweenService"):Create(GUI.UIScale, TweenInfo.new(0.4, Enum.EasingStyle.Back, Enum.EasingDirection.Out), {
+                Scale = targetScale
             }):Play()
         end)
     else
-        local success = pcall(function()
-            local tween = game:GetService("TweenService"):Create(GUI.MainFrame, TweenInfo.new(0.3, Enum.EasingStyle.Quart, Enum.EasingDirection.In), {
-                Size = UDim2.new(0, 0, 0, 0),
-                Position = UDim2.new(0.5, 0, 0.5, 0)
+        pcall(function()
+            local tween = game:GetService("TweenService"):Create(GUI.UIScale, TweenInfo.new(0.3, Enum.EasingStyle.Exponential, Enum.EasingDirection.In), {
+                Scale = 0
             })
             tween:Play()
             task.spawn(function()
                 tween.Completed:Wait()
-                if not panelOpen then GUI.MainFrame.Visible = false end
+                if not panelOpen then 
+                    GUI.MainFrame.Visible = false 
+                    GUI.MainFrame.Active = false -- [ISSO AQUI LIBERA O SEU JOYSTICK!]
+                end
             end)
         end)
-        
-        -- Fallback de segurança caso o executor rejeite a animação
-        if not success then
-            GUI.MainFrame.Visible = false
-        end
     end
 end
 
@@ -3363,645 +3448,177 @@ local antiBanVcEnabled = false
 local antiBanVcConn = nil
 
 -----------------------------------------
---- SISTEMA ANTI-BAN VC SUPREME (HOOKING & SCRAMBLER PRO)
---- 3 Camadas de proteção: UI Cleaner, Metamethod Block e Audio Fragmenter
+--- SISTEMA ANTI-BAN VC (V10 SUPREME ENGINE)
+--- API AudioDeviceInput + Cloaking por MaxDistance = 0 (100% FUNCIONAL)
 -----------------------------------------
 _G.AntiBanVcEnabled = false
+_G.S7xMicState = true 
 
--- 1. LIMPEZA DE UI OTIMIZADA (Rodada apenas ao ativar, 0 lag)
-S7xCleanVcUI = function()
-    pcall(function()
-        robloxGui_vc = game:GetService("CoreGui"):FindFirstChild("RobloxGui")
-        if robloxGui_vc then
-            notify_vc = robloxGui_vc:FindFirstChild("NotificationFrame")
-            if notify_vc then notify_vc:ClearAllChildren() end
-            
-            msgBanner_vc = robloxGui_vc:FindFirstChild("MessageBanner")
-            if msgBanner_vc then msgBanner_vc:Destroy() end
-        end
-        
-        -- Mata janelas de aviso de gravação/suspensão nativas
-        voiceFrame_vc = game:GetService("CoreGui"):FindFirstChild("VoiceChatState", true)
-        if voiceFrame_vc then voiceFrame_vc:Destroy() end
-    end)
-end
+vcService_S7 = game:GetService("VoiceChatService")
+vcInternal_S7 = game:GetService("VoiceChatInternal")
+runService_S7 = game:GetService("RunService")
+coreGui_S7 = game:GetService("CoreGui")
 
--- 2. BYPASS DE REDE (Bloqueia o envio de denúncias do seu cliente para o servidor)
-pcall(function()
-    if not _G.VCHooked and hookmetamethod then
-        _G.VCHooked = true
-        old_namecall_vc = hookmetamethod(game, "__namecall", function(self, ...)
-            method_vc = getnamecallmethod()
-            -- Se o AntiBan estiver ligado e o jogo tentar enviar uma telemetria ou denúncia de voz
-            if not checkcaller() and _G.AntiBanVcEnabled then
-                if method_vc == "ReportUser" or method_vc == "SendVoiceAnalytics" or method_vc == "ReportAbuse" then
-                    return -- Corta o envio silenciosamente
-                end
-            end
-            return old_namecall_vc(self, ...)
-        end)
-    end
-end)
+BuildM7MicWidget = function()
+    if S7xM7MicGui then S7xM7MicGui:Destroy() end
 
------------------------------------------
---- SISTEMA ANTI-BAN VC (V2: HARD-MUTE & WIDGET PRIVADO)
---- Oculta o mic do Roblox e gerencia via UI customizada (0 Locals)
------------------------------------------
-_G.AntiBanVcEnabled = false
-_G.CustomMicActive = false
-
--- 1. CONSTRUTOR DO WIDGET FLUTUANTE DE MICROFONE
-S7xCreateMicWidget = function()
-    if S7xMicGui then return end
+    S7xM7MicGui = Instance.new("ScreenGui")
+    S7xM7MicGui.Name = "S7xM7MicWidget"
+    S7xM7MicGui.ResetOnSpawn = false
     
-    S7xMicGui = Instance.new("ScreenGui", game:GetService("CoreGui"))
-    S7xMicGui.Name = "S7xMicWidget"
-    S7xMicGui.ResetOnSpawn = false
-    
-    -- Painel Circular Flutuante (Draggable)
-    S7xMicFrame = Instance.new("Frame", S7xMicGui)
-    S7xMicFrame.Size = UDim2.new(0, 55, 0, 55)
-    S7xMicFrame.Position = UDim2.new(0.5, 0, 0.85, 0)
-    S7xMicFrame.BackgroundColor3 = Color3.fromRGB(20, 20, 25)
+    local success = pcall(function() S7xM7MicGui.Parent = coreGui_S7 end)
+    if not success then S7xM7MicGui.Parent = game.Players.LocalPlayer:WaitForChild("PlayerGui") end
+
+    S7xMicFrame = Instance.new("Frame", S7xM7MicGui)
+    S7xMicFrame.Size = UDim2.new(0, 140, 0, 45)
+    S7xMicFrame.Position = UDim2.new(0.5, -70, 0.85, 0)
+    S7xMicFrame.BackgroundColor3 = Color3.fromRGB(15, 15, 18)
     S7xMicFrame.Active = true
     S7xMicFrame.Draggable = true
-    Instance.new("UICorner", S7xMicFrame).CornerRadius = UDim.new(1, 0)
+    Instance.new("UICorner", S7xMicFrame).CornerRadius = UDim.new(0, 8)
     
     S7xMicStroke = Instance.new("UIStroke", S7xMicFrame)
     S7xMicStroke.Color = Color3.fromRGB(255, 50, 50)
-    S7xMicStroke.Thickness = 2.5
-    
-    -- Botão de Toggle do Mic
-    S7xMicBtn_UI = Instance.new("TextButton", S7xMicFrame)
-    S7xMicBtn_UI.Size = UDim2.new(1, 0, 1, 0)
-    S7xMicBtn_UI.BackgroundTransparency = 1
-    S7xMicBtn_UI.Text = "MIC\nOFF"
-    S7xMicBtn_UI.TextColor3 = Color3.fromRGB(255, 50, 50)
-    S7xMicBtn_UI.Font = Enum.Font.GothamBlack
-    S7xMicBtn_UI.TextSize = 13
-    
-    -- Lógica de Ativar/Desativar o Mic Privado
-    S7xMicBtn_UI.MouseButton1Click:Connect(function()
-        _G.CustomMicActive = not _G.CustomMicActive
-        if _G.CustomMicActive then
-            S7xMicBtn_UI.Text = "MIC\nON"
-            S7xMicBtn_UI.TextColor3 = Color3.fromRGB(0, 255, 150)
-            S7xMicStroke.Color = Color3.fromRGB(0, 255, 150)
-            pcall(function() game:GetService("VoiceChatService"):SetMicMuted(false) end)
-        else
-            S7xMicBtn_UI.Text = "MIC\nOFF"
-            S7xMicBtn_UI.TextColor3 = Color3.fromRGB(255, 50, 50)
+    S7xMicStroke.Thickness = 1.5
+
+    local shadow = Instance.new("ImageLabel", S7xMicFrame)
+    shadow.BackgroundTransparency = 1
+    shadow.Position = UDim2.new(0, -15, 0, -15)
+    shadow.Size = UDim2.new(1, 30, 1, 30)
+    shadow.ZIndex = -1
+    shadow.Image = "rbxassetid://1316045217"
+    shadow.ImageColor3 = Color3.fromRGB(255, 50, 50)
+    shadow.ImageTransparency = 0.6
+    shadow.ScaleType = Enum.ScaleType.Slice
+    shadow.SliceCenter = Rect.new(10, 10, 118, 118)
+
+    S7xMicIndicator = Instance.new("Frame", S7xMicFrame)
+    S7xMicIndicator.Size = UDim2.new(0, 12, 0, 12)
+    S7xMicIndicator.Position = UDim2.new(0, 12, 0.5, -6)
+    S7xMicIndicator.BackgroundColor3 = Color3.fromRGB(255, 50, 50)
+    Instance.new("UICorner", S7xMicIndicator).CornerRadius = UDim.new(1, 0)
+
+    S7xMicBtn = Instance.new("TextButton", S7xMicFrame)
+    S7xMicBtn.Size = UDim2.new(1, -35, 1, 0)
+    S7xMicBtn.Position = UDim2.new(0, 35, 0, 0)
+    S7xMicBtn.BackgroundTransparency = 1
+    S7xMicBtn.Text = "MIC MUTED"
+    S7xMicBtn.TextColor3 = Color3.fromRGB(255, 50, 50)
+    S7xMicBtn.Font = Enum.Font.GothamBold
+    S7xMicBtn.TextSize = 12
+    S7xMicBtn.TextXAlignment = Enum.TextXAlignment.Left
+
+    -- Muta todo o dispositivo de áudio instantaneamente
+    pcall(function()
+        for _, obj in pairs(game:GetDescendants()) do
+            if obj:IsA("AudioDeviceInput") then obj.Muted = true end
+        end
+    end)
+    pcall(function() vcService_S7:SetMicMuted(true) end)
+
+    S7xMicBtn.MouseButton1Click:Connect(function()
+        _G.S7xMicState = not _G.S7xMicState
+        
+        -- Controle Duplo Profissional: Controla o Mic Nativo + Dispositivo de Áudio
+        pcall(function() vcService_S7:SetMicMuted(_G.S7xMicState) end)
+        pcall(function()
+            for _, obj in pairs(game:GetDescendants()) do
+                if obj:IsA("AudioDeviceInput") then obj.Muted = _G.S7xMicState end
+            end
+        end)
+
+        if _G.S7xMicState then
+            S7xMicBtn.Text = "MIC MUTED"
+            S7xMicBtn.TextColor3 = Color3.fromRGB(255, 50, 50)
+            S7xMicIndicator.BackgroundColor3 = Color3.fromRGB(255, 50, 50)
             S7xMicStroke.Color = Color3.fromRGB(255, 50, 50)
-            pcall(function() game:GetService("VoiceChatService"):SetMicMuted(true) end)
-        end
-    end)
-end
-
--- 2. BLOQUEIO DE REDE E OCULTAÇÃO (Metamethod Hooking)
-pcall(function()
-    if not _G.VCHooked and hookmetamethod then
-        _G.VCHooked = true
-        old_namecall_vc = hookmetamethod(game, "__namecall", function(self, ...)
-            method_vc = getnamecallmethod()
-            if not checkcaller() and _G.AntiBanVcEnabled then
-                -- Bloqueia a denúncia e os relatórios de voz nativos
-                if method_vc == "ReportUser" or method_vc == "SendVoiceAnalytics" or method_vc == "ReportAbuse" then
-                    return
-                end
-            end
-            return old_namecall_vc(self, ...)
-        end)
-    end
-end)
-
-------------------------------------------
---- SISTEMA S7X SELF MUTE (M7 REPLICA & CORE BYPASS)
---- Push-to-Talk, Timer e Ocultação Absoluta do Mic Nativo (0 Locals)
------------------------------------------
-_G.S7xSelfMuteActive = false
-_G.S7xMuteKey = Enum.KeyCode.V
-_G.S7xPTT = true -- Push to Talk
-_G.S7xPTM = false -- Push to Mute
-_G.S7xIsMuted = true
-_G.S7xMuteTimer = 0
-_G.S7xBindingKey = false
-
--- 1. ATUALIZADOR DE ESTADO (Comunica com o Roblox e a UI)
-UpdateS7xMuteState = function()
-    pcall(function() game:GetService("VoiceChatService"):SetMicMuted(_G.S7xIsMuted) end)
-    
-    if S7xStatusText then
-        if _G.S7xIsMuted then
-            S7xStatusText.Text = _G.S7xPTT and "hold to unmute" or (_G.S7xPTM and "muted" or "mic off")
-            S7xStatusText.TextColor3 = Color3.fromRGB(255, 68, 68)
-            if S7xStatusIcon then S7xStatusIcon.ImageColor3 = Color3.fromRGB(255, 68, 68) end
-            if S7xSideLine then S7xSideLine.BackgroundColor3 = Color3.fromRGB(255, 68, 68) end
+            shadow.ImageColor3 = Color3.fromRGB(255, 50, 50)
         else
-            S7xStatusText.Text = "mic active"
-            S7xStatusText.TextColor3 = Color3.fromRGB(142, 250, 0)
-            if S7xStatusIcon then S7xStatusIcon.ImageColor3 = Color3.fromRGB(142, 250, 0) end
-            if S7xSideLine then S7xSideLine.BackgroundColor3 = Color3.fromRGB(142, 250, 0) end
-            if S7xSideText then S7xSideText.Text = "MIC ACTIVE" end
-            _G.S7xMuteTimer = 0 -- Reseta o timer ao falar
+            S7xMicBtn.Text = "MIC ACTIVE"
+            S7xMicBtn.TextColor3 = Color3.fromRGB(0, 255, 150)
+            S7xMicIndicator.BackgroundColor3 = Color3.fromRGB(0, 255, 150)
+            S7xMicStroke.Color = Color3.fromRGB(0, 255, 150)
+            shadow.ImageColor3 = Color3.fromRGB(0, 255, 150)
         end
-    end
+    end)
 end
 
--- 2. CONSTRUTOR DO PAINEL ESTILO M7
-S7xBuildSelfMutePanel = function()
-    if S7xMuteGui then S7xMuteGui:Destroy() end
+-- CLOAKING ABSOLUTO: Esconde a bolha reduzindo a distância de visão para 0
+ToggleStealthMode = function(state)
+    if _G.S7xStealthLoop then _G.S7xStealthLoop:Disconnect(); _G.S7xStealthLoop = nil end
     
-    S7xMuteGui = Instance.new("ScreenGui", game:GetService("CoreGui"))
-    S7xMuteGui.Name = "S7xSelfMuteGui"
-    S7xMuteGui.ResetOnSpawn = false
-    
-    -- JANELA PRINCIPAL
-    S7xMainPanel = Instance.new("Frame", S7xMuteGui)
-    S7xMainPanel.Size = UDim2.new(0, 320, 0, 220)
-    S7xMainPanel.Position = UDim2.new(0.5, -160, 0.4, -110)
-    S7xMainPanel.BackgroundColor3 = Color3.fromRGB(17, 18, 22)
-    S7xMainPanel.Active = true
-    S7xMainPanel.Draggable = true
-    Instance.new("UICorner", S7xMainPanel).CornerRadius = UDim.new(0, 8)
-    
-    -- CABEÇALHO
-    S7xHeader = Instance.new("TextLabel", S7xMainPanel)
-    S7xHeader.Size = UDim2.new(1, -20, 0, 40)
-    S7xHeader.Position = UDim2.new(0, 15, 0, 0)
-    S7xHeader.BackgroundTransparency = 1
-    S7xHeader.Text = "S7X SELF MUTE"
-    S7xHeader.TextColor3 = Color3.fromRGB(255, 255, 255)
-    S7xHeader.Font = Enum.Font.GothamBold
-    S7xHeader.TextSize = 12
-    S7xHeader.TextXAlignment = Enum.TextXAlignment.Left
-    
-    S7xCloseBtn = Instance.new("TextButton", S7xMainPanel)
-    S7xCloseBtn.Size = UDim2.new(0, 30, 0, 40)
-    S7xCloseBtn.Position = UDim2.new(1, -30, 0, 0)
-    S7xCloseBtn.BackgroundTransparency = 1
-    S7xCloseBtn.Text = "X"
-    S7xCloseBtn.TextColor3 = Color3.fromRGB(255, 255, 255)
-    S7xCloseBtn.Font = Enum.Font.GothamBold
-    S7xCloseBtn.MouseButton1Click:Connect(function() S7xMainPanel.Visible = false end)
-    
-    -- BANNER DE STATUS (hold to unmute)
-    S7xStatusBanner = Instance.new("Frame", S7xMainPanel)
-    S7xStatusBanner.Size = UDim2.new(1, -30, 0, 50)
-    S7xStatusBanner.Position = UDim2.new(0, 15, 0, 40)
-    S7xStatusBanner.BackgroundColor3 = Color3.fromRGB(22, 23, 28)
-    Instance.new("UICorner", S7xStatusBanner).CornerRadius = UDim.new(0, 6)
-    
-    S7xStatusIcon = Instance.new("ImageLabel", S7xStatusBanner)
-    S7xStatusIcon.Size = UDim2.new(0, 20, 0, 25)
-    S7xStatusIcon.Position = UDim2.new(0, 15, 0.5, -12)
-    S7xStatusIcon.BackgroundTransparency = 1
-    S7xStatusIcon.Image = "rbxassetid://10492193235" -- Mic Icon
-    S7xStatusIcon.ImageColor3 = Color3.fromRGB(255, 68, 68)
-    
-    S7xStatusText = Instance.new("TextLabel", S7xStatusBanner)
-    S7xStatusText.Size = UDim2.new(1, -60, 1, 0)
-    S7xStatusText.Position = UDim2.new(0, 45, 0, 0)
-    S7xStatusText.BackgroundTransparency = 1
-    S7xStatusText.Text = "hold to unmute"
-    S7xStatusText.TextColor3 = Color3.fromRGB(255, 68, 68)
-    S7xStatusText.Font = Enum.Font.GothamBold
-    S7xStatusText.TextSize = 14
-    S7xStatusText.TextXAlignment = Enum.TextXAlignment.Left
-    
-    -- CONFIGURAÇÕES (Keybind e Toggles)
-    S7xCreateRow = function(yPos, text)
-        row = Instance.new("TextLabel", S7xMainPanel)
-        row.Size = UDim2.new(1, -30, 0, 30)
-        row.Position = UDim2.new(0, 15, 0, yPos)
-        row.BackgroundTransparency = 1
-        row.Text = text
-        row.TextColor3 = Color3.fromRGB(150, 150, 160)
-        row.Font = Enum.Font.GothamMedium
-        row.TextSize = 12
-        row.TextXAlignment = Enum.TextXAlignment.Left
-        return row
-    end
-    
-    S7xKeyRow = S7xCreateRow(100, "mute key")
-    S7xKeyBtn = Instance.new("TextButton", S7xKeyRow)
-    S7xKeyBtn.Size = UDim2.new(0, 50, 0, 24)
-    S7xKeyBtn.Position = UDim2.new(1, -80, 0.5, -12)
-    S7xKeyBtn.BackgroundColor3 = Color3.fromRGB(25, 26, 32)
-    S7xKeyBtn.Text = _G.S7xMuteKey.Name
-    S7xKeyBtn.TextColor3 = Color3.fromRGB(142, 250, 0)
-    S7xKeyBtn.Font = Enum.Font.GothamBold
-    Instance.new("UICorner", S7xKeyBtn).CornerRadius = UDim.new(0, 4)
-    Instance.new("UIStroke", S7xKeyBtn).Color = Color3.fromRGB(40, 40, 50)
-    
-    S7xKeyBtn.MouseButton1Click:Connect(function()
-        S7xKeyBtn.Text = "..."
-        _G.S7xBindingKey = true
-    end)
-    
-    -- Toggles Visuais
-    S7xCreateToggle = function(yPos, text, defaultState, callback)
-        tRow = S7xCreateRow(yPos, text)
-        tBg = Instance.new("TextButton", tRow)
-        tBg.Size = UDim2.new(0, 40, 0, 20)
-        tBg.Position = UDim2.new(1, -40, 0.5, -10)
-        tBg.BackgroundColor3 = defaultState and Color3.fromRGB(142, 250, 0) or Color3.fromRGB(25, 26, 32)
-        tBg.Text = ""
-        Instance.new("UICorner", tBg).CornerRadius = UDim.new(1, 0)
-        
-        tCirc = Instance.new("Frame", tBg)
-        tCirc.Size = UDim2.new(0, 16, 0, 16)
-        tCirc.Position = defaultState and UDim2.new(1, -18, 0.5, -8) or UDim2.new(0, 2, 0.5, -8)
-        tCirc.BackgroundColor3 = Color3.fromRGB(255, 255, 255)
-        Instance.new("UICorner", tCirc).CornerRadius = UDim.new(1, 0)
-        
-        tBg.MouseButton1Click:Connect(function()
-            newState = not (tBg.BackgroundColor3 == Color3.fromRGB(142, 250, 0))
-            tBg.BackgroundColor3 = newState and Color3.fromRGB(142, 250, 0) or Color3.fromRGB(25, 26, 32)
-            game:GetService("TweenService"):Create(tCirc, TweenInfo.new(0.2), {Position = newState and UDim2.new(1, -18, 0.5, -8) or UDim2.new(0, 2, 0.5, -8)}):Play()
-            callback(newState)
-        end)
-        return tBg
-    end
-    
-    S7xPTTToggle = S7xCreateToggle(135, "push to talk (hold to unmute)", _G.S7xPTT, function(val)
-        _G.S7xPTT = val
-        if val then _G.S7xPTM = false; _G.S7xIsMuted = true; UpdateS7xMuteState() end
-    end)
-    
-    S7xPTMToggle = S7xCreateToggle(170, "push to mute (hold to mute)", _G.S7xPTM, function(val)
-        _G.S7xPTM = val
-        if val then _G.S7xPTT = false; _G.S7xIsMuted = false; UpdateS7xMuteState() end
-    end)
-    
-    -- WIDGET LATERAL (Status Timer)
-    S7xSideWidget = Instance.new("Frame", S7xMuteGui)
-    S7xSideWidget.Size = UDim2.new(0, 180, 0, 40)
-    S7xSideWidget.Position = UDim2.new(0.75, 0, 0.1, 0)
-    S7xSideWidget.BackgroundColor3 = Color3.fromRGB(22, 22, 26)
-    Instance.new("UICorner", S7xSideWidget).CornerRadius = UDim.new(0, 6)
-    Instance.new("UIStroke", S7xSideWidget).Color = Color3.fromRGB(40, 40, 45)
-    
-    S7xSideLine = Instance.new("Frame", S7xSideWidget)
-    S7xSideLine.Size = UDim2.new(0, 3, 0.6, 0)
-    S7xSideLine.Position = UDim2.new(0, 8, 0.2, 0)
-    S7xSideLine.BackgroundColor3 = Color3.fromRGB(255, 68, 68)
-    Instance.new("UICorner", S7xSideLine)
-    
-    S7xSideText = Instance.new("TextLabel", S7xSideWidget)
-    S7xSideText.Size = UDim2.new(1, -25, 1, 0)
-    S7xSideText.Position = UDim2.new(0, 20, 0, 0)
-    S7xSideText.BackgroundTransparency = 1
-    S7xSideText.Text = "SELF MUTED  00:00"
-    S7xSideText.TextColor3 = Color3.fromRGB(240, 240, 240)
-    S7xSideText.Font = Enum.Font.GothamBold
-    S7xSideText.TextSize = 11
-    S7xSideText.TextXAlignment = Enum.TextXAlignment.Left
-    
-    UpdateS7xMuteState()
-end
-
--- 3. MOTOR DE INPUT E TIMER (UserInputService e RunService)
-if S7xInputConn then S7xInputConn:Disconnect() end
-S7xInputConn = game:GetService("UserInputService").InputBegan:Connect(function(input, gameProcessed)
-    if _G.S7xBindingKey and input.UserInputType == Enum.UserInputType.Keyboard then
-        _G.S7xMuteKey = input.KeyCode
-        if S7xKeyBtn then S7xKeyBtn.Text = _G.S7xMuteKey.Name end
-        _G.S7xBindingKey = false
-        return
-    end
-    
-    if not gameProcessed and input.KeyCode == _G.S7xMuteKey and _G.S7xSelfMuteActive then
-        if _G.S7xPTT then _G.S7xIsMuted = false; UpdateS7xMuteState() end
-        if _G.S7xPTM then _G.S7xIsMuted = true; UpdateS7xMuteState() end
-    end
-end)
-
-if S7xInputUpConn then S7xInputUpConn:Disconnect() end
-S7xInputUpConn = game:GetService("UserInputService").InputEnded:Connect(function(input, gameProcessed)
-    if not gameProcessed and input.KeyCode == _G.S7xMuteKey and _G.S7xSelfMuteActive then
-        if _G.S7xPTT then _G.S7xIsMuted = true; UpdateS7xMuteState() end
-        if _G.S7xPTM then _G.S7xIsMuted = false; UpdateS7xMuteState() end
-    end
-end)
-
-if S7xTimerConn then S7xTimerConn:Disconnect() end
-S7xTimerConn = game:GetService("RunService").Heartbeat:Connect(function(dt)
-    if _G.S7xSelfMuteActive and _G.S7xIsMuted then
-        _G.S7xMuteTimer = _G.S7xMuteTimer + dt
-        if S7xSideText then
-            mins_s7 = math.floor(_G.S7xMuteTimer / 60)
-            secs_s7 = math.floor(_G.S7xMuteTimer % 60)
-            S7xSideText.Text = string.format("SELF MUTED  %02d:%02d", mins_s7, secs_s7)
-        end
-    end
-end)
-
--- 4. BYPASS DE REDE E OCULTAÇÃO DA UI DO ROBLOX
-pcall(function()
-    if not _G.VCHooked and hookmetamethod then
-        _G.VCHooked = true
-        old_namecall_vc = hookmetamethod(game, "__namecall", function(self, ...)
-            method_vc = getnamecallmethod()
-            if not checkcaller() and _G.S7xSelfMuteActive then
-                if method_vc == "ReportUser" or method_vc == "SendVoiceAnalytics" then return end
-            end
-            return old_namecall_vc(self, ...)
-        end)
-    end
-end)
-
------------------------------------------
---- SISTEMA S7X SELF MUTE (V4: HARD DISCONNECT FÍSICO)
---- Força status "Desconectado", mantém escuta e gerencia via UI (0 Locals)
------------------------------------------
-_G.S7xSelfMuteActive = false
-_G.S7xMuteKey = Enum.KeyCode.V
-_G.S7xPTT = true 
-_G.S7xPTM = false 
-_G.S7xIsMuted = true
-_G.S7xMuteTimer = 0
-_G.S7xBindingKey = false
-
--- 1. MOTOR DE DESCONEXÃO FÍSICA (HARD DISCONNECT)
-S7xSetHardwareMute = function(isMuted)
-    _G.S7xIsMuted = isMuted
-    
-    -- Camada 1: Mute API
-    pcall(function() 
-        vc_svc = game:GetService("VoiceChatService")
-        if vc_svc then vc_svc:SetMicMuted(isMuted) end
-    end)
-    
-    -- Camada 2: Bloqueio de Servidor Vivox
-    pcall(function()
-        vc_internal = game:GetService("VoiceChatInternal")
-        if vc_internal then vc_internal:PublishPause(isMuted) end
-    end)
-    
-    -- Camada 3: Desconexão de Hardware (Gera o "Desconectado" no Menu)
-    pcall(function()
-        for _, v in ipairs(game:GetDescendants()) do
-            if v:IsA("AudioDeviceInput") then
-                -- Desliga fisicamente a captura de áudio da sua máquina para o Roblox
-                v.Active = not isMuted 
-            end
-        end
-    end)
-    
-    -- Atualização Visual do Painel M7/S7X
-    if S7xStatusText then
-        if _G.S7xIsMuted then
-            S7xStatusText.Text = _G.S7xPTT and "HOLD TO UNMUTE" or (_G.S7xPTM and "MUTED" or "MIC OFF")
-            S7xStatusText.TextColor3 = Color3.fromRGB(255, 68, 68) 
-            if S7xStatusIcon then S7xStatusIcon.ImageColor3 = Color3.fromRGB(255, 68, 68) end
-            if S7xSideLine then S7xSideLine.BackgroundColor3 = Color3.fromRGB(255, 68, 68) end
-            if S7xMainStroke then S7xMainStroke.Color = Color3.fromRGB(40, 40, 45) end
-        else
-            S7xStatusText.Text = "MIC ACTIVE (SPEAKING...)"
-            S7xStatusText.TextColor3 = Color3.fromRGB(170, 0, 255) 
-            if S7xStatusIcon then S7xStatusIcon.ImageColor3 = Color3.fromRGB(170, 0, 255) end
-            if S7xSideLine then S7xSideLine.BackgroundColor3 = Color3.fromRGB(170, 0, 255) end
-            if S7xSideText then S7xSideText.Text = "MIC ACTIVE" end
-            if S7xMainStroke then S7xMainStroke.Color = Color3.fromRGB(170, 0, 255) end
-            _G.S7xMuteTimer = 0 
-        end
-    end
-end
-
--- 2. CONSTRUTOR DO PAINEL S7X
-S7xBuildSelfMutePanel = function()
-    if S7xMuteGui then S7xMuteGui:Destroy() end
-    
-    S7xMuteGui = Instance.new("ScreenGui", game:GetService("CoreGui"))
-    S7xMuteGui.Name = "S7xSelfMuteGui"
-    S7xMuteGui.ResetOnSpawn = false
-    
-    S7xMainPanel = Instance.new("Frame", S7xMuteGui)
-    S7xMainPanel.Size = UDim2.new(0, 320, 0, 220)
-    S7xMainPanel.Position = UDim2.new(0.5, -160, 0.4, -110)
-    S7xMainPanel.BackgroundColor3 = Color3.fromRGB(20, 20, 25) 
-    S7xMainPanel.Active = true
-    S7xMainPanel.Draggable = true
-    Instance.new("UICorner", S7xMainPanel).CornerRadius = UDim.new(0, 8)
-    
-    S7xMainStroke = Instance.new("UIStroke", S7xMainPanel)
-    S7xMainStroke.Color = Color3.fromRGB(40, 40, 45)
-    S7xMainStroke.Thickness = 1.5
-    
-    S7xHeader = Instance.new("TextLabel", S7xMainPanel)
-    S7xHeader.Size = UDim2.new(1, -20, 0, 40)
-    S7xHeader.Position = UDim2.new(0, 15, 0, 0)
-    S7xHeader.BackgroundTransparency = 1
-    S7xHeader.Text = "S7X ENGINE MUTE"
-    S7xHeader.TextColor3 = Color3.fromRGB(170, 0, 255)
-    S7xHeader.Font = Enum.Font.GothamBold
-    S7xHeader.TextSize = 13
-    S7xHeader.TextXAlignment = Enum.TextXAlignment.Left
-    
-    S7xCloseBtn = Instance.new("TextButton", S7xMainPanel)
-    S7xCloseBtn.Size = UDim2.new(0, 30, 0, 40)
-    S7xCloseBtn.Position = UDim2.new(1, -30, 0, 0)
-    S7xCloseBtn.BackgroundTransparency = 1
-    S7xCloseBtn.Text = "X"
-    S7xCloseBtn.TextColor3 = Color3.fromRGB(150, 150, 160)
-    S7xCloseBtn.Font = Enum.Font.GothamBold
-    S7xCloseBtn.MouseButton1Click:Connect(function() S7xMainPanel.Visible = false end)
-    
-    S7xStatusBanner = Instance.new("Frame", S7xMainPanel)
-    S7xStatusBanner.Size = UDim2.new(1, -30, 0, 50)
-    S7xStatusBanner.Position = UDim2.new(0, 15, 0, 40)
-    S7xStatusBanner.BackgroundColor3 = Color3.fromRGB(28, 28, 35)
-    Instance.new("UICorner", S7xStatusBanner).CornerRadius = UDim.new(0, 6)
-    
-    S7xStatusIcon = Instance.new("ImageLabel", S7xStatusBanner)
-    S7xStatusIcon.Size = UDim2.new(0, 20, 0, 25)
-    S7xStatusIcon.Position = UDim2.new(0, 15, 0.5, -12)
-    S7xStatusIcon.BackgroundTransparency = 1
-    S7xStatusIcon.Image = "rbxassetid://10492193235"
-    S7xStatusIcon.ImageColor3 = Color3.fromRGB(255, 68, 68)
-    
-    S7xStatusText = Instance.new("TextLabel", S7xStatusBanner)
-    S7xStatusText.Size = UDim2.new(1, -60, 1, 0)
-    S7xStatusText.Position = UDim2.new(0, 45, 0, 0)
-    S7xStatusText.BackgroundTransparency = 1
-    S7xStatusText.Text = "HOLD TO UNMUTE"
-    S7xStatusText.TextColor3 = Color3.fromRGB(255, 68, 68)
-    S7xStatusText.Font = Enum.Font.GothamBold
-    S7xStatusText.TextSize = 13
-    S7xStatusText.TextXAlignment = Enum.TextXAlignment.Left
-    
-    S7xCreateRow = function(yPos, text)
-        row = Instance.new("TextLabel", S7xMainPanel)
-        row.Size = UDim2.new(1, -30, 0, 30)
-        row.Position = UDim2.new(0, 15, 0, yPos)
-        row.BackgroundTransparency = 1
-        row.Text = text
-        row.TextColor3 = Color3.fromRGB(200, 200, 210)
-        row.Font = Enum.Font.GothamMedium
-        row.TextSize = 12
-        row.TextXAlignment = Enum.TextXAlignment.Left
-        return row
-    end
-    
-    S7xKeyRow = S7xCreateRow(100, "Mute Keybind")
-    S7xKeyBtn = Instance.new("TextButton", S7xKeyRow)
-    S7xKeyBtn.Size = UDim2.new(0, 50, 0, 24)
-    S7xKeyBtn.Position = UDim2.new(1, -80, 0.5, -12)
-    S7xKeyBtn.BackgroundColor3 = Color3.fromRGB(35, 35, 42)
-    S7xKeyBtn.Text = _G.S7xMuteKey.Name
-    S7xKeyBtn.TextColor3 = Color3.fromRGB(170, 0, 255)
-    S7xKeyBtn.Font = Enum.Font.GothamBold
-    Instance.new("UICorner", S7xKeyBtn).CornerRadius = UDim.new(0, 4)
-    Instance.new("UIStroke", S7xKeyBtn).Color = Color3.fromRGB(170, 0, 255)
-    
-    S7xKeyBtn.MouseButton1Click:Connect(function()
-        S7xKeyBtn.Text = "..."
-        _G.S7xBindingKey = true
-    end)
-    
-    S7xCreateToggle = function(yPos, text, defaultState, callback)
-        tRow = S7xCreateRow(yPos, text)
-        tBg = Instance.new("TextButton", tRow)
-        tBg.Size = UDim2.new(0, 40, 0, 20)
-        tBg.Position = UDim2.new(1, -40, 0.5, -10)
-        tBg.BackgroundColor3 = defaultState and Color3.fromRGB(170, 0, 255) or Color3.fromRGB(35, 35, 42)
-        tBg.Text = ""
-        Instance.new("UICorner", tBg).CornerRadius = UDim.new(1, 0)
-        
-        tCirc = Instance.new("Frame", tBg)
-        tCirc.Size = UDim2.new(0, 16, 0, 16)
-        tCirc.Position = defaultState and UDim2.new(1, -18, 0.5, -8) or UDim2.new(0, 2, 0.5, -8)
-        tCirc.BackgroundColor3 = Color3.fromRGB(255, 255, 255)
-        Instance.new("UICorner", tCirc).CornerRadius = UDim.new(1, 0)
-        
-        tBg.MouseButton1Click:Connect(function()
-            newState = not (tBg.BackgroundColor3 == Color3.fromRGB(170, 0, 255))
-            tBg.BackgroundColor3 = newState and Color3.fromRGB(170, 0, 255) or Color3.fromRGB(35, 35, 42)
-            game:GetService("TweenService"):Create(tCirc, TweenInfo.new(0.2), {Position = newState and UDim2.new(1, -18, 0.5, -8) or UDim2.new(0, 2, 0.5, -8)}):Play()
-            callback(newState)
-        end)
-        return tBg
-    end
-    
-    S7xPTTToggle = S7xCreateToggle(135, "Push to Talk (Hold to Speak)", _G.S7xPTT, function(val)
-        _G.S7xPTT = val
-        if val then _G.S7xPTM = false; S7xSetHardwareMute(true) end
-    end)
-    
-    S7xPTMToggle = S7xCreateToggle(170, "Push to Mute (Hold to Mute)", _G.S7xPTM, function(val)
-        _G.S7xPTM = val
-        if val then _G.S7xPTT = false; S7xSetHardwareMute(false) end
-    end)
-    
-    S7xSideWidget = Instance.new("Frame", S7xMuteGui)
-    S7xSideWidget.Size = UDim2.new(0, 180, 0, 40)
-    S7xSideWidget.Position = UDim2.new(0.75, 0, 0.1, 0)
-    S7xSideWidget.BackgroundColor3 = Color3.fromRGB(20, 20, 25)
-    Instance.new("UICorner", S7xSideWidget).CornerRadius = UDim.new(0, 6)
-    Instance.new("UIStroke", S7xSideWidget).Color = Color3.fromRGB(40, 40, 45)
-    
-    S7xSideLine = Instance.new("Frame", S7xSideWidget)
-    S7xSideLine.Size = UDim2.new(0, 3, 0.6, 0)
-    S7xSideLine.Position = UDim2.new(0, 8, 0.2, 0)
-    S7xSideLine.BackgroundColor3 = Color3.fromRGB(255, 68, 68)
-    Instance.new("UICorner", S7xSideLine)
-    
-    S7xSideText = Instance.new("TextLabel", S7xSideWidget)
-    S7xSideText.Size = UDim2.new(1, -25, 1, 0)
-    S7xSideText.Position = UDim2.new(0, 20, 0, 0)
-    S7xSideText.BackgroundTransparency = 1
-    S7xSideText.Text = "SELF MUTED  00:00"
-    S7xSideText.TextColor3 = Color3.fromRGB(240, 240, 240)
-    S7xSideText.Font = Enum.Font.GothamBold
-    S7xSideText.TextSize = 11
-    S7xSideText.TextXAlignment = Enum.TextXAlignment.Left
-    
-    S7xSetHardwareMute(_G.S7xIsMuted)
-end
-
--- 3. MOTOR DE INPUT E TIMER
-if S7xInputConn then S7xInputConn:Disconnect() end
-S7xInputConn = game:GetService("UserInputService").InputBegan:Connect(function(input, gameProcessed)
-    if _G.S7xBindingKey and input.UserInputType == Enum.UserInputType.Keyboard then
-        _G.S7xMuteKey = input.KeyCode
-        if S7xKeyBtn then S7xKeyBtn.Text = _G.S7xMuteKey.Name end
-        _G.S7xBindingKey = false
-        return
-    end
-    
-    if not gameProcessed and input.KeyCode == _G.S7xMuteKey and _G.S7xSelfMuteActive then
-        if _G.S7xPTT then S7xSetHardwareMute(false) end
-        if _G.S7xPTM then S7xSetHardwareMute(true) end
-    end
-end)
-
-if S7xInputUpConn then S7xInputUpConn:Disconnect() end
-S7xInputUpConn = game:GetService("UserInputService").InputEnded:Connect(function(input, gameProcessed)
-    if not gameProcessed and input.KeyCode == _G.S7xMuteKey and _G.S7xSelfMuteActive then
-        if _G.S7xPTT then S7xSetHardwareMute(true) end
-        if _G.S7xPTM then S7xSetHardwareMute(false) end
-    end
-end)
-
-if S7xTimerConn then S7xTimerConn:Disconnect() end
-S7xTimerConn = game:GetService("RunService").Heartbeat:Connect(function(dt)
-    if _G.S7xSelfMuteActive and _G.S7xIsMuted then
-        _G.S7xMuteTimer = _G.S7xMuteTimer + dt
-        if S7xSideText then
-            mins_s7 = math.floor(_G.S7xMuteTimer / 60)
-            secs_s7 = math.floor(_G.S7xMuteTimer % 60)
-            S7xSideText.Text = string.format("SELF MUTED  %02d:%02d", mins_s7, secs_s7)
-        end
-    end
-end)
-
--- 4. BYPASS DE REDE
-pcall(function()
-    if not _G.VCHooked and hookmetamethod then
-        _G.VCHooked = true
-        old_namecall_vc = hookmetamethod(game, "__namecall", function(self, ...)
-            method_vc = getnamecallmethod()
-            if not checkcaller() and _G.S7xSelfMuteActive then
-                if method_vc == "ReportUser" or method_vc == "SendVoiceAnalytics" then return end
-            end
-            return old_namecall_vc(self, ...)
-        end)
-    end
-end)
-
--- 5. ATIVAÇÃO DO BOTÃO PRINCIPAL S7X
-GUI.AntiBanVcBtn.MouseButton1Click:Connect(function()
-    _G.S7xSelfMuteActive = not _G.S7xSelfMuteActive
-    if setToggleState then setToggleState(GUI.AntiBanVcBtn, _G.S7xSelfMuteActive) end
-    
-    if _G.S7xSelfMuteActive then
-        S7xBuildSelfMutePanel()
-        
-        -- FORÇA DE ANIQUILAÇÃO DA UI NATIVA
-        if S7xUIClearConn then S7xUIClearConn:Disconnect() end
-        S7xUIClearConn = game:GetService("RunService").Stepped:Connect(function()
+    if state then
+        _G.S7xStealthLoop = runService_S7.Heartbeat:Connect(function()
             pcall(function()
-                cg_rob = game:GetService("CoreGui"):FindFirstChild("RobloxGui")
-                if cg_rob then
-                    vcState = cg_rob:FindFirstChild("VoiceChatState", true)
-                    if vcState then vcState:Destroy() end
+                local topBar = coreGui_S7:FindFirstChild("TopBarApp", true)
+                if topBar then
+                    local micBtn = topBar:FindFirstChild("toggle_mic_mute", true)
+                    if micBtn then micBtn.Visible = false end
                 end
-                if game.Players.LocalPlayer.Character then
-                    head_vc = game.Players.LocalPlayer.Character:FindFirstChild("Head")
-                    if head_vc then
-                        for _, v in ipairs(head_vc:GetChildren()) do
-                            if v.Name == "VoiceChatPrompt" or v.Name == "VoiceChatBubble" then v:Destroy() end
+
+                local char = game.Players.LocalPlayer.Character
+                if char then
+                    local head = char:FindFirstChild("Head") or char:FindFirstChild("HumanoidRootPart")
+                    if head then
+                        for _, v in ipairs(head:GetChildren()) do
+                            -- A Mágica: Corta a distância de visualização pra 0, mas NÃO desliga nem destrói o VoiceSource!
+                            if v:IsA("BillboardGui") and (v.Name:match("VoiceChat") or v.Name:match("VoiceSource")) then
+                                v.MaxDistance = 0 
+                                v.AlwaysOnTop = false
+                            end
                         end
                     end
                 end
             end)
         end)
     else
-        if S7xUIClearConn then S7xUIClearConn:Disconnect(); S7xUIClearConn = nil end
-        if S7xMuteGui then S7xMuteGui:Destroy(); S7xMuteGui = nil end
-        S7xSetHardwareMute(false)
+        pcall(function()
+            local topBar = coreGui_S7:FindFirstChild("TopBarApp", true)
+            if topBar then
+                local micBtn = topBar:FindFirstChild("toggle_mic_mute", true)
+                if micBtn then micBtn.Visible = true end
+            end
+        end)
+        -- Restaura o hardware
+        pcall(function()
+            for _, obj in pairs(game:GetDescendants()) do
+                if obj:IsA("AudioDeviceInput") then obj.Muted = false end
+            end
+            vcService_S7:SetMicMuted(false)
+        end)
+    end
+end
+
+-- BYPASS DE TELEMETRIA
+pcall(function()
+    if not _G.VCHooked and hookmetamethod then
+        _G.VCHooked = true
+        local old_namecall = hookmetamethod(game, "__namecall", function(self, ...)
+            local method = getnamecallmethod()
+            if not checkcaller() and _G.AntiBanVcEnabled then
+                if method == "ReportUser" or method == "SendVoiceAnalytics" or method == "ReportAbuse" then
+                    return -- Retorna vazio pro servidor, negando a telemetria de voz
+                end
+            end
+            return old_namecall(self, ...)
+        end)
     end
 end)
+
+GUI.AntiBanVcBtn.MouseButton1Click:Connect(function()
+    _G.AntiBanVcEnabled = not _G.AntiBanVcEnabled
+    if setToggleState then setToggleState(GUI.AntiBanVcBtn, _G.AntiBanVcEnabled) end
+    
+    if _G.AntiBanVcEnabled then
+        if type(S7xNotify) == "function" then S7xNotify("VOICE PROTECT", "Camuflagem de API ativada. O Roblox não registrará relatórios.") end
+        BuildM7MicWidget()
+        ToggleStealthMode(true)
+    else
+        if S7xM7MicGui then S7xM7MicGui:Destroy(); S7xM7MicGui = nil end
+        ToggleStealthMode(false)
+    end
+end)
+
 GUI.MainTabFrame.CanvasSize = UDim2.new(0, 0, 0, 500)
 
 -----------------------------------------
@@ -4875,25 +4492,36 @@ task.spawn(function()
 end)
 
 -----------------------------------------
---- CRIAÇÃO DE BOTÕES - MOVIM (CONFIG)
+--- ABA MOVIM (CONFIG) - PREMIUM REDESIGN
+--- Layout Espaçoso (2 Colunas) + Categorias + 0 Locals
 -----------------------------------------
-GUI.ConfigButtonsContainer = Instance.new("Frame", GUI.ConfigFrame)
-GUI.ConfigButtonsContainer.Size = UDim2.new(1, 0, 0, 180)
-GUI.ConfigButtonsContainer.BackgroundTransparency = 1
-GUI.ConfigButtonsContainer.LayoutOrder = 1
-GUI.ConfigGridLayout = addUIGrid(GUI.ConfigButtonsContainer, 0.31)
-GUI.ConfigGridLayout:GetPropertyChangedSignal("AbsoluteContentSize"):Connect(function() GUI.ConfigButtonsContainer.Size = UDim2.new(1, 0, 0, GUI.ConfigGridLayout.AbsoluteContentSize.Y + 10) end)
+-- 1. SESSÃO: MOVEMENT OVERRIDES
+GUI.MovimTitle1 = Instance.new("TextLabel", GUI.ConfigFrame)
+GUI.MovimTitle1.Size = UDim2.new(0.9, 0, 0, 20)
+GUI.MovimTitle1.BackgroundTransparency = 1
+GUI.MovimTitle1.Text = "🚀 MOVEMENT OVERRIDES"
+GUI.MovimTitle1.TextColor3 = Color3.fromRGB(170, 0, 255)
+GUI.MovimTitle1.Font = Enum.Font.GothamBlack
+GUI.MovimTitle1.TextSize = 13
+GUI.MovimTitle1.TextXAlignment = Enum.TextXAlignment.Left
+GUI.MovimTitle1.LayoutOrder = -5
 
-GUI.FlyBtn        = createToggleButton("FLY", GUI.ConfigButtonsContainer)
-GUI.SpeedBtn      = createToggleButton("SPEED", GUI.ConfigButtonsContainer)
-GUI.JumpBtn       = createToggleButton("JUMP", GUI.ConfigButtonsContainer)
-GUI.NoclipBtn     = createToggleButton("NOCLIP", GUI.ConfigButtonsContainer)
-GUI.AntiAfkBtn    = createToggleButton("ANTIAFK", GUI.ConfigButtonsContainer)
-GUI.HitboxBtn     = createToggleButton("HITBOX", GUI.ConfigButtonsContainer)
+GUI.MovimContainer1 = Instance.new("Frame", GUI.ConfigFrame)
+GUI.MovimContainer1.Size = UDim2.new(1, 0, 0, 100)
+GUI.MovimContainer1.BackgroundTransparency = 1
+GUI.MovimContainer1.LayoutOrder = -4
 
-GUI.SaveCheckBtn  = createButton("SAVE CHECKPOINT", GUI.ConfigButtonsContainer)
-GUI.ClearCheckBtn = createButton("CLEAR CHECKPOINT", GUI.ConfigButtonsContainer)
-GUI.RespawnBtn    = createButton("RESPAWN", GUI.ConfigButtonsContainer)
+-- O Segredo: 2 Colunas para dar espaço aos Sliders e Keybinds não se atropelarem!
+GUI.MovimGrid1 = addUIGrid(GUI.MovimContainer1, 0.46)
+GUI.MovimGrid1.CellSize = UDim2.new(0.46, 0, 0, 42) -- Trocado de 36 para 42 de altura (Mais espaço!)
+GUI.MovimGrid1:GetPropertyChangedSignal("AbsoluteContentSize"):Connect(function() 
+    GUI.MovimContainer1.Size = UDim2.new(1, 0, 0, GUI.MovimGrid1.AbsoluteContentSize.Y + 10) 
+end)
+
+GUI.FlyBtn    = createToggleButton("FLY MODE", GUI.MovimContainer1)
+GUI.SpeedBtn  = createToggleButton("WALK SPEED", GUI.MovimContainer1)
+GUI.JumpBtn   = createToggleButton("HIGH JUMP", GUI.MovimContainer1)
+GUI.NoclipBtn = createToggleButton("GHOST NOCLIP", GUI.MovimContainer1)
 
 addKeybindBox(GUI.FlyBtn, "Fly")
 addKeybindBox(GUI.SpeedBtn, "Speed")
@@ -4903,7 +4531,49 @@ addKeybindBox(GUI.NoclipBtn, "Noclip")
 addMiniSlider(GUI.FlyBtn, flySpeedValue, 150, function(val) flySpeedValue = val end)
 addMiniSlider(GUI.SpeedBtn, walkSpeedValue, 150, function(val) walkSpeedValue = val end)
 addMiniSlider(GUI.JumpBtn, jumpPowerValue, 150, function(val) jumpPowerValue = val end)
+
+-- LINHA DIVISÓRIA NEON
+GUI.MovimSep1 = Instance.new("Frame", GUI.ConfigFrame)
+GUI.MovimSep1.Size = UDim2.new(0.85, 0, 0, 2)
+GUI.MovimSep1.BackgroundColor3 = Color3.fromRGB(40, 40, 45)
+GUI.MovimSep1.BorderSizePixel = 0
+GUI.MovimSep1.LayoutOrder = -3
+
+-- 2. SESSÃO: CHARACTER UTILITIES
+GUI.MovimTitle2 = Instance.new("TextLabel", GUI.ConfigFrame)
+GUI.MovimTitle2.Size = UDim2.new(0.9, 0, 0, 20)
+GUI.MovimTitle2.BackgroundTransparency = 1
+GUI.MovimTitle2.Text = "🛠️ CHARACTER UTILITIES"
+GUI.MovimTitle2.TextColor3 = Color3.fromRGB(0, 255, 150)
+GUI.MovimTitle2.Font = Enum.Font.GothamBlack
+GUI.MovimTitle2.TextSize = 13
+GUI.MovimTitle2.TextXAlignment = Enum.TextXAlignment.Left
+GUI.MovimTitle2.LayoutOrder = -2
+
+GUI.MovimContainer2 = Instance.new("Frame", GUI.ConfigFrame)
+GUI.MovimContainer2.Size = UDim2.new(1, 0, 0, 100)
+GUI.MovimContainer2.BackgroundTransparency = 1
+GUI.MovimContainer2.LayoutOrder = -1
+    
+GUI.MovimGrid2 = addUIGrid(GUI.MovimContainer2, 0.46)
+GUI.MovimGrid2.CellSize = UDim2.new(0.46, 0, 0, 42)
+GUI.MovimGrid2:GetPropertyChangedSignal("AbsoluteContentSize"):Connect(function() 
+    GUI.MovimContainer2.Size = UDim2.new(1, 0, 0, GUI.MovimGrid2.AbsoluteContentSize.Y + 10) 
+end)
+
+GUI.HitboxBtn     = createToggleButton("EXPAND HITBOX", GUI.MovimContainer2)
+GUI.AntiAfkBtn    = createToggleButton("ANTI AFK", GUI.MovimContainer2)
+GUI.SaveCheckBtn  = createButton("SAVE CHECKPOINT", GUI.MovimContainer2)
+GUI.ClearCheckBtn = createButton("CLEAR CHECKPOINT", GUI.MovimContainer2)
+GUI.RespawnBtn    = createButton("FORCE RESPAWN", GUI.MovimContainer2)
+GUI.RejoinBtn2    = createButton("REJOIN SERVER", GUI.MovimContainer2) 
+
 addMiniSlider(GUI.HitboxBtn, hitboxSizeValue, 50, function(val) hitboxSizeValue = val end)
+
+GUI.RejoinBtn2.MouseButton1Click:Connect(function()
+    if type(S7xNotify) == "function" then S7xNotify("SERVER ACTION", "Rejoining...") end
+    pcall(function() game:GetService("TeleportService"):TeleportToPlaceInstance(game.PlaceId, game.JobId, game.Players.LocalPlayer) end)
+end)
 
 -----------------------------------------
 --- SISTEMA DE ANIMAÇÕES (PERSISTÊNCIA PRO & CUSTOM IDs)
@@ -5091,6 +4761,7 @@ GUI.AnimationsFrame.CanvasSize = UDim2.new(0, 0, 0, GUI.AnimPresets.Size.Y.Offse
 
 -----------------------------------------
 --- SISTEMA DE ADMINISTRAÇÃO SUPREMA (OWNER/CO-OWNER ONLY)
+--- Painel Profissional com Elite 2D Color Picker e Editor Completo
 -----------------------------------------
 GUI.AdmTitle = Instance.new("TextLabel", GUI.AdminFrame)
 GUI.AdmTitle.Size = UDim2.new(1, 0, 0, 30)
@@ -5114,7 +4785,7 @@ GUI.AdmTargetBox.LayoutOrder = 2
 Instance.new("UICorner", GUI.AdmTargetBox).CornerRadius = UDim.new(0, 6)
 Instance.new("UIStroke", GUI.AdmTargetBox).Color = Color3.fromRGB(255, 50, 50)
 
--- 2. CARTÃO DE IDENTIFICAÇÃO (AVATAR E INFO PREMIUM)
+-- 2. CARTÃO DE IDENTIFICAÇÃO VIP
 GUI.AdmTargetCard = Instance.new("Frame", GUI.AdminFrame)
 GUI.AdmTargetCard.Size = UDim2.new(0.9, 0, 0, 75)
 GUI.AdmTargetCard.BackgroundColor3 = Color3.fromRGB(15, 12, 18)
@@ -5159,7 +4830,6 @@ _G.GetAdminTargetID = function()
     return nil
 end
 
--- O Segredo Profissional: Atualiza a foto e os dados enquanto você digita!
 GUI.AdmTargetBox:GetPropertyChangedSignal("Text"):Connect(function()
     local tId, tPlr = _G.GetAdminTargetID()
     if tId and tPlr then
@@ -5174,14 +4844,14 @@ GUI.AdmTargetBox:GetPropertyChangedSignal("Text"):Connect(function()
     end
 end)
 
--- 3. APPLY RANK E KICK (Lado a lado, organizados)
+-- 3. APPLY RANK E KICK
 GUI.AdmRoleBox = Instance.new("TextBox", GUI.AdminFrame)
 GUI.AdmRoleBox.Size = UDim2.new(0.9, 0, 0, 35)
 GUI.AdmRoleBox.BackgroundColor3 = Color3.fromRGB(20, 18, 25)
 GUI.AdmRoleBox.TextColor3 = Color3.fromRGB(255, 255, 255)
 GUI.AdmRoleBox.Font = Enum.Font.GothamBold
 GUI.AdmRoleBox.TextSize = 11
-GUI.AdmRoleBox.PlaceholderText = "NEW RANK (Owner, Influencer, Mod...)"
+GUI.AdmRoleBox.PlaceholderText = "NEW RANK (Owner, Supreme, Mod...)"
 GUI.AdmRoleBox.Text = ""
 GUI.AdmRoleBox.LayoutOrder = 4
 Instance.new("UICorner", GUI.AdmRoleBox).CornerRadius = UDim.new(0, 6)
@@ -5212,10 +4882,9 @@ GUI.AdmKickBtn.MouseButton1Click:Connect(function()
     if not tId then if type(S7xNotify)=="function" then S7xNotify("ADMIN ERROR", "Player not found!") end return end
     if tPlr then tPlr:Kick("\n\n[ S7xHub Supreme ]\nYou have been kicked by an Owner.") end
     pcall(function()
-        local req = _G.HttpReq or HttpReq
-        if req then
-            req({Url = "https://sx7hub-default-rtdb.firebaseio.com/kicks/"..tId..".json?auth=E5UsTROnWPDksN3L6y3SvqjJMNny7IWeGnuwrKat", Method = "PUT", Body = game:GetService("HttpService"):JSONEncode({kick = true, reason = "Kicked by Owner via S7xHub Panel"})})
-            if type(S7xNotify)=="function" then S7xNotify("ADMIN SUCCESS", "Kick order sent to Database!") end
+        if _G.S7xRequest then
+            _G.S7xRequest("/kicks", "POST", {id = tostring(tId), payload = {kick = true, reason = "Kicked by Owner via S7xHub Panel"}})
+            if type(S7xNotify)=="function" then S7xNotify("ADMIN SUCCESS", "Kick order sent to Supabase!") end
         end
     end)
 end)
@@ -5225,15 +4894,14 @@ GUI.AdmRoleBtn.MouseButton1Click:Connect(function()
     local role = GUI.AdmRoleBox.Text
     if not tId or role == "" then return end
     pcall(function()
-        local req = _G.HttpReq or HttpReq
-        if req then
-            req({Url = "https://sx7hub-default-rtdb.firebaseio.com/user.json?auth=E5UsTROnWPDksN3L6y3SvqjJMNny7IWeGnuwrKat", Method = "PATCH", Body = game:GetService("HttpService"):JSONEncode({[tostring(tId)] = role})})
-            if type(S7xNotify)=="function" then S7xNotify("ADMIN SUCCESS", "Rank applied to user!") end
+        if _G.S7xRequest then
+            _G.S7xRequest("/users", "POST", {id = tostring(tId), role = role})
+            if type(S7xNotify)=="function" then S7xNotify("ADMIN SUCCESS", "Rank applied to Supabase!") end
         end
     end)
 end)
 
--- 4. CUSTOM TAG BUILDER (Color Sliders Embutidos)
+-- 4. CUSTOM TAG BUILDER & ELITE COLOR PICKER
 GUI.AdmCustomTitle = Instance.new("TextLabel", GUI.AdminFrame)
 GUI.AdmCustomTitle.Size = UDim2.new(1, 0, 0, 25)
 GUI.AdmCustomTitle.BackgroundTransparency = 1
@@ -5256,62 +4924,192 @@ Instance.new("UIStroke", GUI.AdmTagName).Color = Color3.fromRGB(0, 255, 150)
 
 _G.AdmColors = {Base = Color3.fromRGB(255,255,255), Stroke = Color3.fromRGB(0,0,0)}
 
--- Gerador de Slider de Cor Arco-Íris
-_G.CreateAdmColorPicker = function(title, colorKey, order)
-    local frame = Instance.new("Frame", GUI.AdminFrame)
-    frame.Size = UDim2.new(0.9, 0, 0, 45)
-    frame.BackgroundColor3 = Color3.fromRGB(20, 20, 23)
-    frame.LayoutOrder = order
-    Instance.new("UICorner", frame).CornerRadius = UDim.new(0, 6)
-    
-    local lbl = Instance.new("TextLabel", frame)
-    lbl.Size = UDim2.new(0.3, 0, 1, 0)
+-- CONSTRUTOR DO COLOR PICKER 2D PROFISSIONAL
+_G.CreateEliteColorPicker = function(title, colorKey, order)
+    local container = Instance.new("Frame", GUI.AdminFrame)
+    container.Size = UDim2.new(0.9, 0, 0, 40)
+    container.BackgroundColor3 = Color3.fromRGB(20, 20, 23)
+    container.LayoutOrder = order
+    Instance.new("UICorner", container).CornerRadius = UDim.new(0, 6)
+    Instance.new("UIStroke", container).Color = Color3.fromRGB(45, 45, 55)
+
+    local lbl = Instance.new("TextLabel", container)
+    lbl.Size = UDim2.new(0.5, 0, 1, 0)
     lbl.Position = UDim2.new(0, 10, 0, 0)
     lbl.BackgroundTransparency = 1
     lbl.Text = title
     lbl.TextColor3 = Color3.fromRGB(200, 200, 200)
     lbl.Font = Enum.Font.GothamBold
-    lbl.TextSize = 10
+    lbl.TextSize = 11
     lbl.TextXAlignment = Enum.TextXAlignment.Left
 
-    local preview = Instance.new("Frame", frame)
-    preview.Size = UDim2.new(0, 20, 0, 20)
-    preview.Position = UDim2.new(0.3, 0, 0.5, -10)
-    preview.BackgroundColor3 = _G.AdmColors[colorKey]
-    Instance.new("UICorner", preview).CornerRadius = UDim.new(1, 0)
-    Instance.new("UIStroke", preview).Color = Color3.fromRGB(255,255,255)
+    local colorDisplayBtn = Instance.new("TextButton", container)
+    colorDisplayBtn.Size = UDim2.new(0, 40, 0, 24)
+    colorDisplayBtn.Position = UDim2.new(1, -50, 0.5, -12)
+    colorDisplayBtn.BackgroundColor3 = _G.AdmColors[colorKey]
+    colorDisplayBtn.Text = ""
+    Instance.new("UICorner", colorDisplayBtn).CornerRadius = UDim.new(0, 4)
+    Instance.new("UIStroke", colorDisplayBtn).Color = Color3.fromRGB(255, 255, 255)
+    
+    local hexLabel = Instance.new("TextLabel", container)
+    hexLabel.Size = UDim2.new(0, 60, 1, 0)
+    hexLabel.Position = UDim2.new(1, -120, 0, 0)
+    hexLabel.BackgroundTransparency = 1
+    hexLabel.Text = "#" .. _G.AdmColors[colorKey]:ToHex()
+    hexLabel.TextColor3 = Color3.fromRGB(150, 150, 150)
+    hexLabel.Font = Enum.Font.GothamMedium
+    hexLabel.TextSize = 11
+    hexLabel.TextXAlignment = Enum.TextXAlignment.Right
 
-    local track = Instance.new("TextButton", frame)
-    track.Size = UDim2.new(0.55, 0, 0, 15)
-    track.Position = UDim2.new(0.4, 0, 0.5, -7.5)
-    track.Text = ""
-    Instance.new("UICorner", track).CornerRadius = UDim.new(1, 0)
+    -- POPUP DO COLOR PICKER 2D (Flutuante na tela central)
+    local pickerPopup = Instance.new("Frame", GUI.ScreenGui) 
+    pickerPopup.Size = UDim2.new(0, 220, 0, 240)
+    pickerPopup.Position = UDim2.new(0.5, 50, 0.5, -120)
+    pickerPopup.BackgroundColor3 = Color3.fromRGB(25, 25, 30)
+    pickerPopup.Visible = false
+    pickerPopup.Active = true
+    pickerPopup.Draggable = true
+    pickerPopup.ZIndex = 100
+    Instance.new("UICorner", pickerPopup).CornerRadius = UDim.new(0, 8)
+    Instance.new("UIStroke", pickerPopup).Color = Color3.fromRGB(170, 0, 255)
+    
+    local currentHue, currentSat, currentVal = 1, 1, 1
 
-    local grad = Instance.new("UIGradient", track)
-    grad.Color = ColorSequence.new({
+    -- SATURATION / VALUE MAP (O Quadrado com degradê branco/preto)
+    local svMap = Instance.new("TextButton", pickerPopup)
+    svMap.Size = UDim2.new(1, -20, 0, 130)
+    svMap.Position = UDim2.new(0, 10, 0, 10)
+    svMap.BackgroundColor3 = Color3.fromHSV(currentHue, 1, 1)
+    svMap.Text = ""
+    svMap.AutoButtonColor = false
+    svMap.ZIndex = 101
+    Instance.new("UICorner", svMap).CornerRadius = UDim.new(0, 4)
+    
+    local svImage = Instance.new("ImageLabel", svMap)
+    svImage.Size = UDim2.new(1, 0, 1, 0)
+    svImage.BackgroundTransparency = 1
+    svImage.Image = "rbxassetid://4155801252" -- Imagem nativa de Color Picker
+    svImage.ZIndex = 102
+    Instance.new("UICorner", svImage).CornerRadius = UDim.new(0, 4)
+
+    local svCursor = Instance.new("Frame", svMap)
+    svCursor.Size = UDim2.new(0, 6, 0, 6)
+    svCursor.AnchorPoint = Vector2.new(0.5, 0.5)
+    svCursor.Position = UDim2.new(1, 0, 0, 0)
+    svCursor.BackgroundColor3 = Color3.fromRGB(255, 255, 255)
+    svCursor.ZIndex = 103
+    Instance.new("UICorner", svCursor).CornerRadius = UDim.new(1, 0)
+    Instance.new("UIStroke", svCursor).Color = Color3.fromRGB(0, 0, 0)
+
+    -- HUE SLIDER (Barra de Arco-Íris)
+    local hueSlider = Instance.new("TextButton", pickerPopup)
+    hueSlider.Size = UDim2.new(1, -20, 0, 15)
+    hueSlider.Position = UDim2.new(0, 10, 0, 150)
+    hueSlider.Text = ""
+    hueSlider.AutoButtonColor = false
+    hueSlider.ZIndex = 101
+    Instance.new("UICorner", hueSlider).CornerRadius = UDim.new(1, 0)
+    
+    local hueGrad = Instance.new("UIGradient", hueSlider)
+    hueGrad.Color = ColorSequence.new({
         ColorSequenceKeypoint.new(0, Color3.fromRGB(255,0,0)), ColorSequenceKeypoint.new(0.16, Color3.fromRGB(255,255,0)),
         ColorSequenceKeypoint.new(0.33, Color3.fromRGB(0,255,0)), ColorSequenceKeypoint.new(0.5, Color3.fromRGB(0,255,255)),
         ColorSequenceKeypoint.new(0.66, Color3.fromRGB(0,0,255)), ColorSequenceKeypoint.new(0.83, Color3.fromRGB(255,0,255)),
         ColorSequenceKeypoint.new(1, Color3.fromRGB(255,0,0))
     })
+    
+    local hueCursor = Instance.new("Frame", hueSlider)
+    hueCursor.Size = UDim2.new(0, 6, 1, 4)
+    hueCursor.Position = UDim2.new(0, -3, 0, -2)
+    hueCursor.BackgroundColor3 = Color3.fromRGB(255, 255, 255)
+    hueCursor.ZIndex = 102
+    Instance.new("UICorner", hueCursor)
+    Instance.new("UIStroke", hueCursor).Color = Color3.fromRGB(0, 0, 0)
 
-    local dragging = false
-    track.MouseButton1Down:Connect(function() dragging = true end)
-    game:GetService("UserInputService").InputEnded:Connect(function(i)
-        if i.UserInputType == Enum.UserInputType.MouseButton1 or i.UserInputType == Enum.UserInputType.Touch then dragging = false end
-    end)
-    game:GetService("RunService").Heartbeat:Connect(function()
-        if dragging then
-            local pct = math.clamp((game:GetService("UserInputService"):GetMouseLocation().X - track.AbsolutePosition.X) / track.AbsoluteSize.X, 0, 1)
-            local newC = Color3.fromHSV(pct, 1, 1)
-            preview.BackgroundColor3 = newC
-            _G.AdmColors[colorKey] = newC
+    -- HEX INPUT
+    local hexBox = Instance.new("TextBox", pickerPopup)
+    hexBox.Size = UDim2.new(1, -20, 0, 30)
+    hexBox.Position = UDim2.new(0, 10, 0, 175)
+    hexBox.BackgroundColor3 = Color3.fromRGB(15, 15, 18)
+    hexBox.TextColor3 = Color3.fromRGB(255, 255, 255)
+    hexBox.Font = Enum.Font.GothamMedium
+    hexBox.TextSize = 12
+    hexBox.Text = "#" .. _G.AdmColors[colorKey]:ToHex()
+    hexBox.ZIndex = 101
+    Instance.new("UICorner", hexBox).CornerRadius = UDim.new(0, 4)
+    Instance.new("UIStroke", hexBox).Color = Color3.fromRGB(45, 45, 55)
+
+    -- CLOSE BTN
+    local closeBtn = Instance.new("TextButton", pickerPopup)
+    closeBtn.Size = UDim2.new(1, -20, 0, 20)
+    closeBtn.Position = UDim2.new(0, 10, 0, 215)
+    closeBtn.BackgroundTransparency = 1
+    closeBtn.Text = "X CLOSE"
+    closeBtn.TextColor3 = Color3.fromRGB(255, 100, 100)
+    closeBtn.Font = Enum.Font.GothamBold
+    closeBtn.TextSize = 11
+    closeBtn.ZIndex = 101
+
+    -- FUNÇÕES DE ATUALIZAÇÃO DO PICKER
+    local function UpdateColor()
+        local c = Color3.fromHSV(currentHue, currentSat, currentVal)
+        _G.AdmColors[colorKey] = c
+        colorDisplayBtn.BackgroundColor3 = c
+        hexLabel.Text = "#" .. c:ToHex()
+        hexBox.Text = "#" .. c:ToHex()
+        svMap.BackgroundColor3 = Color3.fromHSV(currentHue, 1, 1)
+    end
+
+    local isDraggingSV = false
+    local isDraggingHue = false
+    local uis = game:GetService("UserInputService")
+
+    svMap.MouseButton1Down:Connect(function() isDraggingSV = true end)
+    hueSlider.MouseButton1Down:Connect(function() isDraggingHue = true end)
+    
+    uis.InputEnded:Connect(function(i)
+        if i.UserInputType == Enum.UserInputType.MouseButton1 or i.UserInputType == Enum.UserInputType.Touch then
+            isDraggingSV = false
+            isDraggingHue = false
         end
     end)
+
+    game:GetService("RunService").Heartbeat:Connect(function()
+        if isDraggingSV and pickerPopup.Visible then
+            local mousePos = uis:GetMouseLocation()
+            local relX = math.clamp(mousePos.X - svMap.AbsolutePosition.X, 0, svMap.AbsoluteSize.X)
+            local relY = math.clamp(mousePos.Y - svMap.AbsolutePosition.Y - 36, 0, svMap.AbsoluteSize.Y) -- 36px offset do coregui
+            currentSat = relX / svMap.AbsoluteSize.X
+            currentVal = 1 - (relY / svMap.AbsoluteSize.Y)
+            svCursor.Position = UDim2.new(currentSat, 0, 1 - currentVal, 0)
+            UpdateColor()
+        elseif isDraggingHue and pickerPopup.Visible then
+            local mousePos = uis:GetMouseLocation()
+            local relX = math.clamp(mousePos.X - hueSlider.AbsolutePosition.X, 0, hueSlider.AbsoluteSize.X)
+            currentHue = 1 - (relX / hueSlider.AbsoluteSize.X)
+            hueCursor.Position = UDim2.new(relX / hueSlider.AbsoluteSize.X, -3, 0, -2)
+            UpdateColor()
+        end
+    end)
+
+    hexBox.FocusLost:Connect(function()
+        pcall(function()
+            local hx = hexBox.Text:gsub("#", "")
+            local c = Color3.fromHex(hx)
+            local h, s, v = c:ToHSV()
+            currentHue, currentSat, currentVal = h, s, v
+            svCursor.Position = UDim2.new(s, 0, 1 - v, 0)
+            hueCursor.Position = UDim2.new(1 - h, -3, 0, -2)
+            UpdateColor()
+        end)
+    end)
+
+    colorDisplayBtn.MouseButton1Click:Connect(function() pickerPopup.Visible = not pickerPopup.Visible end)
+    closeBtn.MouseButton1Click:Connect(function() pickerPopup.Visible = false end)
 end
 
-_G.CreateAdmColorPicker("BASE COLOR", "Base", 8)
-_G.CreateAdmColorPicker("STROKE COLOR", "Stroke", 9)
+_G.CreateEliteColorPicker("BASE COLOR", "Base", 8)
+_G.CreateEliteColorPicker("STROKE COLOR", "Stroke", 9)
 
 GUI.AdmEffectBox = Instance.new("TextBox", GUI.AdminFrame)
 GUI.AdmEffectBox.Size = UDim2.new(0.9, 0, 0, 35)
@@ -5338,16 +5136,12 @@ GUI.AdmCustomBtn.MouseButton1Click:Connect(function()
     local sHex = "#" .. _G.AdmColors.Stroke:ToHex()
     
     pcall(function()
-        local req = _G.HttpReq or HttpReq
-        if req then
-            req({
-                Url = "https://sx7hub-default-rtdb.firebaseio.com/customTags.json?auth=E5UsTROnWPDksN3L6y3SvqjJMNny7IWeGnuwrKat",
-                Method = "PATCH",
-                Body = game:GetService("HttpService"):JSONEncode({
-                    [tostring(tId)] = { CustomName = name, Color = bHex, StrokeColor = sHex, StrokeTransparency = 0, Effect = eff, IsActive = true, Unlocked = {[name] = true} }
-                })
+        if _G.S7xRequest then
+            _G.S7xRequest("/tags", "POST", {
+                id = tostring(tId), 
+                payload = { CustomName = name, Color = bHex, StrokeColor = sHex, StrokeTransparency = 0, Effect = eff, IsActive = true, Unlocked = {[name] = true} }
             })
-            if type(S7xNotify)=="function" then S7xNotify("ADMIN SUCCESS", "Custom Tag applied to user!") end
+            if type(S7xNotify)=="function" then S7xNotify("ADMIN SUCCESS", "Custom Tag saved to Supabase!") end
         end
     end)
 end)
@@ -5355,79 +5149,105 @@ end)
 GUI.AdminFrame.CanvasSize = UDim2.new(0, 0, 0, 600)
 
 -----------------------------------------
---- LÓGICA DE TARGET (UI E AÇÕES)
+--- SISTEMA MESTRE DE TARGET / SPECTER (ELITE UI)
+--- Design em Cartão Premium + Proteção Anti-Local 200
 -----------------------------------------
-local spectatingPlayer = nil
+_G.S7xSpectatingPlayer = nil
+_G.S7xIsClickSelecting = false
 
+-- ==========================================
+-- 1. CONSTRUÇÃO DO CARTÃO DO ALVO (TARGET CARD)
+-- ==========================================
 GUI.TargetInfoContainer = Instance.new("Frame", GUI.SpecterFrame)
-GUI.TargetInfoContainer.Size = UDim2.new(0.9, 0, 0, 80)
-GUI.TargetInfoContainer.BackgroundTransparency = 1
+GUI.TargetInfoContainer.Size = UDim2.new(0.9, 0, 0, 95)
+GUI.TargetInfoContainer.BackgroundColor3 = Color3.fromRGB(15, 12, 18)
 GUI.TargetInfoContainer.LayoutOrder = 1
+Instance.new("UICorner", GUI.TargetInfoContainer).CornerRadius = UDim.new(0, 8)
+
+S7x_TargetCardStroke = Instance.new("UIStroke", GUI.TargetInfoContainer)
+S7x_TargetCardStroke.Color = Color3.fromRGB(45, 45, 55)
+S7x_TargetCardStroke.Thickness = 1.5
 
 GUI.TargetAvatar = Instance.new("ImageLabel", GUI.TargetInfoContainer)
-GUI.TargetAvatar.Size = UDim2.new(0, 70, 0, 70)
-GUI.TargetAvatar.Position = UDim2.new(0, 0, 0.5, -35)
-GUI.TargetAvatar.BackgroundColor3 = Color3.fromRGB(30, 30, 30)
+GUI.TargetAvatar.Size = UDim2.new(0, 60, 0, 60)
+GUI.TargetAvatar.Position = UDim2.new(0, 15, 0.5, -30)
+GUI.TargetAvatar.BackgroundColor3 = Color3.fromRGB(25, 20, 30)
 GUI.TargetAvatar.Image = ""
-Instance.new("UICorner", GUI.TargetAvatar).CornerRadius = UDim.new(0, 4)
+Instance.new("UICorner", GUI.TargetAvatar).CornerRadius = UDim.new(1, 0)
+Instance.new("UIStroke", GUI.TargetAvatar).Color = Color3.fromRGB(170, 0, 255)
 
 GUI.TargetSearchBox = Instance.new("TextBox", GUI.TargetInfoContainer)
-GUI.TargetSearchBox.Size = UDim2.new(1, -80, 0, 25)
-GUI.TargetSearchBox.Position = UDim2.new(0, 80, 0, 0)
-GUI.TargetSearchBox.BackgroundColor3 = Color3.fromRGB(40, 40, 40)
-GUI.TargetSearchBox.TextColor3 = Color3.fromRGB(200, 200, 200)
-GUI.TargetSearchBox.Font = Enum.Font.GothamSemibold
+GUI.TargetSearchBox.Size = UDim2.new(1, -135, 0, 30)
+GUI.TargetSearchBox.Position = UDim2.new(0, 85, 0, 15)
+GUI.TargetSearchBox.BackgroundColor3 = Color3.fromRGB(25, 20, 30)
+GUI.TargetSearchBox.TextColor3 = Color3.fromRGB(255, 255, 255)
+GUI.TargetSearchBox.Font = Enum.Font.GothamBold
 GUI.TargetSearchBox.TextSize = 11
-GUI.TargetSearchBox.PlaceholderText = "@username..."
+GUI.TargetSearchBox.PlaceholderText = "🔍 SEARCH @USERNAME..."
 GUI.TargetSearchBox.Text = ""
 GUI.TargetSearchBox.ClearTextOnFocus = false
-Instance.new("UICorner", GUI.TargetSearchBox).CornerRadius = UDim.new(0, 4)
+Instance.new("UICorner", GUI.TargetSearchBox).CornerRadius = UDim.new(0, 6)
 Instance.new("UIStroke", GUI.TargetSearchBox).Color = Color3.fromRGB(170, 0, 255)
-
-GUI.TargetDetails = Instance.new("TextLabel", GUI.TargetInfoContainer)
-GUI.TargetDetails.Size = UDim2.new(1, -115, 0, 45)
-GUI.TargetDetails.Position = UDim2.new(0, 80, 0, 30)
-GUI.TargetDetails.BackgroundTransparency = 1
-GUI.TargetDetails.Text = "USERID:\nDISPLAY:\nCREATED:"
-GUI.TargetDetails.TextColor3 = Color3.fromRGB(200, 200, 200)
-GUI.TargetDetails.Font = Enum.Font.GothamSemibold
-GUI.TargetDetails.TextSize = 10
-GUI.TargetDetails.TextXAlignment = Enum.TextXAlignment.Left
-GUI.TargetDetails.TextYAlignment = Enum.TextYAlignment.Top
 
 GUI.ClickSelectBtn = Instance.new("ImageButton", GUI.TargetInfoContainer)
 GUI.ClickSelectBtn.Size = UDim2.new(0, 30, 0, 30)
-GUI.ClickSelectBtn.Position = UDim2.new(1, -30, 0, 40)
-GUI.ClickSelectBtn.BackgroundColor3 = Color3.fromRGB(15, 15, 15)
+GUI.ClickSelectBtn.Position = UDim2.new(1, -40, 0, 15)
+GUI.ClickSelectBtn.BackgroundColor3 = Color3.fromRGB(25, 20, 30)
 GUI.ClickSelectBtn.Image = "rbxassetid://3944676352" 
-Instance.new("UICorner", GUI.ClickSelectBtn).CornerRadius = UDim.new(1, 0)
-Instance.new("UIStroke", GUI.ClickSelectBtn).Color = Color3.fromRGB(170, 0, 255)
+Instance.new("UICorner", GUI.ClickSelectBtn).CornerRadius = UDim.new(0, 6)
+S7x_ClickStroke = Instance.new("UIStroke", GUI.ClickSelectBtn)
+S7x_ClickStroke.Color = Color3.fromRGB(170, 0, 255)
 
-local isClickSelecting = false
+GUI.TargetDetails = Instance.new("TextLabel", GUI.TargetInfoContainer)
+GUI.TargetDetails.Size = UDim2.new(1, -95, 0, 35)
+GUI.TargetDetails.Position = UDim2.new(0, 85, 0, 50)
+GUI.TargetDetails.BackgroundTransparency = 1
+GUI.TargetDetails.Text = "<font color='#787882'>WAITING FOR TARGET...</font>"
+GUI.TargetDetails.TextColor3 = Color3.fromRGB(200, 200, 200)
+GUI.TargetDetails.Font = Enum.Font.GothamMedium
+GUI.TargetDetails.TextSize = 11
+GUI.TargetDetails.TextXAlignment = Enum.TextXAlignment.Left
+GUI.TargetDetails.TextYAlignment = Enum.TextYAlignment.Top
+GUI.TargetDetails.RichText = true
+
+-- ==========================================
+-- 2. LÓGICA DE BUSCA INTELIGENTE E CLIQUE
+-- ==========================================
 GUI.ClickSelectBtn.MouseButton1Click:Connect(function()
-    isClickSelecting = not isClickSelecting
-    GUI.ClickSelectBtn.BackgroundColor3 = isClickSelecting and Color3.fromRGB(60, 60, 60) or Color3.fromRGB(15, 15, 15)
+    _G.S7xIsClickSelecting = not _G.S7xIsClickSelecting
+    pcall(function()
+        game:GetService("TweenService"):Create(GUI.ClickSelectBtn, TweenInfo.new(0.2), {
+            BackgroundColor3 = _G.S7xIsClickSelecting and Color3.fromRGB(170, 0, 255) or Color3.fromRGB(25, 20, 30)
+        }):Play()
+        S7x_ClickStroke.Color = _G.S7xIsClickSelecting and Color3.fromRGB(255, 255, 255) or Color3.fromRGB(170, 0, 255)
+    end)
 end)
 
-local function setSpectateTarget(targetPlayer, updateText)
+S7xSetSpectateTarget = function(targetPlayer, updateText)
     if not targetPlayer then return end
-    spectatingPlayer = targetPlayer
+    _G.S7xSpectatingPlayer = targetPlayer
     if updateText then GUI.TargetSearchBox.Text = "@" .. targetPlayer.Name end
-    local creationDate = "Unknown"
-    pcall(function() creationDate = os.date("%d/%m/%Y", os.time() - (targetPlayer.AccountAge * 86400)) end)
-    GUI.TargetDetails.Text = "USERID: " .. targetPlayer.UserId .. "\nDISPLAY: " .. string_upper(targetPlayer.DisplayName) .. "\nCREATED: " .. creationDate
+    
+    S7x_CreationDate = "Unknown"
+    pcall(function() S7x_CreationDate = os.date("%d/%m/%Y", os.time() - (targetPlayer.AccountAge * 86400)) end)
+    
+    GUI.TargetDetails.Text = string.format("<font color='#aa00ff'><b>ID:</b></font> %d\n<font color='#00ffcc'><b>CREATED:</b></font> %s", targetPlayer.UserId, S7x_CreationDate)
     GUI.TargetAvatar.Image = "rbxthumb://type=AvatarHeadShot&id=" .. targetPlayer.UserId .. "&w=150&h=150"
+    S7x_TargetCardStroke.Color = Color3.fromRGB(0, 255, 150)
 end
 
 mouse.Button1Down:Connect(function()
-    if isClickSelecting then
+    if _G.S7xIsClickSelecting then
         local target = mouse.Target
         if target and target.Parent and target.Parent:FindFirstChild("Humanoid") then
-            local p = Players:GetPlayerFromCharacter(target.Parent)
-            if p and p ~= player then
-                setSpectateTarget(p, true)
-                isClickSelecting = false
-                GUI.ClickSelectBtn.BackgroundColor3 = Color3.fromRGB(15, 15, 15)
+            local p = game:GetService("Players"):GetPlayerFromCharacter(target.Parent)
+            if p and p ~= game.Players.LocalPlayer then
+                S7xSetSpectateTarget(p, true)
+                _G.S7xIsClickSelecting = false
+                pcall(function()
+                    GUI.ClickSelectBtn.BackgroundColor3 = Color3.fromRGB(25, 20, 30)
+                    S7x_ClickStroke.Color = Color3.fromRGB(170, 0, 255)
+                end)
             end
         end
     end
@@ -5435,27 +5255,36 @@ end)
 
 GUI.TargetSearchBox:GetPropertyChangedSignal("Text"):Connect(function()
     if GUI.TargetSearchBox.Text == "" then
-        spectatingPlayer = nil; GUI.TargetDetails.Text = "USERID:\nDISPLAY:\nCREATED:"; GUI.TargetAvatar.Image = ""
+        _G.S7xSpectatingPlayer = nil
+        GUI.TargetDetails.Text = "<font color='#787882'>WAITING FOR TARGET...</font>"
+        GUI.TargetAvatar.Image = ""
+        S7x_TargetCardStroke.Color = Color3.fromRGB(45, 45, 55)
         return
     end
-    local text = string_lower(GUI.TargetSearchBox.Text)
-    if string_sub(text, 1, 1) == "@" then text = string_sub(text, 2) end
+    
+    local text = string.lower(GUI.TargetSearchBox.Text)
+    if string.sub(text, 1, 1) == "@" then text = string.sub(text, 2) end
     if text == "" then return end
-    for _, p in pairs(Players:GetPlayers()) do
-        if p ~= player then
-            local lowerName = string_lower(p.Name)
-            local lowerDisplay = string_lower(p.DisplayName)
-            if string_sub(lowerName, 1, #text) == text or string_sub(lowerDisplay, 1, #text) == text then
-                setSpectateTarget(p, false); break
+    
+    for _, p in pairs(game:GetService("Players"):GetPlayers()) do
+        if p ~= game.Players.LocalPlayer then
+            if string.sub(string.lower(p.Name), 1, #text) == text or string.sub(string.lower(p.DisplayName), 1, #text) == text then
+                S7xSetSpectateTarget(p, false)
+                break
             end
         end
     end
 end)
 
 GUI.TargetSearchBox.FocusLost:Connect(function()
-    if spectatingPlayer and GUI.TargetSearchBox.Text ~= "" then GUI.TargetSearchBox.Text = "@" .. spectatingPlayer.Name end
+    if _G.S7xSpectatingPlayer and GUI.TargetSearchBox.Text ~= "" then 
+        GUI.TargetSearchBox.Text = "@" .. _G.S7xSpectatingPlayer.Name 
+    end
 end)
 
+-- ==========================================
+-- 3. INTERFACE DE BOTÕES E FUNÇÕES DE AÇÃO
+-- ==========================================
 GUI.ButtonsContainer = Instance.new("Frame", GUI.SpecterFrame)
 GUI.ButtonsContainer.Size = UDim2.new(1, 0, 0, 200)
 GUI.ButtonsContainer.BackgroundTransparency = 1
@@ -5470,65 +5299,65 @@ GUI.StandBtn         = createToggleButton("STAND", GUI.ButtonsContainer)
 GUI.BackpackBtn      = createToggleButton("BACKPACK", GUI.ButtonsContainer)
 GUI.DoggyBtn         = createToggleButton("DOGGY", GUI.ButtonsContainer)
 GUI.DragBtn          = createToggleButton("DRAG", GUI.ButtonsContainer)
-GUI.CopyAnimBtn = createToggleButton("AUTO EMOTE", GUI.ButtonsContainer)
+GUI.CopyAnimBtn      = createToggleButton("AUTO EMOTE", GUI.ButtonsContainer)
 
 addKeybindBox(GUI.TargetFlingBtn, "TargetFling")
 
 GUI.WhitelistBtn = createButton("WHITELIST", GUI.ButtonsContainer)
 GUI.TeleportBtn  = createButton("TELEPORT", GUI.ButtonsContainer)
-GUI.CopyIdBtn = createButton("COPY ID", GUI.ButtonsContainer)
+GUI.CopyIdBtn    = createButton("COPY ID", GUI.ButtonsContainer)
 
-GUI.SpecterFrame.CanvasSize = UDim2.new(0, 0, 0, 500)
+GUI.SpecterFrame.CanvasSize = UDim2.new(0, 0, 0, 420)
 
------------------------------------------
---- SISTEMA MESTRE DE AÇÕES (TARGET)
------------------------------------------
-local viewEnabled, viewConn = false, nil
-local currentTargetState, targetAttachConn = nil, nil
-local activeTargetAnim = nil
+-- Variáveis Globais de Ação
+_G.S7xViewEnabled = false
+_G.S7xViewConn = nil
+_G.S7xTargetState = nil
+_G.S7xTargetAttach = nil
+_G.S7xActiveAnim = nil
 _G.S7xWhitelist = _G.S7xWhitelist or {}
 
-local function StopTargetAnim()
-    if activeTargetAnim then activeTargetAnim:Stop(); activeTargetAnim = nil end
+S7xStopTargetAnim = function()
+    if _G.S7xActiveAnim then _G.S7xActiveAnim:Stop(); _G.S7xActiveAnim = nil end
 end
 
-local function PlayTargetAnim(animId)
-    local char = player.Character
+S7xPlayTargetAnim = function(animId)
+    local char = game.Players.LocalPlayer.Character
     local hum = char and char:FindFirstChild("Humanoid")
     if hum then
-        StopTargetAnim()
+        S7xStopTargetAnim()
         pcall(function()
             local anim = Instance.new("Animation")
             anim.AnimationId = "rbxassetid://" .. tostring(animId)
-            activeTargetAnim = hum:LoadAnimation(anim)
-            activeTargetAnim:Play()
+            _G.S7xActiveAnim = hum:LoadAnimation(anim)
+            _G.S7xActiveAnim:Play()
         end)
     end
 end
 
-local function clearTargetState()
-    if targetAttachConn then targetAttachConn:Disconnect(); targetAttachConn = nil end
-    StopTargetAnim()
-    local hum = player.Character and player.Character:FindFirstChild("Humanoid")
+S7xClearTargetState = function()
+    if _G.S7xTargetAttach then _G.S7xTargetAttach:Disconnect(); _G.S7xTargetAttach = nil end
+    S7xStopTargetAnim()
+    local hum = game.Players.LocalPlayer.Character and game.Players.LocalPlayer.Character:FindFirstChild("Humanoid")
     if hum then hum.Sit = false; hum.PlatformStand = false end
     
-    if currentTargetState == "Push" then setToggleState(GUI.PushBtn, false) end
-    if currentTargetState == "Headsit" then setToggleState(GUI.HeadsitBtn, false) end
-    if currentTargetState == "Stand" then setToggleState(GUI.StandBtn, false) end
-    if currentTargetState == "Backpack" then setToggleState(GUI.BackpackBtn, false) end
-    if currentTargetState == "Doggy" then setToggleState(GUI.DoggyBtn, false) end
-    if currentTargetState == "Drag" then setToggleState(GUI.DragBtn, false) end
-    if currentTargetState == "TargetFling" then setToggleState(GUI.TargetFlingBtn, false) end
+    if _G.S7xTargetState == "Push" then setToggleState(GUI.PushBtn, false) end
+    if _G.S7xTargetState == "Headsit" then setToggleState(GUI.HeadsitBtn, false) end
+    if _G.S7xTargetState == "Stand" then setToggleState(GUI.StandBtn, false) end
+    if _G.S7xTargetState == "Backpack" then setToggleState(GUI.BackpackBtn, false) end
+    if _G.S7xTargetState == "Doggy" then setToggleState(GUI.DoggyBtn, false) end
+    if _G.S7xTargetState == "Drag" then setToggleState(GUI.DragBtn, false) end
+    if _G.S7xTargetState == "TargetFling" then setToggleState(GUI.TargetFlingBtn, false) end
     
-    currentTargetState = nil
+    _G.S7xTargetState = nil
 end
 
-local function startTargetAction(actionName, btn, animId, actionLogic)
-    if currentTargetState == actionName then clearTargetState() return end
-    if not spectatingPlayer then return end 
+S7xStartTargetAction = function(actionName, btn, animId, actionLogic)
+    if _G.S7xTargetState == actionName then S7xClearTargetState() return end
+    if not _G.S7xSpectatingPlayer then return end 
     
-    clearTargetState()
-    currentTargetState = actionName
+    S7xClearTargetState()
+    _G.S7xTargetState = actionName
     
     if actionName == "Push" then setToggleState(GUI.PushBtn, true)
     elseif actionName == "Stand" then setToggleState(GUI.StandBtn, true)
@@ -5537,38 +5366,41 @@ local function startTargetAction(actionName, btn, animId, actionLogic)
     elseif actionName == "TargetFling" then setToggleState(GUI.TargetFlingBtn, true)
     end
 
-    if animId then PlayTargetAnim(animId) end
+    if animId then S7xPlayTargetAnim(animId) end
 
-    local myHum = player.Character and player.Character:FindFirstChild("Humanoid")
+    local myHum = game.Players.LocalPlayer.Character and game.Players.LocalPlayer.Character:FindFirstChild("Humanoid")
     if myHum then myHum.PlatformStand = true end
 
-    targetAttachConn = RunService.Stepped:Connect(function()
-        if spectatingPlayer and spectatingPlayer.Character and player.Character then
-            local myHrp = player.Character:FindFirstChild("HumanoidRootPart")
-            if myHrp then actionLogic(myHrp, spectatingPlayer.Character, player.Character) end
+    _G.S7xTargetAttach = game:GetService("RunService").Stepped:Connect(function()
+        if _G.S7xSpectatingPlayer and _G.S7xSpectatingPlayer.Character and game.Players.LocalPlayer.Character then
+            local myHrp = game.Players.LocalPlayer.Character:FindFirstChild("HumanoidRootPart")
+            if myHrp then actionLogic(myHrp, _G.S7xSpectatingPlayer.Character, game.Players.LocalPlayer.Character) end
         end
     end)
 end
 
+-- ==========================================
+-- 4. CONEXÕES DOS BOTÕES (BINDS)
+-- ==========================================
 GUI.ViewBtn.MouseButton1Click:Connect(function()
-    if not spectatingPlayer and not viewEnabled then return end 
-    viewEnabled = not viewEnabled
-    setToggleState(GUI.ViewBtn, viewEnabled)
-    if viewEnabled then
-        viewConn = RunService.Heartbeat:Connect(function()
-            if spectatingPlayer and spectatingPlayer.Character and spectatingPlayer.Character:FindFirstChild("Humanoid") then camera.CameraSubject = spectatingPlayer.Character.Humanoid
-            elseif player.Character and player.Character:FindFirstChild("Humanoid") then camera.CameraSubject = player.Character.Humanoid end
+    if not _G.S7xSpectatingPlayer and not _G.S7xViewEnabled then return end 
+    _G.S7xViewEnabled = not _G.S7xViewEnabled
+    setToggleState(GUI.ViewBtn, _G.S7xViewEnabled)
+    if _G.S7xViewEnabled then
+        _G.S7xViewConn = game:GetService("RunService").Heartbeat:Connect(function()
+            if _G.S7xSpectatingPlayer and _G.S7xSpectatingPlayer.Character and _G.S7xSpectatingPlayer.Character:FindFirstChild("Humanoid") then camera.CameraSubject = _G.S7xSpectatingPlayer.Character.Humanoid
+            elseif game.Players.LocalPlayer.Character and game.Players.LocalPlayer.Character:FindFirstChild("Humanoid") then camera.CameraSubject = game.Players.LocalPlayer.Character.Humanoid end
         end)
     else
-        if viewConn then viewConn:Disconnect() viewConn = nil end
-        if player.Character and player.Character:FindFirstChild("Humanoid") then camera.CameraSubject = player.Character.Humanoid end
+        if _G.S7xViewConn then _G.S7xViewConn:Disconnect() _G.S7xViewConn = nil end
+        if game.Players.LocalPlayer.Character and game.Players.LocalPlayer.Character:FindFirstChild("Humanoid") then camera.CameraSubject = game.Players.LocalPlayer.Character.Humanoid end
     end
 end)
 
 GUI.TeleportBtn.MouseButton1Click:Connect(function()
-    if not spectatingPlayer then return end
-    if spectatingPlayer.Character and spectatingPlayer.Character:FindFirstChild("HumanoidRootPart") and player.Character and player.Character:FindFirstChild("HumanoidRootPart") then
-        player.Character.HumanoidRootPart.CFrame = spectatingPlayer.Character.HumanoidRootPart.CFrame * CFrame.new(0, 0, -3)
+    if not _G.S7xSpectatingPlayer then return end
+    if _G.S7xSpectatingPlayer.Character and _G.S7xSpectatingPlayer.Character:FindFirstChild("HumanoidRootPart") and game.Players.LocalPlayer.Character and game.Players.LocalPlayer.Character:FindFirstChild("HumanoidRootPart") then
+        game.Players.LocalPlayer.Character.HumanoidRootPart.CFrame = _G.S7xSpectatingPlayer.Character.HumanoidRootPart.CFrame * CFrame.new(0, 0, -3)
         local origText = GUI.TeleportBtn.Text
         GUI.TeleportBtn.Text = "TELEPORTED!"
         task.delay(1, function() if GUI.TeleportBtn and GUI.TeleportBtn.Parent then GUI.TeleportBtn.Text = origText end end)
@@ -5576,51 +5408,151 @@ GUI.TeleportBtn.MouseButton1Click:Connect(function()
 end)
 
 GUI.CopyIdBtn.MouseButton1Click:Connect(function()
-    if spectatingPlayer then
-        -- Tenta copiar usando a função padrão de executors
-        s_clip, err_clip = pcall(function() 
-            setclipboard(tostring(spectatingPlayer.UserId)) 
-        end)
-        
-        -- Feedback visual no botão
-        orig_text = GUI.CopyIdBtn.Text
-        if s_clip then
-            GUI.CopyIdBtn.Text = "ID COPIED!"
-        else
-            GUI.CopyIdBtn.Text = "ERROR"
-        end
+    if _G.S7xSpectatingPlayer then
+        local s_clip, err_clip = pcall(function() setclipboard(tostring(_G.S7xSpectatingPlayer.UserId)) end)
+        local orig_text = GUI.CopyIdBtn.Text
+        if s_clip then GUI.CopyIdBtn.Text = "ID COPIED!" else GUI.CopyIdBtn.Text = "ERROR" end
         task.delay(1.5, function() if GUI.CopyIdBtn then GUI.CopyIdBtn.Text = orig_text end end)
     end
 end)
 
--- ==========================================
--- MOTOR DE SINCRONIZAÇÃO DE EMOTES (PRO)
--- ==========================================
-_G.SyncEmoteEnabled = false
-_G.ActiveSyncTracks = {}
+GUI.WhitelistBtn.MouseButton1Click:Connect(function()
+    if not _G.S7xSpectatingPlayer then return end
+    if _G.S7xWhitelist[_G.S7xSpectatingPlayer.UserId] then _G.S7xWhitelist[_G.S7xSpectatingPlayer.UserId] = nil
+    else _G.S7xWhitelist[_G.S7xSpectatingPlayer.UserId] = true end
+    local origText = GUI.WhitelistBtn.Text
+    GUI.WhitelistBtn.Text = _G.S7xWhitelist[_G.S7xSpectatingPlayer.UserId] and "WHITELISTED!" or "REMOVED!"
+    task.delay(1, function() if GUI.WhitelistBtn and GUI.WhitelistBtn.Parent then GUI.WhitelistBtn.Text = origText end end)
+end)
+
+S7xToggleTargetFling = function()
+    if not _G.S7xSpectatingPlayer and _G.S7xTargetState ~= "TargetFling" then return end
+    S7xStartTargetAction("TargetFling", GUI.TargetFlingBtn, nil, function(myHrp, tChar, myChar)
+        local tHrp = tChar:FindFirstChild("HumanoidRootPart")
+        local myHum = myChar:FindFirstChild("Humanoid")
+        if tHrp and myHum then
+            myHum.PlatformStand = true
+            local offset = Vector3.new(math.random(-2,2), math.random(-2,2), math.random(-2,2))
+            myHrp.CFrame = tHrp.CFrame * CFrame.new(offset)
+            myHrp.Velocity = Vector3.new(10000, 10000, 10000)
+            myHrp.RotVelocity = Vector3.new(10000, 10000, 10000)
+        end
+    end)
+end
+GUI.TargetFlingBtn.MouseButton1Click:Connect(S7xToggleTargetFling)
+
+GUI.PushBtn.MouseButton1Click:Connect(function()
+    S7xStartTargetAction("Push", GUI.PushBtn, nil, function(myHrp, tChar)
+        local tHrp = tChar:FindFirstChild("HumanoidRootPart")
+        if tHrp then myHrp.CFrame = tHrp.CFrame * CFrame.new(0, 0, 1); myHrp.Velocity = tHrp.CFrame.LookVector * 1500 + Vector3.new(0, 500, 0) end
+    end)
+end)
+
+GUI.HeadsitBtn.MouseButton1Click:Connect(function()
+    if _G.S7xTargetState == "Headsit" then S7xClearTargetState() return end
+    if not _G.S7xSpectatingPlayer then return end
+    
+    S7xClearTargetState()
+    _G.S7xTargetState = "Headsit"
+    setToggleState(GUI.HeadsitBtn, true)
+
+    task.spawn(function()
+        repeat
+            pcall(function()
+                if _G.S7xSpectatingPlayer and _G.S7xSpectatingPlayer.Character and game.Players.LocalPlayer.Character then
+                    local targethead = _G.S7xSpectatingPlayer.Character:FindFirstChild("Head") or _G.S7xSpectatingPlayer.Character:FindFirstChild("HumanoidRootPart")
+                    local myHrp = game.Players.LocalPlayer.Character:FindFirstChild("HumanoidRootPart")
+                    local myHum = game.Players.LocalPlayer.Character:FindFirstChild("Humanoid")
+                    
+                    if targethead and myHrp and myHum then
+                        myHum.Sit = true
+                        myHrp.CFrame = targethead.CFrame * CFrame.new(0, 2, 0)
+                        myHrp.Velocity = Vector3.new(0, 0, 0)
+                    end
+                end
+            end)
+            task.wait()
+        until _G.S7xTargetState ~= "Headsit"
+    end)
+end)
+
+GUI.StandBtn.MouseButton1Click:Connect(function()
+    S7xStartTargetAction("Stand", GUI.StandBtn, 13823324057, function(myHrp, tChar)
+        local tHrp = tChar:FindFirstChild("HumanoidRootPart")
+        if tHrp then myHrp.CFrame = tHrp.CFrame * CFrame.new(-3,1,0); myHrp.Velocity = tHrp.Velocity end
+    end)
+end)
+
+GUI.BackpackBtn.MouseButton1Click:Connect(function()
+    if _G.S7xTargetState == "Backpack" then S7xClearTargetState() return end
+    if not _G.S7xSpectatingPlayer then return end
+    
+    S7xClearTargetState()
+    _G.S7xTargetState = "Backpack"
+    setToggleState(GUI.BackpackBtn, true)
+
+    task.spawn(function()
+        repeat
+            pcall(function()
+                if _G.S7xSpectatingPlayer and _G.S7xSpectatingPlayer.Character and game.Players.LocalPlayer.Character then
+                    local tRoot = _G.S7xSpectatingPlayer.Character:FindFirstChild("HumanoidRootPart")
+                    local myHrp = game.Players.LocalPlayer.Character:FindFirstChild("HumanoidRootPart")
+                    local myHum = game.Players.LocalPlayer.Character:FindFirstChild("Humanoid")
+                    
+                    if tRoot and myHrp and myHum then
+                        myHum.Sit = true
+                        myHrp.CFrame = tRoot.CFrame * CFrame.new(0, 0, 1.2) * CFrame.Angles(0, -3, 0)
+                        myHrp.Velocity = Vector3.new(0, 0, 0)
+                    end
+                end
+            end)
+            task.wait()
+        until _G.S7xTargetState ~= "Backpack"
+    end)
+end)
+
+GUI.DoggyBtn.MouseButton1Click:Connect(function()
+    S7xStartTargetAction("Doggy", GUI.DoggyBtn, 13694096724, function(myHrp, tChar)
+        local tRoot = tChar:FindFirstChild("LowerTorso") or tChar:FindFirstChild("HumanoidRootPart")
+        local tHrp = tChar:FindFirstChild("HumanoidRootPart")
+        if tRoot then myHrp.CFrame = tRoot.CFrame * CFrame.new(0,0.23,0); myHrp.Velocity = tHrp and tHrp.Velocity or Vector3.zero end
+    end)
+end)
+
+GUI.DragBtn.MouseButton1Click:Connect(function()
+    S7xStartTargetAction("Drag", GUI.DragBtn, 10714360343, function(myHrp, tChar)
+        local tNode = tChar:FindFirstChild("RightHand") or tChar:FindFirstChild("HumanoidRootPart")
+        local tHrp = tChar:FindFirstChild("HumanoidRootPart")
+        if tNode then myHrp.CFrame = tNode.CFrame * CFrame.new(0,-2.5,1) * CFrame.Angles(-2, -3, 0); myHrp.Velocity = tHrp and tHrp.Velocity or Vector3.zero end
+    end)
+end)
+
+-----------------------------------------
+-- MODO DE SINCRONIZAÇÃO DE EMOTE
+-----------------------------------------
+_G.S7xSyncEmoteEnabled = false
+_G.S7xActiveSyncTracks = {}
 
 GUI.CopyAnimBtn.MouseButton1Click:Connect(function()
-    _G.SyncEmoteEnabled = not _G.SyncEmoteEnabled
-    pcall(function() if setToggleState then setToggleState(GUI.CopyAnimBtn, _G.SyncEmoteEnabled) end end)
+    _G.S7xSyncEmoteEnabled = not _G.S7xSyncEmoteEnabled
+    pcall(function() if setToggleState then setToggleState(GUI.CopyAnimBtn, _G.S7xSyncEmoteEnabled) end end)
     
-    -- Limpa as animações se desligar a opção
-    if not _G.SyncEmoteEnabled then
-        for id, track in pairs(_G.ActiveSyncTracks) do
+    if not _G.S7xSyncEmoteEnabled then
+        for id, track in pairs(_G.S7xActiveSyncTracks) do
             if track then track:Stop() end
         end
-        _G.ActiveSyncTracks = {}
+        _G.S7xActiveSyncTracks = {}
     end
 end)
 
--- Loop de Monitoramento Furtivo (Alta Frequência)
 task.spawn(function()
     while task.wait(0.1) do
-        if _G.SyncEmoteEnabled and spectatingPlayer and spectatingPlayer.Character then -- Usa a variável de alvo do hub [cite: 534]
+        if _G.S7xSyncEmoteEnabled and _G.S7xSpectatingPlayer and _G.S7xSpectatingPlayer.Character then
             pcall(function()
                 local myChar = game.Players.LocalPlayer.Character
                 local myAnim = myChar and myChar:FindFirstChildOfClass("Humanoid") and myChar.Humanoid:FindFirstChildOfClass("Animator")
                 
-                local tChar = spectatingPlayer.Character
+                local tChar = _G.S7xSpectatingPlayer.Character
                 local tAnim = tChar and tChar:FindFirstChildOfClass("Humanoid") and tChar.Humanoid:FindFirstChildOfClass("Animator")
                 
                 if myAnim and tAnim then
@@ -5632,27 +5564,24 @@ task.spawn(function()
                             local id = track.Animation.AnimationId
                             currentlyPlaying[id] = true
                             
-                            -- Sincroniza apenas se for uma nova animação de ação/emote
-                            if not _G.ActiveSyncTracks[id] then
-                                -- Filtro Profissional: Ignora animações de movimento (andar/correr)
+                            if not _G.S7xActiveSyncTracks[id] then
                                 if track.Priority == Enum.AnimationPriority.Action or track.Priority == Enum.AnimationPriority.Action2 or track.Priority == Enum.AnimationPriority.Action3 then
                                     local newAnim = Instance.new("Animation")
                                     newAnim.AnimationId = id
                                     local newTrack = myAnim:LoadAnimation(newAnim)
                                     newTrack.Priority = track.Priority
                                     newTrack:Play()
-                                    newTrack:AdjustSpeed(track.Speed) -- Sincroniza a velocidade exata
-                                    _G.ActiveSyncTracks[id] = newTrack
+                                    newTrack:AdjustSpeed(track.Speed)
+                                    _G.S7xActiveSyncTracks[id] = newTrack
                                 end
                             end
                         end
                     end
                     
-                    -- Para as nossas tracks se o alvo parar de fazer o emote
-                    for id, myTrack in pairs(_G.ActiveSyncTracks) do
+                    for id, myTrack in pairs(_G.S7xActiveSyncTracks) do
                         if not currentlyPlaying[id] then
                             myTrack:Stop()
-                            _G.ActiveSyncTracks[id] = nil
+                            _G.S7xActiveSyncTracks[id] = nil
                         end
                     end
                 end
@@ -6624,7 +6553,7 @@ GUI.SpamBtn.MouseButton1Click:Connect(toggleSpam)
 
 -----------------------------------------
 --- SISTEMA DE ESP SUPREMO (ARQUITETURA C++ E ZERO LAG REAL)
---- Separação de Lógica e Renderização para 0% de uso de CPU
+--- Separação de Lógica e Renderização para 0% de uso de CPU + IN-GAME ADMIN DEEP SCANNER
 -----------------------------------------
 local espEnabled = false
 local espFolder = Instance.new("Folder", GUI.ScreenGui)
@@ -6635,10 +6564,9 @@ local roleCache = {}
 local Players = game:GetService("Players")
 local LocalPlayer = Players.LocalPlayer
 
--- Motor de Busca de Cargos Isolado (Assíncrono)
+-- Motor de Busca de Cargos Isolado (Mantém o Grupo Oficial S7x)
 local function fetchPlayerRole(plr)
     if roleCache[plr.UserId] then return end
-    
     roleCache[plr.UserId] = {role = "Loading...", color = Color3.fromRGB(255, 255, 255), hex = "#FFFFFF"}
     
     task.spawn(function()
@@ -6667,7 +6595,90 @@ local function fetchPlayerRole(plr)
     end)
 end
 
--- Pre-carrega os cargos 
+-- DEEP SCANNER CIRÚRGICO DE ADMINS NATIVOS DO JOGO (V2 - ATTRIBUTES & FOLDERS)
+local function ScanInGamePermissions(plr)
+    -- 1. É o Criador Oficial do Jogo? (Ameaça Máxima)
+    if plr.UserId == game.CreatorId then 
+        return "GAME OWNER", "#FF0000", Color3.fromRGB(255, 0, 0) 
+    end
+    
+    -- 2. Times Nativos do Roblox (Ex: Team "Admins", "Staff")
+    if plr.Team then
+        local tName = string.lower(plr.Team.Name)
+        if string.find(tName, "admin") or string.find(tName, "mod") or string.find(tName, "staff") or string.find(tName, "owner") or string.find(tName, "dev") or string.find(tName, "creator") then
+            return string.upper(plr.Team.Name), "#FF3333", Color3.fromRGB(255, 50, 50)
+        end
+    end
+
+    -- 3. NOVA CAMADA: Caçador de Atributos (Permissões modernas invisíveis)
+    local attributes = plr:GetAttributes()
+    for attrName, attrValue in pairs(attributes) do
+        local n = string.lower(attrName)
+        local v = string.lower(tostring(attrValue))
+        if string.find(n, "admin") or string.find(n, "role") or string.find(n, "rank") or string.find(n, "permission") or string.find(n, "staff") then
+            -- Se o atributo der cargo de admin ou for um booleano "true" de admin
+            if string.find(v, "admin") or string.find(v, "mod") or string.find(v, "owner") or string.find(v, "special") or (type(attrValue) == "boolean" and attrValue == true) then
+                return "HIDDEN ADMIN", "#FF3333", Color3.fromRGB(255, 50, 50)
+            end
+        end
+    end
+
+    -- 4. Varredura Profunda Clássica (Pastas, Admin_Roles e HD Admin)
+    local function deepScanValues(parent)
+        if not parent then return nil end
+        for _, obj in ipairs(parent:GetChildren()) do
+            -- Procura pastas literalmente chamadas "Admin_Roles", "AdminLevel", etc
+            local objName = string.lower(obj.Name)
+            if string.find(objName, "admin") and (string.find(objName, "role") or string.find(objName, "level") or string.find(objName, "perm")) then
+                return "ADMIN_ROLE DETECTED", "#FF3333", Color3.fromRGB(255, 50, 50)
+            end
+
+            -- Procura os valores de cargo
+            if obj:IsA("StringValue") or obj:IsA("IntValue") or obj:IsA("NumberValue") then
+                local name = string.lower(obj.Name)
+                local val = string.lower(tostring(obj.Value))
+                
+                if string.find(name, "rank") or string.find(name, "role") or string.find(name, "admin") or string.find(name, "permission") or string.find(name, "level") then
+                    if string.find(val, "admin") or string.find(val, "mod") or string.find(val, "owner") or string.find(val, "creator") or string.find(val, "vip") or string.find(val, "staff") or (tonumber(val) and tonumber(val) >= 2) then
+                        return string.upper(tostring(obj.Value)), "#FFaa00", Color3.fromRGB(255, 170, 0)
+                    end
+                end
+            end
+        end
+        return nil
+    end
+
+    local adminTag, hex, c3 = deepScanValues(plr)
+    if adminTag then return adminTag, hex, c3 end
+    
+    local ls = plr:FindFirstChild("leaderstats")
+    if ls then
+        adminTag, hex, c3 = deepScanValues(ls)
+        if adminTag then return adminTag, hex, c3 end
+    end
+    
+    -- 5. Fallback Visual: Scanner de Placas na Cabeça
+    if plr.Character then
+        local head = plr.Character:FindFirstChild("Head") or plr.Character:FindFirstChild("HumanoidRootPart")
+        if head then
+            for _, obj in ipairs(head:GetDescendants()) do
+                if obj:IsA("TextLabel") and obj.Text ~= "" and obj.Text ~= plr.DisplayName and obj.Text ~= plr.Name then
+                    if not obj:FindFirstAncestor("S7x_ProTag") and not obj:FindFirstAncestor("S7x_ESP_Folder") then
+                        local txt = string.lower(obj.Text)
+                        if string.find(txt, "admin") or string.find(txt, "mod") or string.find(txt, "staff") or string.find(txt, "dev") or string.find(txt, "owner") or string.find(txt, "creator") then
+                            local cleanText = string.gsub(obj.Text, "\n", " ")
+                            return cleanText, "#FFaa00", Color3.fromRGB(255, 170, 0)
+                        end
+                    end
+                end
+            end
+        end
+    end
+    
+    return nil, nil, nil
+end
+
+-- Pre-carrega os cargos da Nuvem
 for _, p in ipairs(Players:GetPlayers()) do
     if p ~= LocalPlayer then fetchPlayerRole(p) end
 end
@@ -6693,7 +6704,7 @@ local function toggleEsp()
 end
 GUI.EspBtn.MouseButton1Click:Connect(toggleEsp)
 
--- A MÁGICA DA OTIMIZAÇÃO: Usamos um loop de 10 FPS (0.1s) em vez de RenderStepped
+-- A MÁGICA DA OTIMIZAÇÃO: Loop de 10 FPS (0.1s) em vez de RenderStepped
 task.spawn(function()
     while task.wait(0.1) do
         if not espEnabled then continue end
@@ -6711,7 +6722,7 @@ task.spawn(function()
                 if char and head and hrp and hum and hum.Health > 0 then
                     local b = espFolder:FindFirstChild(v.Name)
                     
-                    -- Cria o HUD se não existir
+                    -- Cria o HUD se não existir (IDÊNTICO AO ORIGINAL)
                     if not b then
                         b = Instance.new("BillboardGui", espFolder)
                         b.Name = v.Name
@@ -6758,27 +6769,40 @@ task.spawn(function()
                         lbl.TextYAlignment = Enum.TextYAlignment.Top
                     end
                     
-                    -- Adornee atualiza nativamente o Tracking de câmera na Engine C++
                     if b.Adornee ~= head then b.Adornee = head end
                     
-                    -- Atualiza a Matemática do Texto de forma leve
                     local pData = roleCache[v.UserId] or {role = "User", color = Color3.fromRGB(255,255,255), hex = "#FFFFFF"}
-                    
+                    local displayRole = pData.role
+                    local displayHex = pData.hex
+                    local displayColor = pData.color
+
+                    -- === DEEP SCAN ATIVADO ===
+                    -- Só sobrescreve se o jogador NÃO for da sua equipe S7xHub (Owner, Supreme, etc)
+                    if displayRole == "User" or displayRole == "Loading..." then
+                        local igName, igHex, igColor = ScanInGamePermissions(v)
+                        if igName then
+                            displayRole = igName
+                            displayHex = igHex
+                            displayColor = igColor
+                        end
+                    end
+
                     local btnAvatar = b:FindFirstChild("AvatarBtn")
                     local stroke = btnAvatar and btnAvatar:FindFirstChild("Stroke")
                     local lbl = b:FindFirstChild("L")
                     
                     if btnAvatar and stroke and lbl then
-                        if stroke.Color ~= pData.color then stroke.Color = pData.color end
+                        if stroke.Color ~= displayColor then stroke.Color = displayColor end
                         
                         local dist = 0
                         if myHrp then dist = math.floor((myHrp.Position - hrp.Position).Magnitude) end
                         
                         local roleText = ""
-                        if pData.role ~= "User" and pData.role ~= "Loading..." then
-                            roleText = "\n<font color='"..pData.hex.."'>[" .. string.upper(pData.role) .. "]</font>"
+                        if displayRole ~= "User" and displayRole ~= "Loading..." then
+                            roleText = "\n<font color='"..displayHex.."'>[" .. string.upper(displayRole) .. "]</font>"
                         end
                         
+                        -- Texto e formatação intocados!
                         lbl.Text = string.format("<font color='#ffffff'>%s</font>\n<font size='10' color='#aaaaaa'>@%s</font>%s\n<font color='#00ffcc'>%dm</font>", v.DisplayName, v.Name, roleText, dist)
                     end
                 else
