@@ -733,7 +733,6 @@ GUI.PlayerInfoPanel.Position = UDim2.new(0.5, 100, 0.5, -225)
 GUI.PlayerInfoPanel.BackgroundColor3 = Color3.fromRGB(16, 16, 20)
 GUI.PlayerInfoPanel.Visible = false
 GUI.PlayerInfoPanel.Active = true
-GUI.PlayerInfoPanel.Draggable = true
 Instance.new("UICorner", GUI.PlayerInfoPanel).CornerRadius = UDim.new(0, 8)
 local PIPStroke = Instance.new("UIStroke", GUI.PlayerInfoPanel)
 PIPStroke.Color = Color3.fromRGB(170, 0, 255)
@@ -1433,7 +1432,6 @@ GUI.MainFrame.Size = UDim2.new(0, 530, 0, 480)
 GUI.MainFrame.Position = UDim2.new(0.5, -290, 0.5, -265) 
 
 GUI.MainFrame.Active = true
-GUI.MainFrame.Draggable = true 
 GUI.MainFrame.ClipsDescendants = false
 
 local MainCorner = Instance.new("UICorner", GUI.MainFrame)
@@ -3509,7 +3507,6 @@ BuildM7MicWidget = function()
     S7xMicFrame.Position = UDim2.new(0.5, -70, 0.85, 0)
     S7xMicFrame.BackgroundColor3 = Color3.fromRGB(15, 15, 18)
     S7xMicFrame.Active = true
-    S7xMicFrame.Draggable = true
     Instance.new("UICorner", S7xMicFrame).CornerRadius = UDim.new(0, 8)
     
     S7xMicStroke = Instance.new("UIStroke", S7xMicFrame)
@@ -3712,7 +3709,6 @@ GUI.FloatPBtn.Font = Enum.Font.GothamBold
 GUI.FloatPBtn.TextSize = 11
 GUI.FloatPBtn.Visible = false
 GUI.FloatPBtn.Active = true
-GUI.FloatPBtn.Draggable = true
 Instance.new("UICorner", GUI.FloatPBtn).CornerRadius = UDim.new(1, 0)
 Instance.new("UIStroke", GUI.FloatPBtn).Color = Color3.fromRGB(255, 255, 255)
 
@@ -4278,7 +4274,6 @@ GUI.AutoFishBtn.MouseButton1Click:Connect(function()
         main.Position = UDim2.new(0.5, -140, 0.5, -240)
         main.BackgroundColor3 = Color3.fromRGB(20, 20, 25)
         main.Active = true 
-        main.Draggable = true 
         Instance.new("UICorner", main).CornerRadius = UDim.new(0, 12)
         Instance.new("UIStroke", main).Color = Color3.fromRGB(170, 0, 255)
 
@@ -4384,7 +4379,6 @@ task.spawn(function()
     S7xSpyUI_Panel.BackgroundTransparency = 0.1
     S7xSpyUI_Panel.Visible = false
     S7xSpyUI_Panel.Active = true
-    S7xSpyUI_Panel.Draggable = true 
     Instance.new("UICorner", S7xSpyUI_Panel).CornerRadius = UDim.new(0, 6)
     
     local strk_spy = Instance.new("UIStroke", S7xSpyUI_Panel)
@@ -5003,7 +4997,6 @@ _G.CreateEliteColorPicker = function(title, colorKey, order)
     pickerPopup.BackgroundColor3 = Color3.fromRGB(25, 25, 30)
     pickerPopup.Visible = false
     pickerPopup.Active = true
-    pickerPopup.Draggable = true
     pickerPopup.ZIndex = 100
     Instance.new("UICorner", pickerPopup).CornerRadius = UDim.new(0, 8)
     Instance.new("UIStroke", pickerPopup).Color = Color3.fromRGB(170, 0, 255)
@@ -6838,7 +6831,6 @@ GUI.StatusHUD.Position = UDim2.new(0.8, -170, 0.4, 0)
 GUI.StatusHUD.BackgroundColor3 = Color3.fromRGB(12, 12, 14)
 GUI.StatusHUD.BackgroundTransparency = 0.2
 GUI.StatusHUD.Active = true
-GUI.StatusHUD.Draggable = true
 GUI.StatusHUD.Visible = false
 Instance.new("UICorner", GUI.StatusHUD).CornerRadius = UDim.new(0, 6)
 local statusStroke = Instance.new("UIStroke", GUI.StatusHUD)
