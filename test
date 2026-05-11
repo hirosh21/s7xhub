@@ -3507,28 +3507,6 @@ end)
 
 GUI.MainTabFrame.CanvasSize = UDim2.new(0, 0, 0, 500)
 
------------------------------------------
---- CRIAÇÃO DE BOTÕES - FUNCTIONS
------------------------------------------
-GUI.EspBtn        = createToggleButton("ESP", GUI.FuncoesFrame)
-GUI.RejoinBtn = createButton("REJOIN", GUI.FuncoesFrame)
-GUI.AntiAdmBtn    = createToggleButton("ANTIADM", GUI.FuncoesFrame)
-GUI.AntiRagdollBtn= createToggleButton("ANTIRAGDOLL", GUI.FuncoesFrame)
-GUI.PotionFlingBtn= createToggleButton("POTIONFLING", GUI.FuncoesFrame)
-GUI.SpamMinesBtn  = createToggleButton("SPAMMINES", GUI.FuncoesFrame)
-GUI.PotionBtn     = createToggleButton("POTION", GUI.FuncoesFrame)
-GUI.VoidProtectBtn= createToggleButton("VOIDPROTECT", GUI.FuncoesFrame)
-
-
-GUI.BreakCannonsBtn=createButton("BREAKCANNONS", GUI.FuncoesFrame)
-GUI.ChatAlertBtn  = createButton("CHATALERT", GUI.FuncoesFrame)
-GUI.MinefieldTPBtn= createButton("MINEFIELD TP", GUI.FuncoesFrame)
-GUI.BalloonTPBtn  = createButton("BALLOON TP", GUI.FuncoesFrame)
-GUI.StairsTPBtn   = createButton("STAIRS TP", GUI.FuncoesFrame)
-
-addKeybindBox(GUI.EspBtn, "Esp")
-GUI.FuncoesFrame.CanvasSize = UDim2.new(0, 0, 0, 500)
-
 
 -----------------------------------------
 --- CRIAÇÃO DE BOTÕES - ULTIMATE
