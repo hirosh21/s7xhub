@@ -4991,67 +4991,58 @@ end)
 GUI.AdminFrame.CanvasSize = UDim2.new(0, 0, 0, 600)
 
 -----------------------------------------
---- LÓGICA DE TARGET (UI E AÇÕES) - DESIGN MAGNÍFICO E TRACKING AVANÇADO
+--- LÓGICA DE TARGET (UI E AÇÕES)
 -----------------------------------------
 local spectatingPlayer = nil
 
 GUI.TargetInfoContainer = Instance.new("Frame", GUI.SpecterFrame)
-GUI.TargetInfoContainer.Size = UDim2.new(0.9, 0, 0, 100)
-GUI.TargetInfoContainer.Position = UDim2.new(0.05, 0, 0, 0)
-GUI.TargetInfoContainer.BackgroundColor3 = Color3.fromRGB(20, 20, 25)
+GUI.TargetInfoContainer.Size = UDim2.new(0.9, 0, 0, 80)
+GUI.TargetInfoContainer.BackgroundTransparency = 1
 GUI.TargetInfoContainer.LayoutOrder = 1
-Instance.new("UICorner", GUI.TargetInfoContainer).CornerRadius = UDim.new(0, 8)
-Instance.new("UIStroke", GUI.TargetInfoContainer).Color = Color3.fromRGB(170, 0, 255)
 
 GUI.TargetAvatar = Instance.new("ImageLabel", GUI.TargetInfoContainer)
 GUI.TargetAvatar.Size = UDim2.new(0, 70, 0, 70)
-GUI.TargetAvatar.Position = UDim2.new(0.05, 0, 0.5, -35)
-GUI.TargetAvatar.BackgroundColor3 = Color3.fromRGB(15, 12, 18)
+GUI.TargetAvatar.Position = UDim2.new(0, 0, 0.5, -35)
+GUI.TargetAvatar.BackgroundColor3 = Color3.fromRGB(30, 30, 30)
 GUI.TargetAvatar.Image = ""
-Instance.new("UICorner", GUI.TargetAvatar).CornerRadius = UDim.new(1, 0)
-GUI.TargetAvStroke = Instance.new("UIStroke", GUI.TargetAvatar)
-GUI.TargetAvStroke.Color = Color3.fromRGB(80, 40, 120)
-GUI.TargetAvStroke.Thickness = 2
+Instance.new("UICorner", GUI.TargetAvatar).CornerRadius = UDim.new(0, 4)
 
 GUI.TargetSearchBox = Instance.new("TextBox", GUI.TargetInfoContainer)
-GUI.TargetSearchBox.Size = UDim2.new(0.65, 0, 0, 28)
-GUI.TargetSearchBox.Position = UDim2.new(0.3, 0, 0.1, 0)
-GUI.TargetSearchBox.BackgroundColor3 = Color3.fromRGB(15, 12, 18)
-GUI.TargetSearchBox.TextColor3 = Color3.fromRGB(255, 255, 255)
-GUI.TargetSearchBox.Font = Enum.Font.GothamBold
+GUI.TargetSearchBox.Size = UDim2.new(1, -80, 0, 25)
+GUI.TargetSearchBox.Position = UDim2.new(0, 80, 0, 0)
+GUI.TargetSearchBox.BackgroundColor3 = Color3.fromRGB(40, 40, 40)
+GUI.TargetSearchBox.TextColor3 = Color3.fromRGB(200, 200, 200)
+GUI.TargetSearchBox.Font = Enum.Font.GothamSemibold
 GUI.TargetSearchBox.TextSize = 11
-GUI.TargetSearchBox.PlaceholderText = "SEARCH @USERNAME..."
+GUI.TargetSearchBox.PlaceholderText = "@username..."
 GUI.TargetSearchBox.Text = ""
 GUI.TargetSearchBox.ClearTextOnFocus = false
 Instance.new("UICorner", GUI.TargetSearchBox).CornerRadius = UDim.new(0, 4)
 Instance.new("UIStroke", GUI.TargetSearchBox).Color = Color3.fromRGB(170, 0, 255)
 
 GUI.TargetDetails = Instance.new("TextLabel", GUI.TargetInfoContainer)
-GUI.TargetDetails.Size = UDim2.new(0.65, 0, 0, 45)
-GUI.TargetDetails.Position = UDim2.new(0.3, 0, 0.45, 0)
+GUI.TargetDetails.Size = UDim2.new(1, -115, 0, 45)
+GUI.TargetDetails.Position = UDim2.new(0, 80, 0, 30)
 GUI.TargetDetails.BackgroundTransparency = 1
-GUI.TargetDetails.Text = "<font color='#787882'>WAITING FOR TARGET...</font>"
+GUI.TargetDetails.Text = "USERID:\nDISPLAY:\nCREATED:"
 GUI.TargetDetails.TextColor3 = Color3.fromRGB(200, 200, 200)
-GUI.TargetDetails.Font = Enum.Font.GothamMedium
-GUI.TargetDetails.TextSize = 11
+GUI.TargetDetails.Font = Enum.Font.GothamSemibold
+GUI.TargetDetails.TextSize = 10
 GUI.TargetDetails.TextXAlignment = Enum.TextXAlignment.Left
 GUI.TargetDetails.TextYAlignment = Enum.TextYAlignment.Top
-GUI.TargetDetails.RichText = true
 
 GUI.ClickSelectBtn = Instance.new("ImageButton", GUI.TargetInfoContainer)
-GUI.ClickSelectBtn.Size = UDim2.new(0, 28, 0, 28)
-GUI.ClickSelectBtn.Position = UDim2.new(0.96, -28, 0.1, 0)
-GUI.ClickSelectBtn.BackgroundColor3 = Color3.fromRGB(30, 25, 40)
+GUI.ClickSelectBtn.Size = UDim2.new(0, 30, 0, 30)
+GUI.ClickSelectBtn.Position = UDim2.new(1, -30, 0, 40)
+GUI.ClickSelectBtn.BackgroundColor3 = Color3.fromRGB(15, 15, 15)
 GUI.ClickSelectBtn.Image = "rbxassetid://3944676352" 
-Instance.new("UICorner", GUI.ClickSelectBtn).CornerRadius = UDim.new(0, 4)
+Instance.new("UICorner", GUI.ClickSelectBtn).CornerRadius = UDim.new(1, 0)
 Instance.new("UIStroke", GUI.ClickSelectBtn).Color = Color3.fromRGB(170, 0, 255)
 
 local isClickSelecting = false
 GUI.ClickSelectBtn.MouseButton1Click:Connect(function()
     isClickSelecting = not isClickSelecting
-    pcall(function()
-        game:GetService("TweenService"):Create(GUI.ClickSelectBtn, TweenInfo.new(0.3), {BackgroundColor3 = isClickSelecting and Color3.fromRGB(170, 0, 255) or Color3.fromRGB(30, 25, 40)}):Play()
-    end)
+    GUI.ClickSelectBtn.BackgroundColor3 = isClickSelecting and Color3.fromRGB(60, 60, 60) or Color3.fromRGB(15, 15, 15)
 end)
 
 local function setSpectateTarget(targetPlayer, updateText)
@@ -5060,10 +5051,8 @@ local function setSpectateTarget(targetPlayer, updateText)
     if updateText then GUI.TargetSearchBox.Text = "@" .. targetPlayer.Name end
     local creationDate = "Unknown"
     pcall(function() creationDate = os.date("%d/%m/%Y", os.time() - (targetPlayer.AccountAge * 86400)) end)
-    
-    GUI.TargetDetails.Text = string.format("<font color='#ffffff'><b>%s</b></font>\n<font color='#aa00ff'>ID:</font> %d\n<font color='#aa00ff'>CREATED:</font> %s", string_upper(targetPlayer.DisplayName), targetPlayer.UserId, creationDate)
+    GUI.TargetDetails.Text = "USERID: " .. targetPlayer.UserId .. "\nDISPLAY: " .. string_upper(targetPlayer.DisplayName) .. "\nCREATED: " .. creationDate
     GUI.TargetAvatar.Image = "rbxthumb://type=AvatarHeadShot&id=" .. targetPlayer.UserId .. "&w=150&h=150"
-    GUI.TargetAvStroke.Color = Color3.fromRGB(0, 255, 150)
 end
 
 mouse.Button1Down:Connect(function()
@@ -5074,7 +5063,7 @@ mouse.Button1Down:Connect(function()
             if p and p ~= player then
                 setSpectateTarget(p, true)
                 isClickSelecting = false
-                GUI.ClickSelectBtn.BackgroundColor3 = Color3.fromRGB(30, 25, 40)
+                GUI.ClickSelectBtn.BackgroundColor3 = Color3.fromRGB(15, 15, 15)
             end
         end
     end
@@ -5082,10 +5071,7 @@ end)
 
 GUI.TargetSearchBox:GetPropertyChangedSignal("Text"):Connect(function()
     if GUI.TargetSearchBox.Text == "" then
-        spectatingPlayer = nil
-        GUI.TargetDetails.Text = "<font color='#787882'>WAITING FOR TARGET...</font>"
-        GUI.TargetAvatar.Image = ""
-        GUI.TargetAvStroke.Color = Color3.fromRGB(80, 40, 120)
+        spectatingPlayer = nil; GUI.TargetDetails.Text = "USERID:\nDISPLAY:\nCREATED:"; GUI.TargetAvatar.Image = ""
         return
     end
     local text = string_lower(GUI.TargetSearchBox.Text)
@@ -5096,8 +5082,7 @@ GUI.TargetSearchBox:GetPropertyChangedSignal("Text"):Connect(function()
             local lowerName = string_lower(p.Name)
             local lowerDisplay = string_lower(p.DisplayName)
             if string_sub(lowerName, 1, #text) == text or string_sub(lowerDisplay, 1, #text) == text then
-                setSpectateTarget(p, false)
-                break
+                setSpectateTarget(p, false); break
             end
         end
     end
@@ -5121,18 +5106,18 @@ GUI.StandBtn         = createToggleButton("STAND", GUI.ButtonsContainer)
 GUI.BackpackBtn      = createToggleButton("BACKPACK", GUI.ButtonsContainer)
 GUI.DoggyBtn         = createToggleButton("DOGGY", GUI.ButtonsContainer)
 GUI.DragBtn          = createToggleButton("DRAG", GUI.ButtonsContainer)
-GUI.CopyAnimBtn      = createToggleButton("AUTO EMOTE", GUI.ButtonsContainer)
+GUI.CopyAnimBtn = createToggleButton("AUTO EMOTE", GUI.ButtonsContainer)
 
 addKeybindBox(GUI.TargetFlingBtn, "TargetFling")
 
 GUI.WhitelistBtn = createButton("WHITELIST", GUI.ButtonsContainer)
 GUI.TeleportBtn  = createButton("TELEPORT", GUI.ButtonsContainer)
-GUI.CopyIdBtn    = createButton("COPY ID", GUI.ButtonsContainer)
+GUI.CopyIdBtn = createButton("COPY ID", GUI.ButtonsContainer)
 
 GUI.SpecterFrame.CanvasSize = UDim2.new(0, 0, 0, 500)
 
 -----------------------------------------
---- SISTEMA MESTRE DE AÇÕES (TARGET) - OFF-MAP LOCATOR PRO
+--- SISTEMA MESTRE DE AÇÕES (TARGET)
 -----------------------------------------
 local viewEnabled, viewConn = false, nil
 local currentTargetState, targetAttachConn = nil, nil
@@ -5194,11 +5179,9 @@ local function startTargetAction(actionName, btn, animId, actionLogic)
     if myHum then myHum.PlatformStand = true end
 
     targetAttachConn = RunService.Stepped:Connect(function()
-        -- BUSCA AVANÇADA (Mesmo se cair do mapa ou respawnar)
-        local tChar = spectatingPlayer and (spectatingPlayer.Character or workspace:FindFirstChild(spectatingPlayer.Name))
-        if tChar and player.Character then
+        if spectatingPlayer and spectatingPlayer.Character and player.Character then
             local myHrp = player.Character:FindFirstChild("HumanoidRootPart")
-            if myHrp then actionLogic(myHrp, tChar, player.Character) end
+            if myHrp then actionLogic(myHrp, spectatingPlayer.Character, player.Character) end
         end
     end)
 end
@@ -5209,15 +5192,8 @@ GUI.ViewBtn.MouseButton1Click:Connect(function()
     setToggleState(GUI.ViewBtn, viewEnabled)
     if viewEnabled then
         viewConn = RunService.Heartbeat:Connect(function()
-            -- BUSCA AVANÇADA PARA CÂMERA (Impede a câmera de quebrar se o player cair no void)
-            local tChar = spectatingPlayer and (spectatingPlayer.Character or workspace:FindFirstChild(spectatingPlayer.Name))
-            local tSubject = tChar and (tChar:FindFirstChild("Humanoid") or tChar:FindFirstChild("Head") or tChar:FindFirstChildWhichIsA("BasePart"))
-            
-            if tSubject then 
-                camera.CameraSubject = tSubject
-            elseif player.Character and player.Character:FindFirstChild("Humanoid") then 
-                camera.CameraSubject = player.Character.Humanoid 
-            end
+            if spectatingPlayer and spectatingPlayer.Character and spectatingPlayer.Character:FindFirstChild("Humanoid") then camera.CameraSubject = spectatingPlayer.Character.Humanoid
+            elseif player.Character and player.Character:FindFirstChild("Humanoid") then camera.CameraSubject = player.Character.Humanoid end
         end)
     else
         if viewConn then viewConn:Disconnect() viewConn = nil end
@@ -5227,11 +5203,8 @@ end)
 
 GUI.TeleportBtn.MouseButton1Click:Connect(function()
     if not spectatingPlayer then return end
-    local tChar = spectatingPlayer.Character or workspace:FindFirstChild(spectatingPlayer.Name)
-    local tRoot = tChar and (tChar:FindFirstChild("HumanoidRootPart") or tChar:FindFirstChild("Head") or tChar:FindFirstChildWhichIsA("BasePart"))
-    
-    if tRoot and player.Character and player.Character:FindFirstChild("HumanoidRootPart") then
-        player.Character.HumanoidRootPart.CFrame = tRoot.CFrame * CFrame.new(0, 0, -3)
+    if spectatingPlayer.Character and spectatingPlayer.Character:FindFirstChild("HumanoidRootPart") and player.Character and player.Character:FindFirstChild("HumanoidRootPart") then
+        player.Character.HumanoidRootPart.CFrame = spectatingPlayer.Character.HumanoidRootPart.CFrame * CFrame.new(0, 0, -3)
         local origText = GUI.TeleportBtn.Text
         GUI.TeleportBtn.Text = "TELEPORTED!"
         task.delay(1, function() if GUI.TeleportBtn and GUI.TeleportBtn.Parent then GUI.TeleportBtn.Text = origText end end)
@@ -5240,9 +5213,18 @@ end)
 
 GUI.CopyIdBtn.MouseButton1Click:Connect(function()
     if spectatingPlayer then
-        local s_clip, err_clip = pcall(function() setclipboard(tostring(spectatingPlayer.UserId)) end)
-        local orig_text = GUI.CopyIdBtn.Text
-        GUI.CopyIdBtn.Text = s_clip and "ID COPIED!" or "ERROR"
+        -- Tenta copiar usando a função padrão de executors
+        s_clip, err_clip = pcall(function() 
+            setclipboard(tostring(spectatingPlayer.UserId)) 
+        end)
+        
+        -- Feedback visual no botão
+        orig_text = GUI.CopyIdBtn.Text
+        if s_clip then
+            GUI.CopyIdBtn.Text = "ID COPIED!"
+        else
+            GUI.CopyIdBtn.Text = "ERROR"
+        end
         task.delay(1.5, function() if GUI.CopyIdBtn then GUI.CopyIdBtn.Text = orig_text end end)
     end
 end)
@@ -5257,6 +5239,7 @@ GUI.CopyAnimBtn.MouseButton1Click:Connect(function()
     _G.SyncEmoteEnabled = not _G.SyncEmoteEnabled
     pcall(function() if setToggleState then setToggleState(GUI.CopyAnimBtn, _G.SyncEmoteEnabled) end end)
     
+    -- Limpa as animações se desligar a opção
     if not _G.SyncEmoteEnabled then
         for id, track in pairs(_G.ActiveSyncTracks) do
             if track then track:Stop() end
@@ -5265,48 +5248,51 @@ GUI.CopyAnimBtn.MouseButton1Click:Connect(function()
     end
 end)
 
+-- Loop de Monitoramento Furtivo (Alta Frequência)
 task.spawn(function()
     while task.wait(0.1) do
-        if _G.SyncEmoteEnabled and spectatingPlayer then 
-            local tChar = spectatingPlayer.Character or workspace:FindFirstChild(spectatingPlayer.Name)
-            if tChar then
-                pcall(function()
-                    local myChar = game.Players.LocalPlayer.Character
-                    local myAnim = myChar and myChar:FindFirstChildOfClass("Humanoid") and myChar.Humanoid:FindFirstChildOfClass("Animator")
-                    local tAnim = tChar:FindFirstChildOfClass("Humanoid") and tChar.Humanoid:FindFirstChildOfClass("Animator")
+        if _G.SyncEmoteEnabled and spectatingPlayer and spectatingPlayer.Character then -- Usa a variável de alvo do hub [cite: 534]
+            pcall(function()
+                local myChar = game.Players.LocalPlayer.Character
+                local myAnim = myChar and myChar:FindFirstChildOfClass("Humanoid") and myChar.Humanoid:FindFirstChildOfClass("Animator")
+                
+                local tChar = spectatingPlayer.Character
+                local tAnim = tChar and tChar:FindFirstChildOfClass("Humanoid") and tChar.Humanoid:FindFirstChildOfClass("Animator")
+                
+                if myAnim and tAnim then
+                    local tTracks = tAnim:GetPlayingAnimationTracks()
+                    local currentlyPlaying = {}
                     
-                    if myAnim and tAnim then
-                        local tTracks = tAnim:GetPlayingAnimationTracks()
-                        local currentlyPlaying = {}
-                        
-                        for _, track in ipairs(tTracks) do
-                            if track.Animation and track.Animation.AnimationId then
-                                local id = track.Animation.AnimationId
-                                currentlyPlaying[id] = true
-                                
-                                if not _G.ActiveSyncTracks[id] then
-                                    if track.Priority == Enum.AnimationPriority.Action or track.Priority == Enum.AnimationPriority.Action2 or track.Priority == Enum.AnimationPriority.Action3 then
-                                        local newAnim = Instance.new("Animation")
-                                        newAnim.AnimationId = id
-                                        local newTrack = myAnim:LoadAnimation(newAnim)
-                                        newTrack.Priority = track.Priority
-                                        newTrack:Play()
-                                        newTrack:AdjustSpeed(track.Speed)
-                                        _G.ActiveSyncTracks[id] = newTrack
-                                    end
+                    for _, track in ipairs(tTracks) do
+                        if track.Animation and track.Animation.AnimationId then
+                            local id = track.Animation.AnimationId
+                            currentlyPlaying[id] = true
+                            
+                            -- Sincroniza apenas se for uma nova animação de ação/emote
+                            if not _G.ActiveSyncTracks[id] then
+                                -- Filtro Profissional: Ignora animações de movimento (andar/correr)
+                                if track.Priority == Enum.AnimationPriority.Action or track.Priority == Enum.AnimationPriority.Action2 or track.Priority == Enum.AnimationPriority.Action3 then
+                                    local newAnim = Instance.new("Animation")
+                                    newAnim.AnimationId = id
+                                    local newTrack = myAnim:LoadAnimation(newAnim)
+                                    newTrack.Priority = track.Priority
+                                    newTrack:Play()
+                                    newTrack:AdjustSpeed(track.Speed) -- Sincroniza a velocidade exata
+                                    _G.ActiveSyncTracks[id] = newTrack
                                 end
                             end
                         end
-                        
-                        for id, myTrack in pairs(_G.ActiveSyncTracks) do
-                            if not currentlyPlaying[id] then
-                                myTrack:Stop()
-                                _G.ActiveSyncTracks[id] = nil
-                            end
+                    end
+                    
+                    -- Para as nossas tracks se o alvo parar de fazer o emote
+                    for id, myTrack in pairs(_G.ActiveSyncTracks) do
+                        if not currentlyPlaying[id] then
+                            myTrack:Stop()
+                            _G.ActiveSyncTracks[id] = nil
                         end
                     end
-                end)
-            end
+                end
+            end)
         end
     end
 end)
@@ -5323,7 +5309,7 @@ end)
 local function toggleTargetFling()
     if not spectatingPlayer and currentTargetState ~= "TargetFling" then return end
     startTargetAction("TargetFling", GUI.TargetFlingBtn, nil, function(myHrp, tChar, myChar)
-        local tHrp = tChar:FindFirstChild("HumanoidRootPart") or tChar:FindFirstChild("Head") or tChar:FindFirstChildWhichIsA("BasePart")
+        local tHrp = tChar:FindFirstChild("HumanoidRootPart")
         local myHum = myChar:FindFirstChild("Humanoid")
         if tHrp and myHum then
             myHum.PlatformStand = true
@@ -5338,7 +5324,7 @@ GUI.TargetFlingBtn.MouseButton1Click:Connect(toggleTargetFling)
 
 GUI.PushBtn.MouseButton1Click:Connect(function()
     startTargetAction("Push", GUI.PushBtn, nil, function(myHrp, tChar)
-        local tHrp = tChar:FindFirstChild("HumanoidRootPart") or tChar:FindFirstChild("Head") or tChar:FindFirstChildWhichIsA("BasePart")
+        local tHrp = tChar:FindFirstChild("HumanoidRootPart")
         if tHrp then myHrp.CFrame = tHrp.CFrame * CFrame.new(0, 0, 1); myHrp.Velocity = tHrp.CFrame.LookVector * 1500 + Vector3.new(0, 500, 0) end
     end)
 end)
@@ -5354,9 +5340,8 @@ GUI.HeadsitBtn.MouseButton1Click:Connect(function()
     task.spawn(function()
         repeat
             pcall(function()
-                local tChar = spectatingPlayer and (spectatingPlayer.Character or workspace:FindFirstChild(spectatingPlayer.Name))
-                if tChar and player.Character then
-                    local targethead = tChar:FindFirstChild("Head") or tChar:FindFirstChild("HumanoidRootPart") or tChar:FindFirstChildWhichIsA("BasePart")
+                if spectatingPlayer and spectatingPlayer.Character and player.Character then
+                    local targethead = spectatingPlayer.Character:FindFirstChild("Head") or spectatingPlayer.Character:FindFirstChild("HumanoidRootPart")
                     local myHrp = player.Character:FindFirstChild("HumanoidRootPart")
                     local myHum = player.Character:FindFirstChild("Humanoid")
                     
@@ -5374,8 +5359,8 @@ end)
 
 GUI.StandBtn.MouseButton1Click:Connect(function()
     startTargetAction("Stand", GUI.StandBtn, 13823324057, function(myHrp, tChar)
-        local tHrp = tChar:FindFirstChild("HumanoidRootPart") or tChar:FindFirstChild("Head") or tChar:FindFirstChildWhichIsA("BasePart")
-        if tHrp then myHrp.CFrame = tHrp.CFrame * CFrame.new(-3,1,0); myHrp.Velocity = tHrp.Velocity or Vector3.zero end
+        local tHrp = tChar:FindFirstChild("HumanoidRootPart")
+        if tHrp then myHrp.CFrame = tHrp.CFrame * CFrame.new(-3,1,0); myHrp.Velocity = tHrp.Velocity end
     end)
 end)
 
@@ -5390,9 +5375,8 @@ GUI.BackpackBtn.MouseButton1Click:Connect(function()
     task.spawn(function()
         repeat
             pcall(function()
-                local tChar = spectatingPlayer and (spectatingPlayer.Character or workspace:FindFirstChild(spectatingPlayer.Name))
-                if tChar and player.Character then
-                    local tRoot = tChar:FindFirstChild("HumanoidRootPart") or tChar:FindFirstChild("Torso") or tChar:FindFirstChild("UpperTorso") or tChar:FindFirstChild("Head")
+                if spectatingPlayer and spectatingPlayer.Character and player.Character then
+                    local tRoot = spectatingPlayer.Character:FindFirstChild("HumanoidRootPart")
                     local myHrp = player.Character:FindFirstChild("HumanoidRootPart")
                     local myHum = player.Character:FindFirstChild("Humanoid")
                     
@@ -5410,16 +5394,16 @@ end)
 
 GUI.DoggyBtn.MouseButton1Click:Connect(function()
     startTargetAction("Doggy", GUI.DoggyBtn, 13694096724, function(myHrp, tChar)
-        local tRoot = tChar:FindFirstChild("LowerTorso") or tChar:FindFirstChild("HumanoidRootPart") or tChar:FindFirstChild("Head") or tChar:FindFirstChildWhichIsA("BasePart")
-        local tHrp = tChar:FindFirstChild("HumanoidRootPart") or tRoot
+        local tRoot = tChar:FindFirstChild("LowerTorso") or tChar:FindFirstChild("HumanoidRootPart")
+        local tHrp = tChar:FindFirstChild("HumanoidRootPart")
         if tRoot then myHrp.CFrame = tRoot.CFrame * CFrame.new(0,0.23,0); myHrp.Velocity = tHrp and tHrp.Velocity or Vector3.zero end
     end)
 end)
 
 GUI.DragBtn.MouseButton1Click:Connect(function()
     startTargetAction("Drag", GUI.DragBtn, 10714360343, function(myHrp, tChar)
-        local tNode = tChar:FindFirstChild("RightHand") or tChar:FindFirstChild("HumanoidRootPart") or tChar:FindFirstChild("Head") or tChar:FindFirstChildWhichIsA("BasePart")
-        local tHrp = tChar:FindFirstChild("HumanoidRootPart") or tNode
+        local tNode = tChar:FindFirstChild("RightHand") or tChar:FindFirstChild("HumanoidRootPart")
+        local tHrp = tChar:FindFirstChild("HumanoidRootPart")
         if tNode then myHrp.CFrame = tNode.CFrame * CFrame.new(0,-2.5,1) * CFrame.Angles(-2, -3, 0); myHrp.Velocity = tHrp and tHrp.Velocity or Vector3.zero end
     end)
 end)
