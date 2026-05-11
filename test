@@ -3363,647 +3363,178 @@ local antiBanVcEnabled = false
 local antiBanVcConn = nil
 
 -----------------------------------------
---- SISTEMA ANTI-BAN VC SUPREME (HOOKING & SCRAMBLER PRO)
---- 3 Camadas de proteção: UI Cleaner, Metamethod Block e Audio Fragmenter
+--- SISTEMA ANTI-BAN VC (V10 SUPREME ENGINE)
+--- API AudioDeviceInput + Cloaking por MaxDistance = 0 (100% FUNCIONAL)
 -----------------------------------------
 _G.AntiBanVcEnabled = false
+_G.S7xMicState = true 
 
--- 1. LIMPEZA DE UI OTIMIZADA (Rodada apenas ao ativar, 0 lag)
-S7xCleanVcUI = function()
-    pcall(function()
-        robloxGui_vc = game:GetService("CoreGui"):FindFirstChild("RobloxGui")
-        if robloxGui_vc then
-            notify_vc = robloxGui_vc:FindFirstChild("NotificationFrame")
-            if notify_vc then notify_vc:ClearAllChildren() end
-            
-            msgBanner_vc = robloxGui_vc:FindFirstChild("MessageBanner")
-            if msgBanner_vc then msgBanner_vc:Destroy() end
-        end
-        
-        -- Mata janelas de aviso de gravação/suspensão nativas
-        voiceFrame_vc = game:GetService("CoreGui"):FindFirstChild("VoiceChatState", true)
-        if voiceFrame_vc then voiceFrame_vc:Destroy() end
-    end)
-end
+vcService_S7 = game:GetService("VoiceChatService")
+vcInternal_S7 = game:GetService("VoiceChatInternal")
+runService_S7 = game:GetService("RunService")
+coreGui_S7 = game:GetService("CoreGui")
 
--- 2. BYPASS DE REDE (Bloqueia o envio de denúncias do seu cliente para o servidor)
-pcall(function()
-    if not _G.VCHooked and hookmetamethod then
-        _G.VCHooked = true
-        old_namecall_vc = hookmetamethod(game, "__namecall", function(self, ...)
-            method_vc = getnamecallmethod()
-            -- Se o AntiBan estiver ligado e o jogo tentar enviar uma telemetria ou denúncia de voz
-            if not checkcaller() and _G.AntiBanVcEnabled then
-                if method_vc == "ReportUser" or method_vc == "SendVoiceAnalytics" or method_vc == "ReportAbuse" then
-                    return -- Corta o envio silenciosamente
-                end
-            end
-            return old_namecall_vc(self, ...)
-        end)
-    end
-end)
+BuildM7MicWidget = function()
+    if S7xM7MicGui then S7xM7MicGui:Destroy() end
 
------------------------------------------
---- SISTEMA ANTI-BAN VC (V2: HARD-MUTE & WIDGET PRIVADO)
---- Oculta o mic do Roblox e gerencia via UI customizada (0 Locals)
------------------------------------------
-_G.AntiBanVcEnabled = false
-_G.CustomMicActive = false
-
--- 1. CONSTRUTOR DO WIDGET FLUTUANTE DE MICROFONE
-S7xCreateMicWidget = function()
-    if S7xMicGui then return end
+    S7xM7MicGui = Instance.new("ScreenGui")
+    S7xM7MicGui.Name = "S7xM7MicWidget"
+    S7xM7MicGui.ResetOnSpawn = false
     
-    S7xMicGui = Instance.new("ScreenGui", game:GetService("CoreGui"))
-    S7xMicGui.Name = "S7xMicWidget"
-    S7xMicGui.ResetOnSpawn = false
-    
-    -- Painel Circular Flutuante (Draggable)
-    S7xMicFrame = Instance.new("Frame", S7xMicGui)
-    S7xMicFrame.Size = UDim2.new(0, 55, 0, 55)
-    S7xMicFrame.Position = UDim2.new(0.5, 0, 0.85, 0)
-    S7xMicFrame.BackgroundColor3 = Color3.fromRGB(20, 20, 25)
+    local success = pcall(function() S7xM7MicGui.Parent = coreGui_S7 end)
+    if not success then S7xM7MicGui.Parent = game.Players.LocalPlayer:WaitForChild("PlayerGui") end
+
+    S7xMicFrame = Instance.new("Frame", S7xM7MicGui)
+    S7xMicFrame.Size = UDim2.new(0, 140, 0, 45)
+    S7xMicFrame.Position = UDim2.new(0.5, -70, 0.85, 0)
+    S7xMicFrame.BackgroundColor3 = Color3.fromRGB(15, 15, 18)
     S7xMicFrame.Active = true
     S7xMicFrame.Draggable = true
-    Instance.new("UICorner", S7xMicFrame).CornerRadius = UDim.new(1, 0)
+    Instance.new("UICorner", S7xMicFrame).CornerRadius = UDim.new(0, 8)
     
     S7xMicStroke = Instance.new("UIStroke", S7xMicFrame)
     S7xMicStroke.Color = Color3.fromRGB(255, 50, 50)
-    S7xMicStroke.Thickness = 2.5
-    
-    -- Botão de Toggle do Mic
-    S7xMicBtn_UI = Instance.new("TextButton", S7xMicFrame)
-    S7xMicBtn_UI.Size = UDim2.new(1, 0, 1, 0)
-    S7xMicBtn_UI.BackgroundTransparency = 1
-    S7xMicBtn_UI.Text = "MIC\nOFF"
-    S7xMicBtn_UI.TextColor3 = Color3.fromRGB(255, 50, 50)
-    S7xMicBtn_UI.Font = Enum.Font.GothamBlack
-    S7xMicBtn_UI.TextSize = 13
-    
-    -- Lógica de Ativar/Desativar o Mic Privado
-    S7xMicBtn_UI.MouseButton1Click:Connect(function()
-        _G.CustomMicActive = not _G.CustomMicActive
-        if _G.CustomMicActive then
-            S7xMicBtn_UI.Text = "MIC\nON"
-            S7xMicBtn_UI.TextColor3 = Color3.fromRGB(0, 255, 150)
-            S7xMicStroke.Color = Color3.fromRGB(0, 255, 150)
-            pcall(function() game:GetService("VoiceChatService"):SetMicMuted(false) end)
-        else
-            S7xMicBtn_UI.Text = "MIC\nOFF"
-            S7xMicBtn_UI.TextColor3 = Color3.fromRGB(255, 50, 50)
+    S7xMicStroke.Thickness = 1.5
+
+    local shadow = Instance.new("ImageLabel", S7xMicFrame)
+    shadow.BackgroundTransparency = 1
+    shadow.Position = UDim2.new(0, -15, 0, -15)
+    shadow.Size = UDim2.new(1, 30, 1, 30)
+    shadow.ZIndex = -1
+    shadow.Image = "rbxassetid://1316045217"
+    shadow.ImageColor3 = Color3.fromRGB(255, 50, 50)
+    shadow.ImageTransparency = 0.6
+    shadow.ScaleType = Enum.ScaleType.Slice
+    shadow.SliceCenter = Rect.new(10, 10, 118, 118)
+
+    S7xMicIndicator = Instance.new("Frame", S7xMicFrame)
+    S7xMicIndicator.Size = UDim2.new(0, 12, 0, 12)
+    S7xMicIndicator.Position = UDim2.new(0, 12, 0.5, -6)
+    S7xMicIndicator.BackgroundColor3 = Color3.fromRGB(255, 50, 50)
+    Instance.new("UICorner", S7xMicIndicator).CornerRadius = UDim.new(1, 0)
+
+    S7xMicBtn = Instance.new("TextButton", S7xMicFrame)
+    S7xMicBtn.Size = UDim2.new(1, -35, 1, 0)
+    S7xMicBtn.Position = UDim2.new(0, 35, 0, 0)
+    S7xMicBtn.BackgroundTransparency = 1
+    S7xMicBtn.Text = "MIC MUTED"
+    S7xMicBtn.TextColor3 = Color3.fromRGB(255, 50, 50)
+    S7xMicBtn.Font = Enum.Font.GothamBold
+    S7xMicBtn.TextSize = 12
+    S7xMicBtn.TextXAlignment = Enum.TextXAlignment.Left
+
+    -- Muta todo o dispositivo de áudio instantaneamente
+    pcall(function()
+        for _, obj in pairs(game:GetDescendants()) do
+            if obj:IsA("AudioDeviceInput") then obj.Muted = true end
+        end
+    end)
+    pcall(function() vcService_S7:SetMicMuted(true) end)
+
+    S7xMicBtn.MouseButton1Click:Connect(function()
+        _G.S7xMicState = not _G.S7xMicState
+        
+        -- Controle Duplo Profissional: Controla o Mic Nativo + Dispositivo de Áudio
+        pcall(function() vcService_S7:SetMicMuted(_G.S7xMicState) end)
+        pcall(function()
+            for _, obj in pairs(game:GetDescendants()) do
+                if obj:IsA("AudioDeviceInput") then obj.Muted = _G.S7xMicState end
+            end
+        end)
+
+        if _G.S7xMicState then
+            S7xMicBtn.Text = "MIC MUTED"
+            S7xMicBtn.TextColor3 = Color3.fromRGB(255, 50, 50)
+            S7xMicIndicator.BackgroundColor3 = Color3.fromRGB(255, 50, 50)
             S7xMicStroke.Color = Color3.fromRGB(255, 50, 50)
-            pcall(function() game:GetService("VoiceChatService"):SetMicMuted(true) end)
-        end
-    end)
-end
-
--- 2. BLOQUEIO DE REDE E OCULTAÇÃO (Metamethod Hooking)
-pcall(function()
-    if not _G.VCHooked and hookmetamethod then
-        _G.VCHooked = true
-        old_namecall_vc = hookmetamethod(game, "__namecall", function(self, ...)
-            method_vc = getnamecallmethod()
-            if not checkcaller() and _G.AntiBanVcEnabled then
-                -- Bloqueia a denúncia e os relatórios de voz nativos
-                if method_vc == "ReportUser" or method_vc == "SendVoiceAnalytics" or method_vc == "ReportAbuse" then
-                    return
-                end
-            end
-            return old_namecall_vc(self, ...)
-        end)
-    end
-end)
-
-------------------------------------------
---- SISTEMA S7X SELF MUTE (M7 REPLICA & CORE BYPASS)
---- Push-to-Talk, Timer e Ocultação Absoluta do Mic Nativo (0 Locals)
------------------------------------------
-_G.S7xSelfMuteActive = false
-_G.S7xMuteKey = Enum.KeyCode.V
-_G.S7xPTT = true -- Push to Talk
-_G.S7xPTM = false -- Push to Mute
-_G.S7xIsMuted = true
-_G.S7xMuteTimer = 0
-_G.S7xBindingKey = false
-
--- 1. ATUALIZADOR DE ESTADO (Comunica com o Roblox e a UI)
-UpdateS7xMuteState = function()
-    pcall(function() game:GetService("VoiceChatService"):SetMicMuted(_G.S7xIsMuted) end)
-    
-    if S7xStatusText then
-        if _G.S7xIsMuted then
-            S7xStatusText.Text = _G.S7xPTT and "hold to unmute" or (_G.S7xPTM and "muted" or "mic off")
-            S7xStatusText.TextColor3 = Color3.fromRGB(255, 68, 68)
-            if S7xStatusIcon then S7xStatusIcon.ImageColor3 = Color3.fromRGB(255, 68, 68) end
-            if S7xSideLine then S7xSideLine.BackgroundColor3 = Color3.fromRGB(255, 68, 68) end
+            shadow.ImageColor3 = Color3.fromRGB(255, 50, 50)
         else
-            S7xStatusText.Text = "mic active"
-            S7xStatusText.TextColor3 = Color3.fromRGB(142, 250, 0)
-            if S7xStatusIcon then S7xStatusIcon.ImageColor3 = Color3.fromRGB(142, 250, 0) end
-            if S7xSideLine then S7xSideLine.BackgroundColor3 = Color3.fromRGB(142, 250, 0) end
-            if S7xSideText then S7xSideText.Text = "MIC ACTIVE" end
-            _G.S7xMuteTimer = 0 -- Reseta o timer ao falar
+            S7xMicBtn.Text = "MIC ACTIVE"
+            S7xMicBtn.TextColor3 = Color3.fromRGB(0, 255, 150)
+            S7xMicIndicator.BackgroundColor3 = Color3.fromRGB(0, 255, 150)
+            S7xMicStroke.Color = Color3.fromRGB(0, 255, 150)
+            shadow.ImageColor3 = Color3.fromRGB(0, 255, 150)
         end
-    end
+    end)
 end
 
--- 2. CONSTRUTOR DO PAINEL ESTILO M7
-S7xBuildSelfMutePanel = function()
-    if S7xMuteGui then S7xMuteGui:Destroy() end
+-- CLOAKING ABSOLUTO: Esconde a bolha reduzindo a distância de visão para 0
+ToggleStealthMode = function(state)
+    if _G.S7xStealthLoop then _G.S7xStealthLoop:Disconnect(); _G.S7xStealthLoop = nil end
     
-    S7xMuteGui = Instance.new("ScreenGui", game:GetService("CoreGui"))
-    S7xMuteGui.Name = "S7xSelfMuteGui"
-    S7xMuteGui.ResetOnSpawn = false
-    
-    -- JANELA PRINCIPAL
-    S7xMainPanel = Instance.new("Frame", S7xMuteGui)
-    S7xMainPanel.Size = UDim2.new(0, 320, 0, 220)
-    S7xMainPanel.Position = UDim2.new(0.5, -160, 0.4, -110)
-    S7xMainPanel.BackgroundColor3 = Color3.fromRGB(17, 18, 22)
-    S7xMainPanel.Active = true
-    S7xMainPanel.Draggable = true
-    Instance.new("UICorner", S7xMainPanel).CornerRadius = UDim.new(0, 8)
-    
-    -- CABEÇALHO
-    S7xHeader = Instance.new("TextLabel", S7xMainPanel)
-    S7xHeader.Size = UDim2.new(1, -20, 0, 40)
-    S7xHeader.Position = UDim2.new(0, 15, 0, 0)
-    S7xHeader.BackgroundTransparency = 1
-    S7xHeader.Text = "S7X SELF MUTE"
-    S7xHeader.TextColor3 = Color3.fromRGB(255, 255, 255)
-    S7xHeader.Font = Enum.Font.GothamBold
-    S7xHeader.TextSize = 12
-    S7xHeader.TextXAlignment = Enum.TextXAlignment.Left
-    
-    S7xCloseBtn = Instance.new("TextButton", S7xMainPanel)
-    S7xCloseBtn.Size = UDim2.new(0, 30, 0, 40)
-    S7xCloseBtn.Position = UDim2.new(1, -30, 0, 0)
-    S7xCloseBtn.BackgroundTransparency = 1
-    S7xCloseBtn.Text = "X"
-    S7xCloseBtn.TextColor3 = Color3.fromRGB(255, 255, 255)
-    S7xCloseBtn.Font = Enum.Font.GothamBold
-    S7xCloseBtn.MouseButton1Click:Connect(function() S7xMainPanel.Visible = false end)
-    
-    -- BANNER DE STATUS (hold to unmute)
-    S7xStatusBanner = Instance.new("Frame", S7xMainPanel)
-    S7xStatusBanner.Size = UDim2.new(1, -30, 0, 50)
-    S7xStatusBanner.Position = UDim2.new(0, 15, 0, 40)
-    S7xStatusBanner.BackgroundColor3 = Color3.fromRGB(22, 23, 28)
-    Instance.new("UICorner", S7xStatusBanner).CornerRadius = UDim.new(0, 6)
-    
-    S7xStatusIcon = Instance.new("ImageLabel", S7xStatusBanner)
-    S7xStatusIcon.Size = UDim2.new(0, 20, 0, 25)
-    S7xStatusIcon.Position = UDim2.new(0, 15, 0.5, -12)
-    S7xStatusIcon.BackgroundTransparency = 1
-    S7xStatusIcon.Image = "rbxassetid://10492193235" -- Mic Icon
-    S7xStatusIcon.ImageColor3 = Color3.fromRGB(255, 68, 68)
-    
-    S7xStatusText = Instance.new("TextLabel", S7xStatusBanner)
-    S7xStatusText.Size = UDim2.new(1, -60, 1, 0)
-    S7xStatusText.Position = UDim2.new(0, 45, 0, 0)
-    S7xStatusText.BackgroundTransparency = 1
-    S7xStatusText.Text = "hold to unmute"
-    S7xStatusText.TextColor3 = Color3.fromRGB(255, 68, 68)
-    S7xStatusText.Font = Enum.Font.GothamBold
-    S7xStatusText.TextSize = 14
-    S7xStatusText.TextXAlignment = Enum.TextXAlignment.Left
-    
-    -- CONFIGURAÇÕES (Keybind e Toggles)
-    S7xCreateRow = function(yPos, text)
-        row = Instance.new("TextLabel", S7xMainPanel)
-        row.Size = UDim2.new(1, -30, 0, 30)
-        row.Position = UDim2.new(0, 15, 0, yPos)
-        row.BackgroundTransparency = 1
-        row.Text = text
-        row.TextColor3 = Color3.fromRGB(150, 150, 160)
-        row.Font = Enum.Font.GothamMedium
-        row.TextSize = 12
-        row.TextXAlignment = Enum.TextXAlignment.Left
-        return row
-    end
-    
-    S7xKeyRow = S7xCreateRow(100, "mute key")
-    S7xKeyBtn = Instance.new("TextButton", S7xKeyRow)
-    S7xKeyBtn.Size = UDim2.new(0, 50, 0, 24)
-    S7xKeyBtn.Position = UDim2.new(1, -80, 0.5, -12)
-    S7xKeyBtn.BackgroundColor3 = Color3.fromRGB(25, 26, 32)
-    S7xKeyBtn.Text = _G.S7xMuteKey.Name
-    S7xKeyBtn.TextColor3 = Color3.fromRGB(142, 250, 0)
-    S7xKeyBtn.Font = Enum.Font.GothamBold
-    Instance.new("UICorner", S7xKeyBtn).CornerRadius = UDim.new(0, 4)
-    Instance.new("UIStroke", S7xKeyBtn).Color = Color3.fromRGB(40, 40, 50)
-    
-    S7xKeyBtn.MouseButton1Click:Connect(function()
-        S7xKeyBtn.Text = "..."
-        _G.S7xBindingKey = true
-    end)
-    
-    -- Toggles Visuais
-    S7xCreateToggle = function(yPos, text, defaultState, callback)
-        tRow = S7xCreateRow(yPos, text)
-        tBg = Instance.new("TextButton", tRow)
-        tBg.Size = UDim2.new(0, 40, 0, 20)
-        tBg.Position = UDim2.new(1, -40, 0.5, -10)
-        tBg.BackgroundColor3 = defaultState and Color3.fromRGB(142, 250, 0) or Color3.fromRGB(25, 26, 32)
-        tBg.Text = ""
-        Instance.new("UICorner", tBg).CornerRadius = UDim.new(1, 0)
-        
-        tCirc = Instance.new("Frame", tBg)
-        tCirc.Size = UDim2.new(0, 16, 0, 16)
-        tCirc.Position = defaultState and UDim2.new(1, -18, 0.5, -8) or UDim2.new(0, 2, 0.5, -8)
-        tCirc.BackgroundColor3 = Color3.fromRGB(255, 255, 255)
-        Instance.new("UICorner", tCirc).CornerRadius = UDim.new(1, 0)
-        
-        tBg.MouseButton1Click:Connect(function()
-            newState = not (tBg.BackgroundColor3 == Color3.fromRGB(142, 250, 0))
-            tBg.BackgroundColor3 = newState and Color3.fromRGB(142, 250, 0) or Color3.fromRGB(25, 26, 32)
-            game:GetService("TweenService"):Create(tCirc, TweenInfo.new(0.2), {Position = newState and UDim2.new(1, -18, 0.5, -8) or UDim2.new(0, 2, 0.5, -8)}):Play()
-            callback(newState)
-        end)
-        return tBg
-    end
-    
-    S7xPTTToggle = S7xCreateToggle(135, "push to talk (hold to unmute)", _G.S7xPTT, function(val)
-        _G.S7xPTT = val
-        if val then _G.S7xPTM = false; _G.S7xIsMuted = true; UpdateS7xMuteState() end
-    end)
-    
-    S7xPTMToggle = S7xCreateToggle(170, "push to mute (hold to mute)", _G.S7xPTM, function(val)
-        _G.S7xPTM = val
-        if val then _G.S7xPTT = false; _G.S7xIsMuted = false; UpdateS7xMuteState() end
-    end)
-    
-    -- WIDGET LATERAL (Status Timer)
-    S7xSideWidget = Instance.new("Frame", S7xMuteGui)
-    S7xSideWidget.Size = UDim2.new(0, 180, 0, 40)
-    S7xSideWidget.Position = UDim2.new(0.75, 0, 0.1, 0)
-    S7xSideWidget.BackgroundColor3 = Color3.fromRGB(22, 22, 26)
-    Instance.new("UICorner", S7xSideWidget).CornerRadius = UDim.new(0, 6)
-    Instance.new("UIStroke", S7xSideWidget).Color = Color3.fromRGB(40, 40, 45)
-    
-    S7xSideLine = Instance.new("Frame", S7xSideWidget)
-    S7xSideLine.Size = UDim2.new(0, 3, 0.6, 0)
-    S7xSideLine.Position = UDim2.new(0, 8, 0.2, 0)
-    S7xSideLine.BackgroundColor3 = Color3.fromRGB(255, 68, 68)
-    Instance.new("UICorner", S7xSideLine)
-    
-    S7xSideText = Instance.new("TextLabel", S7xSideWidget)
-    S7xSideText.Size = UDim2.new(1, -25, 1, 0)
-    S7xSideText.Position = UDim2.new(0, 20, 0, 0)
-    S7xSideText.BackgroundTransparency = 1
-    S7xSideText.Text = "SELF MUTED  00:00"
-    S7xSideText.TextColor3 = Color3.fromRGB(240, 240, 240)
-    S7xSideText.Font = Enum.Font.GothamBold
-    S7xSideText.TextSize = 11
-    S7xSideText.TextXAlignment = Enum.TextXAlignment.Left
-    
-    UpdateS7xMuteState()
-end
-
--- 3. MOTOR DE INPUT E TIMER (UserInputService e RunService)
-if S7xInputConn then S7xInputConn:Disconnect() end
-S7xInputConn = game:GetService("UserInputService").InputBegan:Connect(function(input, gameProcessed)
-    if _G.S7xBindingKey and input.UserInputType == Enum.UserInputType.Keyboard then
-        _G.S7xMuteKey = input.KeyCode
-        if S7xKeyBtn then S7xKeyBtn.Text = _G.S7xMuteKey.Name end
-        _G.S7xBindingKey = false
-        return
-    end
-    
-    if not gameProcessed and input.KeyCode == _G.S7xMuteKey and _G.S7xSelfMuteActive then
-        if _G.S7xPTT then _G.S7xIsMuted = false; UpdateS7xMuteState() end
-        if _G.S7xPTM then _G.S7xIsMuted = true; UpdateS7xMuteState() end
-    end
-end)
-
-if S7xInputUpConn then S7xInputUpConn:Disconnect() end
-S7xInputUpConn = game:GetService("UserInputService").InputEnded:Connect(function(input, gameProcessed)
-    if not gameProcessed and input.KeyCode == _G.S7xMuteKey and _G.S7xSelfMuteActive then
-        if _G.S7xPTT then _G.S7xIsMuted = true; UpdateS7xMuteState() end
-        if _G.S7xPTM then _G.S7xIsMuted = false; UpdateS7xMuteState() end
-    end
-end)
-
-if S7xTimerConn then S7xTimerConn:Disconnect() end
-S7xTimerConn = game:GetService("RunService").Heartbeat:Connect(function(dt)
-    if _G.S7xSelfMuteActive and _G.S7xIsMuted then
-        _G.S7xMuteTimer = _G.S7xMuteTimer + dt
-        if S7xSideText then
-            mins_s7 = math.floor(_G.S7xMuteTimer / 60)
-            secs_s7 = math.floor(_G.S7xMuteTimer % 60)
-            S7xSideText.Text = string.format("SELF MUTED  %02d:%02d", mins_s7, secs_s7)
-        end
-    end
-end)
-
--- 4. BYPASS DE REDE E OCULTAÇÃO DA UI DO ROBLOX
-pcall(function()
-    if not _G.VCHooked and hookmetamethod then
-        _G.VCHooked = true
-        old_namecall_vc = hookmetamethod(game, "__namecall", function(self, ...)
-            method_vc = getnamecallmethod()
-            if not checkcaller() and _G.S7xSelfMuteActive then
-                if method_vc == "ReportUser" or method_vc == "SendVoiceAnalytics" then return end
-            end
-            return old_namecall_vc(self, ...)
-        end)
-    end
-end)
-
------------------------------------------
---- SISTEMA S7X SELF MUTE (V4: HARD DISCONNECT FÍSICO)
---- Força status "Desconectado", mantém escuta e gerencia via UI (0 Locals)
------------------------------------------
-_G.S7xSelfMuteActive = false
-_G.S7xMuteKey = Enum.KeyCode.V
-_G.S7xPTT = true 
-_G.S7xPTM = false 
-_G.S7xIsMuted = true
-_G.S7xMuteTimer = 0
-_G.S7xBindingKey = false
-
--- 1. MOTOR DE DESCONEXÃO FÍSICA (HARD DISCONNECT)
-S7xSetHardwareMute = function(isMuted)
-    _G.S7xIsMuted = isMuted
-    
-    -- Camada 1: Mute API
-    pcall(function() 
-        vc_svc = game:GetService("VoiceChatService")
-        if vc_svc then vc_svc:SetMicMuted(isMuted) end
-    end)
-    
-    -- Camada 2: Bloqueio de Servidor Vivox
-    pcall(function()
-        vc_internal = game:GetService("VoiceChatInternal")
-        if vc_internal then vc_internal:PublishPause(isMuted) end
-    end)
-    
-    -- Camada 3: Desconexão de Hardware (Gera o "Desconectado" no Menu)
-    pcall(function()
-        for _, v in ipairs(game:GetDescendants()) do
-            if v:IsA("AudioDeviceInput") then
-                -- Desliga fisicamente a captura de áudio da sua máquina para o Roblox
-                v.Active = not isMuted 
-            end
-        end
-    end)
-    
-    -- Atualização Visual do Painel M7/S7X
-    if S7xStatusText then
-        if _G.S7xIsMuted then
-            S7xStatusText.Text = _G.S7xPTT and "HOLD TO UNMUTE" or (_G.S7xPTM and "MUTED" or "MIC OFF")
-            S7xStatusText.TextColor3 = Color3.fromRGB(255, 68, 68) 
-            if S7xStatusIcon then S7xStatusIcon.ImageColor3 = Color3.fromRGB(255, 68, 68) end
-            if S7xSideLine then S7xSideLine.BackgroundColor3 = Color3.fromRGB(255, 68, 68) end
-            if S7xMainStroke then S7xMainStroke.Color = Color3.fromRGB(40, 40, 45) end
-        else
-            S7xStatusText.Text = "MIC ACTIVE (SPEAKING...)"
-            S7xStatusText.TextColor3 = Color3.fromRGB(170, 0, 255) 
-            if S7xStatusIcon then S7xStatusIcon.ImageColor3 = Color3.fromRGB(170, 0, 255) end
-            if S7xSideLine then S7xSideLine.BackgroundColor3 = Color3.fromRGB(170, 0, 255) end
-            if S7xSideText then S7xSideText.Text = "MIC ACTIVE" end
-            if S7xMainStroke then S7xMainStroke.Color = Color3.fromRGB(170, 0, 255) end
-            _G.S7xMuteTimer = 0 
-        end
-    end
-end
-
--- 2. CONSTRUTOR DO PAINEL S7X
-S7xBuildSelfMutePanel = function()
-    if S7xMuteGui then S7xMuteGui:Destroy() end
-    
-    S7xMuteGui = Instance.new("ScreenGui", game:GetService("CoreGui"))
-    S7xMuteGui.Name = "S7xSelfMuteGui"
-    S7xMuteGui.ResetOnSpawn = false
-    
-    S7xMainPanel = Instance.new("Frame", S7xMuteGui)
-    S7xMainPanel.Size = UDim2.new(0, 320, 0, 220)
-    S7xMainPanel.Position = UDim2.new(0.5, -160, 0.4, -110)
-    S7xMainPanel.BackgroundColor3 = Color3.fromRGB(20, 20, 25) 
-    S7xMainPanel.Active = true
-    S7xMainPanel.Draggable = true
-    Instance.new("UICorner", S7xMainPanel).CornerRadius = UDim.new(0, 8)
-    
-    S7xMainStroke = Instance.new("UIStroke", S7xMainPanel)
-    S7xMainStroke.Color = Color3.fromRGB(40, 40, 45)
-    S7xMainStroke.Thickness = 1.5
-    
-    S7xHeader = Instance.new("TextLabel", S7xMainPanel)
-    S7xHeader.Size = UDim2.new(1, -20, 0, 40)
-    S7xHeader.Position = UDim2.new(0, 15, 0, 0)
-    S7xHeader.BackgroundTransparency = 1
-    S7xHeader.Text = "S7X ENGINE MUTE"
-    S7xHeader.TextColor3 = Color3.fromRGB(170, 0, 255)
-    S7xHeader.Font = Enum.Font.GothamBold
-    S7xHeader.TextSize = 13
-    S7xHeader.TextXAlignment = Enum.TextXAlignment.Left
-    
-    S7xCloseBtn = Instance.new("TextButton", S7xMainPanel)
-    S7xCloseBtn.Size = UDim2.new(0, 30, 0, 40)
-    S7xCloseBtn.Position = UDim2.new(1, -30, 0, 0)
-    S7xCloseBtn.BackgroundTransparency = 1
-    S7xCloseBtn.Text = "X"
-    S7xCloseBtn.TextColor3 = Color3.fromRGB(150, 150, 160)
-    S7xCloseBtn.Font = Enum.Font.GothamBold
-    S7xCloseBtn.MouseButton1Click:Connect(function() S7xMainPanel.Visible = false end)
-    
-    S7xStatusBanner = Instance.new("Frame", S7xMainPanel)
-    S7xStatusBanner.Size = UDim2.new(1, -30, 0, 50)
-    S7xStatusBanner.Position = UDim2.new(0, 15, 0, 40)
-    S7xStatusBanner.BackgroundColor3 = Color3.fromRGB(28, 28, 35)
-    Instance.new("UICorner", S7xStatusBanner).CornerRadius = UDim.new(0, 6)
-    
-    S7xStatusIcon = Instance.new("ImageLabel", S7xStatusBanner)
-    S7xStatusIcon.Size = UDim2.new(0, 20, 0, 25)
-    S7xStatusIcon.Position = UDim2.new(0, 15, 0.5, -12)
-    S7xStatusIcon.BackgroundTransparency = 1
-    S7xStatusIcon.Image = "rbxassetid://10492193235"
-    S7xStatusIcon.ImageColor3 = Color3.fromRGB(255, 68, 68)
-    
-    S7xStatusText = Instance.new("TextLabel", S7xStatusBanner)
-    S7xStatusText.Size = UDim2.new(1, -60, 1, 0)
-    S7xStatusText.Position = UDim2.new(0, 45, 0, 0)
-    S7xStatusText.BackgroundTransparency = 1
-    S7xStatusText.Text = "HOLD TO UNMUTE"
-    S7xStatusText.TextColor3 = Color3.fromRGB(255, 68, 68)
-    S7xStatusText.Font = Enum.Font.GothamBold
-    S7xStatusText.TextSize = 13
-    S7xStatusText.TextXAlignment = Enum.TextXAlignment.Left
-    
-    S7xCreateRow = function(yPos, text)
-        row = Instance.new("TextLabel", S7xMainPanel)
-        row.Size = UDim2.new(1, -30, 0, 30)
-        row.Position = UDim2.new(0, 15, 0, yPos)
-        row.BackgroundTransparency = 1
-        row.Text = text
-        row.TextColor3 = Color3.fromRGB(200, 200, 210)
-        row.Font = Enum.Font.GothamMedium
-        row.TextSize = 12
-        row.TextXAlignment = Enum.TextXAlignment.Left
-        return row
-    end
-    
-    S7xKeyRow = S7xCreateRow(100, "Mute Keybind")
-    S7xKeyBtn = Instance.new("TextButton", S7xKeyRow)
-    S7xKeyBtn.Size = UDim2.new(0, 50, 0, 24)
-    S7xKeyBtn.Position = UDim2.new(1, -80, 0.5, -12)
-    S7xKeyBtn.BackgroundColor3 = Color3.fromRGB(35, 35, 42)
-    S7xKeyBtn.Text = _G.S7xMuteKey.Name
-    S7xKeyBtn.TextColor3 = Color3.fromRGB(170, 0, 255)
-    S7xKeyBtn.Font = Enum.Font.GothamBold
-    Instance.new("UICorner", S7xKeyBtn).CornerRadius = UDim.new(0, 4)
-    Instance.new("UIStroke", S7xKeyBtn).Color = Color3.fromRGB(170, 0, 255)
-    
-    S7xKeyBtn.MouseButton1Click:Connect(function()
-        S7xKeyBtn.Text = "..."
-        _G.S7xBindingKey = true
-    end)
-    
-    S7xCreateToggle = function(yPos, text, defaultState, callback)
-        tRow = S7xCreateRow(yPos, text)
-        tBg = Instance.new("TextButton", tRow)
-        tBg.Size = UDim2.new(0, 40, 0, 20)
-        tBg.Position = UDim2.new(1, -40, 0.5, -10)
-        tBg.BackgroundColor3 = defaultState and Color3.fromRGB(170, 0, 255) or Color3.fromRGB(35, 35, 42)
-        tBg.Text = ""
-        Instance.new("UICorner", tBg).CornerRadius = UDim.new(1, 0)
-        
-        tCirc = Instance.new("Frame", tBg)
-        tCirc.Size = UDim2.new(0, 16, 0, 16)
-        tCirc.Position = defaultState and UDim2.new(1, -18, 0.5, -8) or UDim2.new(0, 2, 0.5, -8)
-        tCirc.BackgroundColor3 = Color3.fromRGB(255, 255, 255)
-        Instance.new("UICorner", tCirc).CornerRadius = UDim.new(1, 0)
-        
-        tBg.MouseButton1Click:Connect(function()
-            newState = not (tBg.BackgroundColor3 == Color3.fromRGB(170, 0, 255))
-            tBg.BackgroundColor3 = newState and Color3.fromRGB(170, 0, 255) or Color3.fromRGB(35, 35, 42)
-            game:GetService("TweenService"):Create(tCirc, TweenInfo.new(0.2), {Position = newState and UDim2.new(1, -18, 0.5, -8) or UDim2.new(0, 2, 0.5, -8)}):Play()
-            callback(newState)
-        end)
-        return tBg
-    end
-    
-    S7xPTTToggle = S7xCreateToggle(135, "Push to Talk (Hold to Speak)", _G.S7xPTT, function(val)
-        _G.S7xPTT = val
-        if val then _G.S7xPTM = false; S7xSetHardwareMute(true) end
-    end)
-    
-    S7xPTMToggle = S7xCreateToggle(170, "Push to Mute (Hold to Mute)", _G.S7xPTM, function(val)
-        _G.S7xPTM = val
-        if val then _G.S7xPTT = false; S7xSetHardwareMute(false) end
-    end)
-    
-    S7xSideWidget = Instance.new("Frame", S7xMuteGui)
-    S7xSideWidget.Size = UDim2.new(0, 180, 0, 40)
-    S7xSideWidget.Position = UDim2.new(0.75, 0, 0.1, 0)
-    S7xSideWidget.BackgroundColor3 = Color3.fromRGB(20, 20, 25)
-    Instance.new("UICorner", S7xSideWidget).CornerRadius = UDim.new(0, 6)
-    Instance.new("UIStroke", S7xSideWidget).Color = Color3.fromRGB(40, 40, 45)
-    
-    S7xSideLine = Instance.new("Frame", S7xSideWidget)
-    S7xSideLine.Size = UDim2.new(0, 3, 0.6, 0)
-    S7xSideLine.Position = UDim2.new(0, 8, 0.2, 0)
-    S7xSideLine.BackgroundColor3 = Color3.fromRGB(255, 68, 68)
-    Instance.new("UICorner", S7xSideLine)
-    
-    S7xSideText = Instance.new("TextLabel", S7xSideWidget)
-    S7xSideText.Size = UDim2.new(1, -25, 1, 0)
-    S7xSideText.Position = UDim2.new(0, 20, 0, 0)
-    S7xSideText.BackgroundTransparency = 1
-    S7xSideText.Text = "SELF MUTED  00:00"
-    S7xSideText.TextColor3 = Color3.fromRGB(240, 240, 240)
-    S7xSideText.Font = Enum.Font.GothamBold
-    S7xSideText.TextSize = 11
-    S7xSideText.TextXAlignment = Enum.TextXAlignment.Left
-    
-    S7xSetHardwareMute(_G.S7xIsMuted)
-end
-
--- 3. MOTOR DE INPUT E TIMER
-if S7xInputConn then S7xInputConn:Disconnect() end
-S7xInputConn = game:GetService("UserInputService").InputBegan:Connect(function(input, gameProcessed)
-    if _G.S7xBindingKey and input.UserInputType == Enum.UserInputType.Keyboard then
-        _G.S7xMuteKey = input.KeyCode
-        if S7xKeyBtn then S7xKeyBtn.Text = _G.S7xMuteKey.Name end
-        _G.S7xBindingKey = false
-        return
-    end
-    
-    if not gameProcessed and input.KeyCode == _G.S7xMuteKey and _G.S7xSelfMuteActive then
-        if _G.S7xPTT then S7xSetHardwareMute(false) end
-        if _G.S7xPTM then S7xSetHardwareMute(true) end
-    end
-end)
-
-if S7xInputUpConn then S7xInputUpConn:Disconnect() end
-S7xInputUpConn = game:GetService("UserInputService").InputEnded:Connect(function(input, gameProcessed)
-    if not gameProcessed and input.KeyCode == _G.S7xMuteKey and _G.S7xSelfMuteActive then
-        if _G.S7xPTT then S7xSetHardwareMute(true) end
-        if _G.S7xPTM then S7xSetHardwareMute(false) end
-    end
-end)
-
-if S7xTimerConn then S7xTimerConn:Disconnect() end
-S7xTimerConn = game:GetService("RunService").Heartbeat:Connect(function(dt)
-    if _G.S7xSelfMuteActive and _G.S7xIsMuted then
-        _G.S7xMuteTimer = _G.S7xMuteTimer + dt
-        if S7xSideText then
-            mins_s7 = math.floor(_G.S7xMuteTimer / 60)
-            secs_s7 = math.floor(_G.S7xMuteTimer % 60)
-            S7xSideText.Text = string.format("SELF MUTED  %02d:%02d", mins_s7, secs_s7)
-        end
-    end
-end)
-
--- 4. BYPASS DE REDE
-pcall(function()
-    if not _G.VCHooked and hookmetamethod then
-        _G.VCHooked = true
-        old_namecall_vc = hookmetamethod(game, "__namecall", function(self, ...)
-            method_vc = getnamecallmethod()
-            if not checkcaller() and _G.S7xSelfMuteActive then
-                if method_vc == "ReportUser" or method_vc == "SendVoiceAnalytics" then return end
-            end
-            return old_namecall_vc(self, ...)
-        end)
-    end
-end)
-
--- 5. ATIVAÇÃO DO BOTÃO PRINCIPAL S7X
-GUI.AntiBanVcBtn.MouseButton1Click:Connect(function()
-    _G.S7xSelfMuteActive = not _G.S7xSelfMuteActive
-    if setToggleState then setToggleState(GUI.AntiBanVcBtn, _G.S7xSelfMuteActive) end
-    
-    if _G.S7xSelfMuteActive then
-        S7xBuildSelfMutePanel()
-        
-        -- FORÇA DE ANIQUILAÇÃO DA UI NATIVA
-        if S7xUIClearConn then S7xUIClearConn:Disconnect() end
-        S7xUIClearConn = game:GetService("RunService").Stepped:Connect(function()
+    if state then
+        _G.S7xStealthLoop = runService_S7.Heartbeat:Connect(function()
             pcall(function()
-                cg_rob = game:GetService("CoreGui"):FindFirstChild("RobloxGui")
-                if cg_rob then
-                    vcState = cg_rob:FindFirstChild("VoiceChatState", true)
-                    if vcState then vcState:Destroy() end
+                local topBar = coreGui_S7:FindFirstChild("TopBarApp", true)
+                if topBar then
+                    local micBtn = topBar:FindFirstChild("toggle_mic_mute", true)
+                    if micBtn then micBtn.Visible = false end
                 end
-                if game.Players.LocalPlayer.Character then
-                    head_vc = game.Players.LocalPlayer.Character:FindFirstChild("Head")
-                    if head_vc then
-                        for _, v in ipairs(head_vc:GetChildren()) do
-                            if v.Name == "VoiceChatPrompt" or v.Name == "VoiceChatBubble" then v:Destroy() end
+
+                local char = game.Players.LocalPlayer.Character
+                if char then
+                    local head = char:FindFirstChild("Head") or char:FindFirstChild("HumanoidRootPart")
+                    if head then
+                        for _, v in ipairs(head:GetChildren()) do
+                            -- A Mágica: Corta a distância de visualização pra 0, mas NÃO desliga nem destrói o VoiceSource!
+                            if v:IsA("BillboardGui") and (v.Name:match("VoiceChat") or v.Name:match("VoiceSource")) then
+                                v.MaxDistance = 0 
+                                v.AlwaysOnTop = false
+                            end
                         end
                     end
                 end
             end)
         end)
     else
-        if S7xUIClearConn then S7xUIClearConn:Disconnect(); S7xUIClearConn = nil end
-        if S7xMuteGui then S7xMuteGui:Destroy(); S7xMuteGui = nil end
-        S7xSetHardwareMute(false)
+        pcall(function()
+            local topBar = coreGui_S7:FindFirstChild("TopBarApp", true)
+            if topBar then
+                local micBtn = topBar:FindFirstChild("toggle_mic_mute", true)
+                if micBtn then micBtn.Visible = true end
+            end
+        end)
+        -- Restaura o hardware
+        pcall(function()
+            for _, obj in pairs(game:GetDescendants()) do
+                if obj:IsA("AudioDeviceInput") then obj.Muted = false end
+            end
+            vcService_S7:SetMicMuted(false)
+        end)
+    end
+end
+
+-- BYPASS DE TELEMETRIA
+pcall(function()
+    if not _G.VCHooked and hookmetamethod then
+        _G.VCHooked = true
+        local old_namecall = hookmetamethod(game, "__namecall", function(self, ...)
+            local method = getnamecallmethod()
+            if not checkcaller() and _G.AntiBanVcEnabled then
+                if method == "ReportUser" or method == "SendVoiceAnalytics" or method == "ReportAbuse" then
+                    return -- Retorna vazio pro servidor, negando a telemetria de voz
+                end
+            end
+            return old_namecall(self, ...)
+        end)
     end
 end)
-GUI.MainTabFrame.CanvasSize = UDim2.new(0, 0, 0, 500)
 
+GUI.AntiBanVcBtn.MouseButton1Click:Connect(function()
+    _G.AntiBanVcEnabled = not _G.AntiBanVcEnabled
+    if setToggleState then setToggleState(GUI.AntiBanVcBtn, _G.AntiBanVcEnabled) end
+    
+    if _G.AntiBanVcEnabled then
+        if type(S7xNotify) == "function" then S7xNotify("VOICE PROTECT", "Camuflagem de API ativada. O Roblox não registrará relatórios.") end
+        BuildM7MicWidget()
+        ToggleStealthMode(true)
+    else
+        if S7xM7MicGui then S7xM7MicGui:Destroy(); S7xM7MicGui = nil end
+        ToggleStealthMode(false)
+    end
+end)
+
+GUI.MainTabFrame.CanvasSize = UDim2.new(0, 0, 0, 500)
 -----------------------------------------
 --- CRIAÇÃO DE BOTÕES - FUNCTIONS
 -----------------------------------------
