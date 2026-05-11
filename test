@@ -1811,30 +1811,107 @@ GUI.DiscordLinkBtn.MouseButton1Click:Connect(function()
 end)
 
 -----------------------------------------
---- SISTEMA DE SERVERS (COM DETECÇÃO VISUAL DE ADMINS)
+--- SISTEMA DE SERVERS (PREMIUM DESIGN & CURRENT SERVER INFO)
 -----------------------------------------
 _G.ServersLoaded = false
-local isFetchingServers = false
+GUI.IsFetchingServers = false
 
+-- [ CARTÃO DO SERVIDOR ATUAL ]
+GUI.CurrentServerCard = Instance.new("Frame", GUI.ServersFrame)
+GUI.CurrentServerCard.Name = "CurrentServerCard"
+GUI.CurrentServerCard.Size = UDim2.new(0.9, 0, 0, 85)
+GUI.CurrentServerCard.BackgroundColor3 = Color3.fromRGB(20, 20, 25)
+GUI.CurrentServerCard.LayoutOrder = -3
+Instance.new("UICorner", GUI.CurrentServerCard).CornerRadius = UDim.new(0, 8)
+Instance.new("UIStroke", GUI.CurrentServerCard).Color = Color3.fromRGB(170, 0, 255)
+
+GUI.CSC_Title = Instance.new("TextLabel", GUI.CurrentServerCard)
+GUI.CSC_Title.Size = UDim2.new(1, -20, 0, 25)
+GUI.CSC_Title.Position = UDim2.new(0, 10, 0, 5)
+GUI.CSC_Title.BackgroundTransparency = 1
+GUI.CSC_Title.Text = "🌟 CURRENT SERVER"
+GUI.CSC_Title.TextColor3 = Color3.fromRGB(170, 0, 255)
+GUI.CSC_Title.Font = Enum.Font.GothamBlack
+GUI.CSC_Title.TextSize = 13
+GUI.CSC_Title.TextXAlignment = Enum.TextXAlignment.Left
+
+GUI.CSC_Info = Instance.new("TextLabel", GUI.CurrentServerCard)
+GUI.CSC_Info.Size = UDim2.new(1, -20, 0, 40)
+GUI.CSC_Info.Position = UDim2.new(0, 10, 0, 30)
+GUI.CSC_Info.BackgroundTransparency = 1
+GUI.CSC_Info.Text = "<font color='#aaaaaa'>Players:</font> " .. #game.Players:GetPlayers() .. "/" .. game.Players.MaxPlayers .. "\n<font color='#aaaaaa'>JobId:</font> " .. string.sub(game.JobId, 1, 15) .. "..."
+GUI.CSC_Info.TextColor3 = Color3.fromRGB(255, 255, 255)
+GUI.CSC_Info.Font = Enum.Font.GothamMedium
+GUI.CSC_Info.TextSize = 11
+GUI.CSC_Info.RichText = true
+GUI.CSC_Info.TextXAlignment = Enum.TextXAlignment.Left
+GUI.CSC_Info.TextYAlignment = Enum.TextYAlignment.Top
+
+-- Botão Copiar JobID no Servidor Atual
+GUI.CSC_CopyBtn = Instance.new("TextButton", GUI.CurrentServerCard)
+GUI.CSC_CopyBtn.Size = UDim2.new(0, 85, 0, 24)
+GUI.CSC_CopyBtn.Position = UDim2.new(1, -95, 0, 8)
+GUI.CSC_CopyBtn.BackgroundColor3 = Color3.fromRGB(30, 25, 40)
+GUI.CSC_CopyBtn.Text = "COPY ID"
+GUI.CSC_CopyBtn.TextColor3 = Color3.fromRGB(200, 200, 255)
+GUI.CSC_CopyBtn.Font = Enum.Font.GothamBold
+GUI.CSC_CopyBtn.TextSize = 10
+Instance.new("UICorner", GUI.CSC_CopyBtn).CornerRadius = UDim.new(0, 4)
+Instance.new("UIStroke", GUI.CSC_CopyBtn).Color = Color3.fromRGB(100, 50, 180)
+
+GUI.CSC_CopyBtn.MouseButton1Click:Connect(function()
+    pcall(function() if setclipboard then setclipboard(tostring(game.JobId)) end end)
+    local orig = GUI.CSC_CopyBtn.Text
+    GUI.CSC_CopyBtn.Text = "COPIED!"
+    GUI.CSC_CopyBtn.TextColor3 = Color3.fromRGB(0, 255, 150)
+    task.delay(1.5, function()
+        if GUI.CSC_CopyBtn then
+            GUI.CSC_CopyBtn.Text = orig
+            GUI.CSC_CopyBtn.TextColor3 = Color3.fromRGB(200, 200, 255)
+        end
+    end)
+end)
+
+-- Atualiza Info do servidor atual dinamicamente
+task.spawn(function()
+    while task.wait(5) do
+        if GUI.CSC_Info and GUI.CSC_Info.Parent then
+            pcall(function()
+                GUI.CSC_Info.Text = "<font color='#aaaaaa'>Players:</font> " .. #game.Players:GetPlayers() .. "/" .. game.Players.MaxPlayers .. "\n<font color='#aaaaaa'>JobId:</font> " .. string.sub(game.JobId, 1, 15) .. "..."
+            end)
+        end
+    end
+end)
+
+-- Separador visual
+GUI.ServersSep = Instance.new("Frame", GUI.ServersFrame)
+GUI.ServersSep.Size = UDim2.new(0.85, 0, 0, 2)
+GUI.ServersSep.BackgroundColor3 = Color3.fromRGB(40, 40, 45)
+GUI.ServersSep.BorderSizePixel = 0
+GUI.ServersSep.LayoutOrder = -2
+
+-- [ BOTÃO DE REFRESH ]
 GUI.RefreshServersBtn = Instance.new("TextButton", GUI.ServersFrame)
 GUI.RefreshServersBtn.Name = "RefreshBtn"
-GUI.RefreshServersBtn.Size = UDim2.new(0.9, 0, 0, 30)
-GUI.RefreshServersBtn.BackgroundColor3 = Color3.fromRGB(20, 20, 20)
+GUI.RefreshServersBtn.Size = UDim2.new(0.9, 0, 0, 32)
+GUI.RefreshServersBtn.BackgroundColor3 = Color3.fromRGB(25, 25, 30)
 GUI.RefreshServersBtn.Text = "REFRESH SERVERS"
-GUI.RefreshServersBtn.TextColor3 = Color3.fromRGB(170, 0, 255)
+GUI.RefreshServersBtn.TextColor3 = Color3.fromRGB(255, 255, 255)
 GUI.RefreshServersBtn.Font = Enum.Font.GothamBold
-GUI.RefreshServersBtn.TextSize = 12
+GUI.RefreshServersBtn.TextSize = 11
 GUI.RefreshServersBtn.LayoutOrder = -1 
 GUI.RefreshServersBtn.AutoButtonColor = false
 Instance.new("UICorner", GUI.RefreshServersBtn).CornerRadius = UDim.new(0, 6)
-Instance.new("UIStroke", GUI.RefreshServersBtn).Color = Color3.fromRGB(170, 0, 255)
+local refStroke = Instance.new("UIStroke", GUI.RefreshServersBtn)
+refStroke.Color = Color3.fromRGB(170, 0, 255)
+refStroke.Thickness = 1.2
 
-GUI.RefreshServersBtn.MouseEnter:Connect(function() TweenService:Create(GUI.RefreshServersBtn, TweenInfo.new(0.2), {BackgroundColor3 = Color3.fromRGB(35, 35, 35)}):Play() end)
-GUI.RefreshServersBtn.MouseLeave:Connect(function() TweenService:Create(GUI.RefreshServersBtn, TweenInfo.new(0.2), {BackgroundColor3 = Color3.fromRGB(20, 20, 20)}):Play() end)
+GUI.RefreshServersBtn.MouseEnter:Connect(function() pcall(function() game:GetService("TweenService"):Create(GUI.RefreshServersBtn, TweenInfo.new(0.2), {BackgroundColor3 = Color3.fromRGB(40, 35, 50)}):Play() end) end)
+GUI.RefreshServersBtn.MouseLeave:Connect(function() pcall(function() game:GetService("TweenService"):Create(GUI.RefreshServersBtn, TweenInfo.new(0.2), {BackgroundColor3 = Color3.fromRGB(25, 25, 30)}):Play() end) end)
 
-local function PopulateServers()
-    if isFetchingServers then return end
-    isFetchingServers = true
+GUI.PopulateServers = function()
+    if GUI.IsFetchingServers then return end
+    GUI.IsFetchingServers = true
     GUI.RefreshServersBtn.Text = "FETCHING..."
     
     for _, v in pairs(GUI.ServersFrame:GetChildren()) do
@@ -1847,43 +1924,36 @@ local function PopulateServers()
         end)
         
         if success and result then
-            local decoded = HttpService:JSONDecode(result)
+            local decoded = game:GetService("HttpService"):JSONDecode(result)
             if decoded and decoded.data then
                 local layoutCount = 1
                 for _, server in ipairs(decoded.data) do
                     if server.id ~= game.JobId and server.playing < server.maxPlayers then
                         local card = Instance.new("Frame", GUI.ServersFrame)
                         card.Name = "ServerCard"
-                        card.Size = UDim2.new(0.9, 0, 0, 40)
+                        card.Size = UDim2.new(0.9, 0, 0, 45)
+                        card.BackgroundColor3 = Color3.fromRGB(20, 20, 23)
                         card.LayoutOrder = layoutCount
                         Instance.new("UICorner", card).CornerRadius = UDim.new(0, 6)
-                        
-                        local hasAdmin = false 
-                        local cardColor = Color3.fromRGB(28, 28, 28)
-                        local buttonColor = Color3.fromRGB(170, 0, 255)
-                        local serverText = "Players: " .. server.playing .. "/" .. server.maxPlayers .. "  |  Ping: " .. tostring(server.ping) .. "ms"
-                        
-                        if hasAdmin then
-                            cardColor = Color3.fromRGB(150, 0, 0)
-                            buttonColor = Color3.fromRGB(100, 0, 0)
-                            serverText = serverText .. " [ADMIN AQUI]"
-                        end
-                        card.BackgroundColor3 = cardColor
+                        local cardStroke = Instance.new("UIStroke", card)
+                        cardStroke.Color = Color3.fromRGB(45, 45, 50)
                         
                         local info = Instance.new("TextLabel", card)
                         info.Size = UDim2.new(0.7, 0, 1, 0)
                         info.Position = UDim2.new(0.05, 0, 0, 0)
                         info.BackgroundTransparency = 1
-                        info.Text = serverText
+                        info.Text = "<font color='#ffffff'>Players:</font> " .. server.playing .. "/" .. server.maxPlayers .. "\n<font color='#aaaaaa'>Ping:</font> " .. tostring(server.ping) .. "ms"
                         info.TextColor3 = Color3.fromRGB(200, 200, 200)
                         info.Font = Enum.Font.GothamSemibold
                         info.TextSize = 11
+                        info.RichText = true
                         info.TextXAlignment = Enum.TextXAlignment.Left
+                        info.TextYAlignment = Enum.TextYAlignment.Center
                         
                         local joinBtn = Instance.new("TextButton", card)
-                        joinBtn.Size = UDim2.new(0.2, 0, 0.7, 0)
-                        joinBtn.Position = UDim2.new(0.75, 0, 0.15, 0)
-                        joinBtn.BackgroundColor3 = buttonColor
+                        joinBtn.Size = UDim2.new(0.22, 0, 0.6, 0)
+                        joinBtn.Position = UDim2.new(0.73, 0, 0.2, 0)
+                        joinBtn.BackgroundColor3 = Color3.fromRGB(170, 0, 255)
                         joinBtn.Text = "JOIN"
                         joinBtn.TextColor3 = Color3.fromRGB(255, 255, 255)
                         joinBtn.Font = Enum.Font.GothamBold
@@ -1891,24 +1961,25 @@ local function PopulateServers()
                         joinBtn.AutoButtonColor = false
                         Instance.new("UICorner", joinBtn).CornerRadius = UDim.new(0, 4)
                         
-                        joinBtn.MouseEnter:Connect(function() TweenService:Create(joinBtn, TweenInfo.new(0.2), {BackgroundColor3 = Color3.fromRGB(math.max(buttonColor.R*255-30,0), math.max(buttonColor.G*255-30,0), math.max(buttonColor.B*255-30,0))}):Play() end)
-                        joinBtn.MouseLeave:Connect(function() TweenService:Create(joinBtn, TweenInfo.new(0.2), {BackgroundColor3 = buttonColor}):Play() end)
+                        joinBtn.MouseEnter:Connect(function() pcall(function() game:GetService("TweenService"):Create(joinBtn, TweenInfo.new(0.2), {BackgroundColor3 = Color3.fromRGB(140, 0, 220)}):Play() end) end)
+                        joinBtn.MouseLeave:Connect(function() pcall(function() game:GetService("TweenService"):Create(joinBtn, TweenInfo.new(0.2), {BackgroundColor3 = Color3.fromRGB(170, 0, 255)}):Play() end) end)
                         
                         joinBtn.MouseButton1Click:Connect(function()
                             joinBtn.Text = "..."
-                            TeleportService:TeleportToPlaceInstance(game.PlaceId, server.id, player)
+                            game:GetService("TeleportService"):TeleportToPlaceInstance(game.PlaceId, server.id, game.Players.LocalPlayer)
                         end)
+                        
                         layoutCount = layoutCount + 1
                     end
                 end
             end
         end
         GUI.RefreshServersBtn.Text = "REFRESH SERVERS"
-        isFetchingServers = false
+        GUI.IsFetchingServers = false
     end)
 end
 
-GUI.RefreshServersBtn.MouseButton1Click:Connect(PopulateServers)
+GUI.RefreshServersBtn.MouseButton1Click:Connect(GUI.PopulateServers)
 
 
 -----------------------------------------
@@ -2295,14 +2366,22 @@ RefreshAurasUI = function()
 end
 
 -----------------------------------------
---- CONTEÚDO DA ABA HOME (INÍCIO PREMIUM S7X)
+--- CONTEÚDO DA ABA HOME (INÍCIO PREMIUM S7X) - DESIGN PROFISSIONAL
 -----------------------------------------
+-- [ CONTAINER DE PERFIL ]
+GUI.ProfileContainer = Instance.new("Frame", GUI.InicioFrame)
+GUI.ProfileContainer.Size = UDim2.new(0.9, 0, 0, 100)
+GUI.ProfileContainer.Position = UDim2.new(0.05, 0, 0.05, 0)
+GUI.ProfileContainer.BackgroundColor3 = Color3.fromRGB(20, 20, 25)
+Instance.new("UICorner", GUI.ProfileContainer).CornerRadius = UDim.new(0, 8)
+Instance.new("UIStroke", GUI.ProfileContainer).Color = Color3.fromRGB(170, 0, 255)
+
 -- Avatar com Sombra e Glow Pulsante
-GUI.Avatar = Instance.new("ImageLabel", GUI.InicioFrame)
-GUI.Avatar.Size = UDim2.new(0, 90, 0, 90)
-GUI.Avatar.Position = UDim2.new(0.5, -45, 0.05, 0)
+GUI.Avatar = Instance.new("ImageLabel", GUI.ProfileContainer)
+GUI.Avatar.Size = UDim2.new(0, 70, 0, 70)
+GUI.Avatar.Position = UDim2.new(0.05, 0, 0.5, -35)
 GUI.Avatar.Image = "rbxthumb://type=AvatarHeadShot&id=" .. game.Players.LocalPlayer.UserId .. "&w=150&h=150"
-GUI.Avatar.BackgroundColor3 = Color3.fromRGB(20, 18, 25)
+GUI.Avatar.BackgroundColor3 = Color3.fromRGB(15, 12, 18)
 Instance.new("UICorner", GUI.Avatar).CornerRadius = UDim.new(1, 0)
 
 GUI.AvatarStroke = Instance.new("UIStroke", GUI.Avatar)
@@ -2318,18 +2397,19 @@ task.spawn(function()
     end
 end)
 
--- Nome Principal
-GUI.PlayerName = Instance.new("TextLabel", GUI.InicioFrame)
-GUI.PlayerName.Size = UDim2.new(1, 0, 0, 25)
-GUI.PlayerName.Position = UDim2.new(0, 0, 0.26, 0)
-GUI.PlayerName.Text = string.upper(game.Players.LocalPlayer.DisplayName)
+-- Info Principal (Nome e Tag)
+GUI.PlayerName = Instance.new("TextLabel", GUI.ProfileContainer)
+GUI.PlayerName.Size = UDim2.new(0.6, 0, 0, 20)
+GUI.PlayerName.Position = UDim2.new(0.3, 0, 0.15, 0)
+GUI.PlayerName.Text = string.upper(game.Players.LocalPlayer.DisplayName) .. " (@" .. game.Players.LocalPlayer.Name .. ")"
 GUI.PlayerName.TextColor3 = Color3.fromRGB(255, 255, 255)
 GUI.PlayerName.BackgroundTransparency = 1
 GUI.PlayerName.Font = Enum.Font.GothamBlack
-GUI.PlayerName.TextSize = 18
+GUI.PlayerName.TextSize = 14
+GUI.PlayerName.TextXAlignment = Enum.TextXAlignment.Left
 
 -- Lógica de Tag
-local function getMyTag()
+GUI.GetMyTag = function()
     if _G.EquippedTag then return _G.EquippedTag end
     local success, role = pcall(function() return game.Players.LocalPlayer:GetRoleInGroup(34157675) end) 
     local isPerm = false
@@ -2348,109 +2428,187 @@ local function getMyTag()
     return GetFirebaseRank(game.Players.LocalPlayer) or (success and role and role ~= "Guest" and role) or "User"
 end
 
-GUI.PlayerTagLabel = Instance.new("TextLabel", GUI.InicioFrame)
-GUI.PlayerTagLabel.Size = UDim2.new(1, 0, 0, 20)
-GUI.PlayerTagLabel.Position = UDim2.new(0, 0, 0.33, 0)
-GUI.PlayerTagLabel.Text = "EQUIPPED TAG: " .. string.upper(getMyTag())
+GUI.PlayerTagLabel = Instance.new("TextLabel", GUI.ProfileContainer)
+GUI.PlayerTagLabel.Size = UDim2.new(0.6, 0, 0, 15)
+GUI.PlayerTagLabel.Position = UDim2.new(0.3, 0, 0.35, 0)
+GUI.PlayerTagLabel.Text = "RANK: " .. string.upper(GUI.GetMyTag())
 GUI.PlayerTagLabel.TextColor3 = Color3.fromRGB(170, 0, 255)
 GUI.PlayerTagLabel.BackgroundTransparency = 1
 GUI.PlayerTagLabel.Font = Enum.Font.GothamBold
-GUI.PlayerTagLabel.TextSize = 12
+GUI.PlayerTagLabel.TextSize = 11
+GUI.PlayerTagLabel.TextXAlignment = Enum.TextXAlignment.Left
 
--- Informações do Jogador
-GUI.PingLabel = Instance.new("TextLabel", GUI.InicioFrame)
-GUI.PingLabel.Size = UDim2.new(1, 0, 0, 20)
-GUI.PingLabel.Position = UDim2.new(0, 0, 0.42, 0)
-GUI.PingLabel.Text = "PING: CALCULATING..."
-GUI.PingLabel.TextColor3 = Color3.fromRGB(200, 200, 210)
+-- Botão de Copiar ID Embutido no Perfil
+GUI.CopyMyIdBtn = Instance.new("TextButton", GUI.ProfileContainer)
+GUI.CopyMyIdBtn.Size = UDim2.new(0, 80, 0, 22)
+GUI.CopyMyIdBtn.Position = UDim2.new(0.3, 0, 0.6, 0)
+GUI.CopyMyIdBtn.BackgroundColor3 = Color3.fromRGB(30, 25, 40)
+GUI.CopyMyIdBtn.Text = "COPY MY ID"
+GUI.CopyMyIdBtn.TextColor3 = Color3.fromRGB(200, 200, 255)
+GUI.CopyMyIdBtn.Font = Enum.Font.GothamBold
+GUI.CopyMyIdBtn.TextSize = 10
+Instance.new("UICorner", GUI.CopyMyIdBtn).CornerRadius = UDim.new(0, 4)
+Instance.new("UIStroke", GUI.CopyMyIdBtn).Color = Color3.fromRGB(100, 50, 180)
+
+GUI.CopyMyIdBtn.MouseButton1Click:Connect(function()
+    pcall(function() if setclipboard then setclipboard(tostring(game.Players.LocalPlayer.UserId)) end end)
+    local origText = GUI.CopyMyIdBtn.Text
+    GUI.CopyMyIdBtn.Text = "ID COPIED!"
+    GUI.CopyMyIdBtn.TextColor3 = Color3.fromRGB(0, 255, 150)
+    task.delay(1.5, function()
+        if GUI.CopyMyIdBtn then 
+            GUI.CopyMyIdBtn.Text = origText
+            GUI.CopyMyIdBtn.TextColor3 = Color3.fromRGB(200, 200, 255)
+        end
+    end)
+end)
+
+-- [ CONTAINER DE ESTATÍSTICAS E SERVIDOR ]
+GUI.StatsContainer = Instance.new("Frame", GUI.InicioFrame)
+GUI.StatsContainer.Size = UDim2.new(0.9, 0, 0, 80)
+GUI.StatsContainer.Position = UDim2.new(0.05, 0, 0.3, 0)
+GUI.StatsContainer.BackgroundColor3 = Color3.fromRGB(20, 20, 25)
+Instance.new("UICorner", GUI.StatsContainer).CornerRadius = UDim.new(0, 8)
+Instance.new("UIStroke", GUI.StatsContainer).Color = Color3.fromRGB(170, 0, 255)
+
+GUI.StatsGrid = Instance.new("UIGridLayout", GUI.StatsContainer)
+GUI.StatsGrid.CellSize = UDim2.new(0.48, 0, 0, 30)
+GUI.StatsGrid.CellPadding = UDim2.new(0, 5, 0, 5)
+GUI.StatsGrid.HorizontalAlignment = Enum.HorizontalAlignment.Center
+GUI.StatsGrid.VerticalAlignment = Enum.VerticalAlignment.Center
+
+GUI.PingLabel = Instance.new("TextLabel", GUI.StatsContainer)
 GUI.PingLabel.BackgroundTransparency = 1
+GUI.PingLabel.Text = "PING: --"
+GUI.PingLabel.TextColor3 = Color3.fromRGB(200, 200, 210)
 GUI.PingLabel.Font = Enum.Font.GothamMedium
-GUI.PingLabel.TextSize = 12
+GUI.PingLabel.TextSize = 11
 
+GUI.FpsLabel = Instance.new("TextLabel", GUI.StatsContainer)
+GUI.FpsLabel.BackgroundTransparency = 1
+GUI.FpsLabel.Text = "FPS: --"
+GUI.FpsLabel.TextColor3 = Color3.fromRGB(200, 200, 210)
+GUI.FpsLabel.Font = Enum.Font.GothamMedium
+GUI.FpsLabel.TextSize = 11
+
+GUI.AgeLabel = Instance.new("TextLabel", GUI.StatsContainer)
+GUI.AgeLabel.BackgroundTransparency = 1
+GUI.AgeLabel.Text = "AGE: " .. game.Players.LocalPlayer.AccountAge .. " DAYS"
+GUI.AgeLabel.TextColor3 = Color3.fromRGB(200, 200, 210)
+GUI.AgeLabel.Font = Enum.Font.GothamMedium
+GUI.AgeLabel.TextSize = 11
+
+GUI.ExecLabel = Instance.new("TextLabel", GUI.StatsContainer)
+GUI.ExecLabel.BackgroundTransparency = 1
+GUI.ExecLabel.Text = "EXEC: " .. (identifyexecutor and identifyexecutor() or "Unknown")
+GUI.ExecLabel.TextColor3 = Color3.fromRGB(200, 200, 210)
+GUI.ExecLabel.Font = Enum.Font.GothamMedium
+GUI.ExecLabel.TextSize = 11
+
+-- Atualizador Dinâmico
 task.spawn(function()
+    local frames = 0
+    local lastUpdate = tick()
+    game:GetService("RunService").RenderStepped:Connect(function() frames = frames + 1 end)
+    
     while task.wait(1) do
         if GUI.PingLabel and GUI.PingLabel.Parent then 
             pcall(function() 
-                GUI.PingLabel.Text = "PING: " .. math.round(game.Players.LocalPlayer:GetNetworkPing() * 1000) .. " MS"
-                GUI.PlayerTagLabel.Text = "EQUIPPED TAG: " .. string.upper(getMyTag()) 
+                local pingMs = math.round(game.Players.LocalPlayer:GetNetworkPing() * 1000)
+                GUI.PingLabel.Text = "PING: " .. pingMs .. " MS"
+                GUI.PingLabel.TextColor3 = pingMs < 100 and Color3.fromRGB(0, 255, 150) or (pingMs < 200 and Color3.fromRGB(255, 255, 0) or Color3.fromRGB(255, 50, 50))
+                
+                GUI.PlayerTagLabel.Text = "RANK: " .. string.upper(GUI.GetMyTag()) 
+                
+                local now = tick()
+                local fps = math.round(frames / (now - lastUpdate))
+                frames = 0
+                lastUpdate = now
+                GUI.FpsLabel.Text = "FPS: " .. fps
+                GUI.FpsLabel.TextColor3 = fps > 45 and Color3.fromRGB(0, 255, 150) or (fps > 25 and Color3.fromRGB(255, 255, 0) or Color3.fromRGB(255, 50, 50))
             end) 
         else break end
     end
 end)
 
-GUI.UserIdLabel = Instance.new("TextLabel", GUI.InicioFrame)
-GUI.UserIdLabel.Size = UDim2.new(1, 0, 0, 20)
-GUI.UserIdLabel.Position = UDim2.new(0, 0, 0.49, 0)
-GUI.UserIdLabel.Text = "ACCOUNT ID: " .. game.Players.LocalPlayer.UserId
-GUI.UserIdLabel.TextColor3 = Color3.fromRGB(200, 200, 210)
-GUI.UserIdLabel.BackgroundTransparency = 1
-GUI.UserIdLabel.Font = Enum.Font.GothamMedium
-GUI.UserIdLabel.TextSize = 12
+-- [ BOTÃO DE COPIAR JOB ID ]
+GUI.CopyJobIdBtn = Instance.new("TextButton", GUI.InicioFrame)
+GUI.CopyJobIdBtn.Size = UDim2.new(0.9, 0, 0, 28)
+GUI.CopyJobIdBtn.Position = UDim2.new(0.05, 0, 0.52, 0)
+GUI.CopyJobIdBtn.BackgroundColor3 = Color3.fromRGB(25, 25, 30)
+GUI.CopyJobIdBtn.Text = "COPY SERVER JOBID"
+GUI.CopyJobIdBtn.TextColor3 = Color3.fromRGB(200, 200, 200)
+GUI.CopyJobIdBtn.Font = Enum.Font.GothamBold
+GUI.CopyJobIdBtn.TextSize = 11
+Instance.new("UICorner", GUI.CopyJobIdBtn).CornerRadius = UDim.new(0, 6)
+Instance.new("UIStroke", GUI.CopyJobIdBtn).Color = Color3.fromRGB(100, 100, 120)
 
-local creationDate = os.date("%d/%m/%Y", os.time() - (game.Players.LocalPlayer.AccountAge * 86400))
-GUI.AccountAgeLabel = Instance.new("TextLabel", GUI.InicioFrame)
-GUI.AccountAgeLabel.Size = UDim2.new(1, 0, 0, 20)
-GUI.AccountAgeLabel.Position = UDim2.new(0, 0, 0.56, 0)
-GUI.AccountAgeLabel.Text = "CREATED ON: " .. creationDate
-GUI.AccountAgeLabel.TextColor3 = Color3.fromRGB(200, 200, 210)
-GUI.AccountAgeLabel.BackgroundTransparency = 1
-GUI.AccountAgeLabel.Font = Enum.Font.GothamMedium
-GUI.AccountAgeLabel.TextSize = 12
+GUI.CopyJobIdBtn.MouseButton1Click:Connect(function()
+    pcall(function() if setclipboard then setclipboard(tostring(game.JobId)) end end)
+    local origText = GUI.CopyJobIdBtn.Text
+    GUI.CopyJobIdBtn.Text = "SERVER JOBID COPIED!"
+    GUI.CopyJobIdBtn.TextColor3 = Color3.fromRGB(0, 255, 150)
+    GUI.CopyJobIdBtn.BackgroundColor3 = Color3.fromRGB(20, 40, 25)
+    task.delay(1.5, function()
+        if GUI.CopyJobIdBtn then 
+            GUI.CopyJobIdBtn.Text = origText
+            GUI.CopyJobIdBtn.TextColor3 = Color3.fromRGB(200, 200, 200)
+            GUI.CopyJobIdBtn.BackgroundColor3 = Color3.fromRGB(25, 25, 30)
+        end
+    end)
+end)
 
--- BANNER DISCORD PROFISSIONAL (DESIGN BLURPLE COM VIDRO)
+-- [ BANNER DISCORD PROFISSIONAL ]
 GUI.DiscordBanner = Instance.new("TextButton", GUI.InicioFrame)
-GUI.DiscordBanner.Size = UDim2.new(0.65, 0, 0, 42)
-GUI.DiscordBanner.Position = UDim2.new(0.175, 0, 0.68, 0)
-GUI.DiscordBanner.BackgroundColor3 = Color3.fromRGB(88, 101, 242) -- Cor Oficial do Discord
-GUI.DiscordBanner.BackgroundTransparency = 0.85
+GUI.DiscordBanner.Size = UDim2.new(0.9, 0, 0, 45)
+GUI.DiscordBanner.Position = UDim2.new(0.05, 0, 0.62, 0)
+GUI.DiscordBanner.BackgroundColor3 = Color3.fromRGB(88, 101, 242)
+GUI.DiscordBanner.BackgroundTransparency = 0.8
 GUI.DiscordBanner.Text = ""
 GUI.DiscordBanner.AutoButtonColor = false
 Instance.new("UICorner", GUI.DiscordBanner).CornerRadius = UDim.new(0, 8)
 
 GUI.DiscordStroke = Instance.new("UIStroke", GUI.DiscordBanner)
 GUI.DiscordStroke.Color = Color3.fromRGB(88, 101, 242)
-GUI.DiscordStroke.Thickness = 1.2
+GUI.DiscordStroke.Thickness = 1.5
 
 GUI.DiscordIcon = Instance.new("ImageLabel", GUI.DiscordBanner)
-GUI.DiscordIcon.Size = UDim2.new(0, 22, 0, 22)
-GUI.DiscordIcon.Position = UDim2.new(0.08, 0, 0.5, -11)
+GUI.DiscordIcon.Size = UDim2.new(0, 24, 0, 24)
+GUI.DiscordIcon.Position = UDim2.new(0.05, 0, 0.5, -12)
 GUI.DiscordIcon.BackgroundTransparency = 1
-GUI.DiscordIcon.Image = "rbxassetid://13316134376" -- Logo do Discord
+GUI.DiscordIcon.Image = "rbxassetid://13316134376" 
 GUI.DiscordIcon.ImageColor3 = Color3.fromRGB(255, 255, 255)
 
 GUI.DiscordText = Instance.new("TextLabel", GUI.DiscordBanner)
 GUI.DiscordText.Size = UDim2.new(0.7, 0, 1, 0)
-GUI.DiscordText.Position = UDim2.new(0.25, 0, 0, 0)
+GUI.DiscordText.Position = UDim2.new(0.2, 0, 0, 0)
 GUI.DiscordText.BackgroundTransparency = 1
-GUI.DiscordText.Text = "JOIN DISCORD\ndiscord.gg/s7xhub"
+GUI.DiscordText.Text = "JOIN OUR DISCORD\n<font size='9'>Click to copy invite link</font>"
+GUI.DiscordText.RichText = true
 GUI.DiscordText.TextColor3 = Color3.fromRGB(255, 255, 255)
 GUI.DiscordText.Font = Enum.Font.GothamBold
-GUI.DiscordText.TextSize = 11
+GUI.DiscordText.TextSize = 12
 GUI.DiscordText.TextXAlignment = Enum.TextXAlignment.Left
 
--- Animações do Botão do Discord
 GUI.DiscordBanner.MouseEnter:Connect(function()
     pcall(function()
         game:GetService("TweenService"):Create(GUI.DiscordBanner, TweenInfo.new(0.3), {BackgroundTransparency = 0.3}):Play()
-        game:GetService("TweenService"):Create(GUI.DiscordStroke, TweenInfo.new(0.3), {Thickness = 1.5}):Play()
+        game:GetService("TweenService"):Create(GUI.DiscordStroke, TweenInfo.new(0.3), {Thickness = 2}):Play()
     end)
 end)
 
 GUI.DiscordBanner.MouseLeave:Connect(function()
     pcall(function()
-        game:GetService("TweenService"):Create(GUI.DiscordBanner, TweenInfo.new(0.3), {BackgroundTransparency = 0.85}):Play()
-        game:GetService("TweenService"):Create(GUI.DiscordStroke, TweenInfo.new(0.3), {Thickness = 1.2}):Play()
+        game:GetService("TweenService"):Create(GUI.DiscordBanner, TweenInfo.new(0.3), {BackgroundTransparency = 0.8}):Play()
+        game:GetService("TweenService"):Create(GUI.DiscordStroke, TweenInfo.new(0.3), {Thickness = 1.5}):Play()
     end)
 end)
 
--- Sistema de Cópia e Feedback Visual
 GUI.DiscordBanner.MouseButton1Click:Connect(function()
     pcall(function() if setclipboard then setclipboard("https://discord.gg/s7xhub") end end)
-    
     local origText = GUI.DiscordText.Text
     GUI.DiscordText.Text = "COPIED TO CLIPBOARD!"
     GUI.DiscordText.TextColor3 = Color3.fromRGB(0, 255, 150)
-    
     task.delay(1.5, function()
         if GUI.DiscordText then
             GUI.DiscordText.Text = origText
@@ -2460,9 +2618,26 @@ GUI.DiscordBanner.MouseButton1Click:Connect(function()
 end)
 
 -- Botão de Tag Public (O Olho - Protegido e Ajustado)
-GUI.EyeBtn = Instance.new("ImageButton", GUI.InicioFrame)
-GUI.EyeBtn.Size = UDim2.new(0, 25, 0, 25)
-GUI.EyeBtn.Position = UDim2.new(0.5, -12, 0.84, 0)
+GUI.EyeBtnContainer = Instance.new("Frame", GUI.InicioFrame)
+GUI.EyeBtnContainer.Size = UDim2.new(0.9, 0, 0, 35)
+GUI.EyeBtnContainer.Position = UDim2.new(0.05, 0, 0.76, 0)
+GUI.EyeBtnContainer.BackgroundColor3 = Color3.fromRGB(20, 20, 25)
+Instance.new("UICorner", GUI.EyeBtnContainer).CornerRadius = UDim.new(0, 6)
+Instance.new("UIStroke", GUI.EyeBtnContainer).Color = Color3.fromRGB(45, 45, 55)
+
+GUI.EyeBtnLabel = Instance.new("TextLabel", GUI.EyeBtnContainer)
+GUI.EyeBtnLabel.Size = UDim2.new(0.7, 0, 1, 0)
+GUI.EyeBtnLabel.Position = UDim2.new(0.05, 0, 0, 0)
+GUI.EyeBtnLabel.BackgroundTransparency = 1
+GUI.EyeBtnLabel.Text = "PUBLIC TAG VISIBILITY"
+GUI.EyeBtnLabel.TextColor3 = Color3.fromRGB(200, 200, 210)
+GUI.EyeBtnLabel.Font = Enum.Font.GothamBold
+GUI.EyeBtnLabel.TextSize = 11
+GUI.EyeBtnLabel.TextXAlignment = Enum.TextXAlignment.Left
+
+GUI.EyeBtn = Instance.new("ImageButton", GUI.EyeBtnContainer)
+GUI.EyeBtn.Size = UDim2.new(0, 22, 0, 22)
+GUI.EyeBtn.Position = UDim2.new(1, -30, 0.5, -11)
 GUI.EyeBtn.BackgroundTransparency = 1
 GUI.EyeBtn.Image = "rbxassetid://6031763426" 
 GUI.EyeBtn.ImageColor3 = Color3.fromRGB(170, 0, 255)
@@ -2507,15 +2682,15 @@ _G.TagEnforcer = game:GetService("RunService").Heartbeat:Connect(function()
     end
 end)
 
--- Créditos Alinhados
+-- Créditos Alinhados e Versão
 GUI.CreditsLabel = Instance.new("TextLabel", GUI.InicioFrame)
 GUI.CreditsLabel.Size = UDim2.new(1, 0, 0, 20)
-GUI.CreditsLabel.Position = UDim2.new(0, 0, 0.93, 0)
-GUI.CreditsLabel.Text = "CREATORS: LULU HIROSH"
+GUI.CreditsLabel.Position = UDim2.new(0, 0, 0.9, 0)
+GUI.CreditsLabel.Text = "S7XHUB PREMIUM ENGINE | CREATORS: LULU HIROSH"
 GUI.CreditsLabel.TextColor3 = Color3.fromRGB(100, 100, 110)
 GUI.CreditsLabel.BackgroundTransparency = 1
 GUI.CreditsLabel.Font = Enum.Font.GothamBold
-GUI.CreditsLabel.TextSize = 10
+GUI.CreditsLabel.TextSize = 9
 
 local function resetTabs()
     GUI.InicioFrame.Visible = false; GUI.MainTabFrame.Visible = false; GUI.UltimateFrame.Visible = false; GUI.TagsFrame.Visible = false; GUI.FuncoesFrame.Visible = false; GUI.ConfigFrame.Visible = false; GUI.SpecterFrame.Visible = false; GUI.ServersFrame.Visible = false; GUI.AnimationsFrame.Visible = false; GUI.SysConfigFrame.Visible = false; GUI.SobreFrame.Visible = false
@@ -3359,9 +3534,6 @@ GUI.EquipEverythingBtn.MouseButton1Click:Connect(function()
     end)
 end)
 
-local antiBanVcEnabled = false
-local antiBanVcConn = nil
-
 -----------------------------------------
 --- SISTEMA ANTI-BAN VC (V10 SUPREME ENGINE)
 --- API AudioDeviceInput + Cloaking por MaxDistance = 0 (100% FUNCIONAL)
@@ -3535,6 +3707,7 @@ GUI.AntiBanVcBtn.MouseButton1Click:Connect(function()
 end)
 
 GUI.MainTabFrame.CanvasSize = UDim2.new(0, 0, 0, 500)
+
 -----------------------------------------
 --- CRIAÇÃO DE BOTÕES - FUNCTIONS
 -----------------------------------------
@@ -4406,30 +4579,103 @@ task.spawn(function()
 end)
 
 -----------------------------------------
---- CRIAÇÃO DE BOTÕES - MOVIM (CONFIG)
+--- CRIAÇÃO DE BOTÕES - MOVIM (CONFIG) - PREMIUM DESIGN
 -----------------------------------------
 GUI.ConfigButtonsContainer = Instance.new("Frame", GUI.ConfigFrame)
-GUI.ConfigButtonsContainer.Size = UDim2.new(1, 0, 0, 180)
+GUI.ConfigButtonsContainer.Size = UDim2.new(1, 0, 0, 300)
 GUI.ConfigButtonsContainer.BackgroundTransparency = 1
 GUI.ConfigButtonsContainer.LayoutOrder = 1
-GUI.ConfigGridLayout = addUIGrid(GUI.ConfigButtonsContainer, 0.31)
-GUI.ConfigGridLayout:GetPropertyChangedSignal("AbsoluteContentSize"):Connect(function() GUI.ConfigButtonsContainer.Size = UDim2.new(1, 0, 0, GUI.ConfigGridLayout.AbsoluteContentSize.Y + 10) end)
+GUI.ConfigListLayout = addUIList(GUI.ConfigButtonsContainer)
+GUI.ConfigListLayout:GetPropertyChangedSignal("AbsoluteContentSize"):Connect(function() 
+    GUI.ConfigButtonsContainer.Size = UDim2.new(1, 0, 0, GUI.ConfigListLayout.AbsoluteContentSize.Y + 10) 
+end)
 
-GUI.FlyBtn        = createToggleButton("FLY", GUI.ConfigButtonsContainer)
-GUI.SpeedBtn      = createToggleButton("SPEED", GUI.ConfigButtonsContainer)
-GUI.JumpBtn       = createToggleButton("JUMP", GUI.ConfigButtonsContainer)
-GUI.NoclipBtn     = createToggleButton("NOCLIP", GUI.ConfigButtonsContainer)
-GUI.AntiAfkBtn    = createToggleButton("ANTIAFK", GUI.ConfigButtonsContainer)
-GUI.HitboxBtn     = createToggleButton("HITBOX", GUI.ConfigButtonsContainer)
+-- [ SEÇÃO 1: MOVEMENT & PHYSICS ]
+GUI.MovimTitle1 = Instance.new("TextLabel", GUI.ConfigButtonsContainer)
+GUI.MovimTitle1.Size = UDim2.new(0.85, 0, 0, 20)
+GUI.MovimTitle1.BackgroundTransparency = 1
+GUI.MovimTitle1.Text = "MOVEMENT & PHYSICS"
+GUI.MovimTitle1.TextColor3 = Color3.fromRGB(170, 0, 255)
+GUI.MovimTitle1.Font = Enum.Font.GothamBlack
+GUI.MovimTitle1.TextSize = 12
+GUI.MovimTitle1.TextXAlignment = Enum.TextXAlignment.Center
 
-GUI.SaveCheckBtn  = createButton("SAVE CHECKPOINT", GUI.ConfigButtonsContainer)
-GUI.ClearCheckBtn = createButton("CLEAR CHECKPOINT", GUI.ConfigButtonsContainer)
-GUI.RespawnBtn    = createButton("RESPAWN", GUI.ConfigButtonsContainer)
+GUI.MovimGrid1 = Instance.new("Frame", GUI.ConfigButtonsContainer)
+GUI.MovimGrid1.Size = UDim2.new(1, 0, 0, 100)
+GUI.MovimGrid1.BackgroundTransparency = 1
+GUI.MovimGrid1Layout = addUIGrid(GUI.MovimGrid1, 0.44)
+GUI.MovimGrid1Layout:GetPropertyChangedSignal("AbsoluteContentSize"):Connect(function() 
+    GUI.MovimGrid1.Size = UDim2.new(1, 0, 0, GUI.MovimGrid1Layout.AbsoluteContentSize.Y + 5) 
+end)
 
+GUI.FlyBtn        = createToggleButton("FLY", GUI.MovimGrid1)
+GUI.SpeedBtn      = createToggleButton("SPEED", GUI.MovimGrid1)
+GUI.JumpBtn       = createToggleButton("JUMP", GUI.MovimGrid1)
+GUI.NoclipBtn     = createToggleButton("NOCLIP", GUI.MovimGrid1)
+
+-- [ SEPARADOR ]
+GUI.MovimSep1 = Instance.new("Frame", GUI.ConfigButtonsContainer)
+GUI.MovimSep1.Size = UDim2.new(0.85, 0, 0, 2)
+GUI.MovimSep1.BackgroundColor3 = Color3.fromRGB(40, 40, 45)
+GUI.MovimSep1.BorderSizePixel = 0
+
+-- [ SEÇÃO 2: UTILITIES ]
+GUI.MovimTitle2 = Instance.new("TextLabel", GUI.ConfigButtonsContainer)
+GUI.MovimTitle2.Size = UDim2.new(0.85, 0, 0, 20)
+GUI.MovimTitle2.BackgroundTransparency = 1
+GUI.MovimTitle2.Text = "UTILITIES"
+GUI.MovimTitle2.TextColor3 = Color3.fromRGB(170, 0, 255)
+GUI.MovimTitle2.Font = Enum.Font.GothamBlack
+GUI.MovimTitle2.TextSize = 12
+GUI.MovimTitle2.TextXAlignment = Enum.TextXAlignment.Center
+
+GUI.MovimGrid2 = Instance.new("Frame", GUI.ConfigButtonsContainer)
+GUI.MovimGrid2.Size = UDim2.new(1, 0, 0, 60)
+GUI.MovimGrid2.BackgroundTransparency = 1
+GUI.MovimGrid2Layout = addUIGrid(GUI.MovimGrid2, 0.44)
+GUI.MovimGrid2Layout:GetPropertyChangedSignal("AbsoluteContentSize"):Connect(function() 
+    GUI.MovimGrid2.Size = UDim2.new(1, 0, 0, GUI.MovimGrid2Layout.AbsoluteContentSize.Y + 5) 
+end)
+
+GUI.AntiAfkBtn    = createToggleButton("ANTIAFK", GUI.MovimGrid2)
+GUI.HitboxBtn     = createToggleButton("HITBOX", GUI.MovimGrid2)
+
+-- [ SEÇÃO 3: CHECKPOINTS ]
+GUI.MovimGrid3 = Instance.new("Frame", GUI.ConfigButtonsContainer)
+GUI.MovimGrid3.Size = UDim2.new(1, 0, 0, 40)
+GUI.MovimGrid3.BackgroundTransparency = 1
+GUI.MovimGrid3Layout = addUIGrid(GUI.MovimGrid3, 0.3)
+GUI.MovimGrid3Layout:GetPropertyChangedSignal("AbsoluteContentSize"):Connect(function() 
+    GUI.MovimGrid3.Size = UDim2.new(1, 0, 0, GUI.MovimGrid3Layout.AbsoluteContentSize.Y + 5) 
+end)
+
+GUI.SaveCheckBtn  = createButton("SAVE CHECK", GUI.MovimGrid3)
+GUI.ClearCheckBtn = createButton("CLEAR CHECK", GUI.MovimGrid3)
+GUI.RespawnBtn    = createButton("RESPAWN", GUI.MovimGrid3)
+
+-- Cores Personalizadas Premium para os Botões de Checkpoint
+pcall(function()
+    GUI.SaveCheckBtn.BackgroundColor3 = Color3.fromRGB(20, 40, 25)
+    GUI.SaveCheckBtn.TextColor3 = Color3.fromRGB(100, 255, 150)
+    local saveStroke = GUI.SaveCheckBtn:FindFirstChildOfClass("UIStroke")
+    if saveStroke then saveStroke.Color = Color3.fromRGB(0, 150, 80) end
+
+    GUI.ClearCheckBtn.BackgroundColor3 = Color3.fromRGB(40, 25, 20)
+    GUI.ClearCheckBtn.TextColor3 = Color3.fromRGB(255, 100, 100)
+    local clearStroke = GUI.ClearCheckBtn:FindFirstChildOfClass("UIStroke")
+    if clearStroke then clearStroke.Color = Color3.fromRGB(150, 50, 50) end
+end)
+
+-- [ INSERÇÃO DE KEYBINDS E SLIDERS ]
 addKeybindBox(GUI.FlyBtn, "Fly")
 addKeybindBox(GUI.SpeedBtn, "Speed")
 addKeybindBox(GUI.JumpBtn, "Jump")
 addKeybindBox(GUI.NoclipBtn, "Noclip")
+
+addMiniSlider(GUI.FlyBtn, flySpeedValue, 150, function(val) flySpeedValue = val end)
+addMiniSlider(GUI.SpeedBtn, walkSpeedValue, 150, function(val) walkSpeedValue = val end)
+addMiniSlider(GUI.JumpBtn, jumpPowerValue, 150, function(val) jumpPowerValue = val end)
+addMiniSlider(GUI.HitboxBtn, hitboxSizeValue, 50, function(val) hitboxSizeValue = val end)
 
 addMiniSlider(GUI.FlyBtn, flySpeedValue, 150, function(val) flySpeedValue = val end)
 addMiniSlider(GUI.SpeedBtn, walkSpeedValue, 150, function(val) walkSpeedValue = val end)
@@ -4886,58 +5132,67 @@ end)
 GUI.AdminFrame.CanvasSize = UDim2.new(0, 0, 0, 600)
 
 -----------------------------------------
---- LÓGICA DE TARGET (UI E AÇÕES)
+--- LÓGICA DE TARGET (UI E AÇÕES) - DESIGN MAGNÍFICO E TRACKING AVANÇADO
 -----------------------------------------
 local spectatingPlayer = nil
 
 GUI.TargetInfoContainer = Instance.new("Frame", GUI.SpecterFrame)
-GUI.TargetInfoContainer.Size = UDim2.new(0.9, 0, 0, 80)
-GUI.TargetInfoContainer.BackgroundTransparency = 1
+GUI.TargetInfoContainer.Size = UDim2.new(0.9, 0, 0, 100)
+GUI.TargetInfoContainer.Position = UDim2.new(0.05, 0, 0, 0)
+GUI.TargetInfoContainer.BackgroundColor3 = Color3.fromRGB(20, 20, 25)
 GUI.TargetInfoContainer.LayoutOrder = 1
+Instance.new("UICorner", GUI.TargetInfoContainer).CornerRadius = UDim.new(0, 8)
+Instance.new("UIStroke", GUI.TargetInfoContainer).Color = Color3.fromRGB(170, 0, 255)
 
 GUI.TargetAvatar = Instance.new("ImageLabel", GUI.TargetInfoContainer)
 GUI.TargetAvatar.Size = UDim2.new(0, 70, 0, 70)
-GUI.TargetAvatar.Position = UDim2.new(0, 0, 0.5, -35)
-GUI.TargetAvatar.BackgroundColor3 = Color3.fromRGB(30, 30, 30)
+GUI.TargetAvatar.Position = UDim2.new(0.05, 0, 0.5, -35)
+GUI.TargetAvatar.BackgroundColor3 = Color3.fromRGB(15, 12, 18)
 GUI.TargetAvatar.Image = ""
-Instance.new("UICorner", GUI.TargetAvatar).CornerRadius = UDim.new(0, 4)
+Instance.new("UICorner", GUI.TargetAvatar).CornerRadius = UDim.new(1, 0)
+GUI.TargetAvStroke = Instance.new("UIStroke", GUI.TargetAvatar)
+GUI.TargetAvStroke.Color = Color3.fromRGB(80, 40, 120)
+GUI.TargetAvStroke.Thickness = 2
 
 GUI.TargetSearchBox = Instance.new("TextBox", GUI.TargetInfoContainer)
-GUI.TargetSearchBox.Size = UDim2.new(1, -80, 0, 25)
-GUI.TargetSearchBox.Position = UDim2.new(0, 80, 0, 0)
-GUI.TargetSearchBox.BackgroundColor3 = Color3.fromRGB(40, 40, 40)
-GUI.TargetSearchBox.TextColor3 = Color3.fromRGB(200, 200, 200)
-GUI.TargetSearchBox.Font = Enum.Font.GothamSemibold
+GUI.TargetSearchBox.Size = UDim2.new(0.65, 0, 0, 28)
+GUI.TargetSearchBox.Position = UDim2.new(0.3, 0, 0.1, 0)
+GUI.TargetSearchBox.BackgroundColor3 = Color3.fromRGB(15, 12, 18)
+GUI.TargetSearchBox.TextColor3 = Color3.fromRGB(255, 255, 255)
+GUI.TargetSearchBox.Font = Enum.Font.GothamBold
 GUI.TargetSearchBox.TextSize = 11
-GUI.TargetSearchBox.PlaceholderText = "@username..."
+GUI.TargetSearchBox.PlaceholderText = "SEARCH @USERNAME..."
 GUI.TargetSearchBox.Text = ""
 GUI.TargetSearchBox.ClearTextOnFocus = false
 Instance.new("UICorner", GUI.TargetSearchBox).CornerRadius = UDim.new(0, 4)
 Instance.new("UIStroke", GUI.TargetSearchBox).Color = Color3.fromRGB(170, 0, 255)
 
 GUI.TargetDetails = Instance.new("TextLabel", GUI.TargetInfoContainer)
-GUI.TargetDetails.Size = UDim2.new(1, -115, 0, 45)
-GUI.TargetDetails.Position = UDim2.new(0, 80, 0, 30)
+GUI.TargetDetails.Size = UDim2.new(0.65, 0, 0, 45)
+GUI.TargetDetails.Position = UDim2.new(0.3, 0, 0.45, 0)
 GUI.TargetDetails.BackgroundTransparency = 1
-GUI.TargetDetails.Text = "USERID:\nDISPLAY:\nCREATED:"
+GUI.TargetDetails.Text = "<font color='#787882'>WAITING FOR TARGET...</font>"
 GUI.TargetDetails.TextColor3 = Color3.fromRGB(200, 200, 200)
-GUI.TargetDetails.Font = Enum.Font.GothamSemibold
-GUI.TargetDetails.TextSize = 10
+GUI.TargetDetails.Font = Enum.Font.GothamMedium
+GUI.TargetDetails.TextSize = 11
 GUI.TargetDetails.TextXAlignment = Enum.TextXAlignment.Left
 GUI.TargetDetails.TextYAlignment = Enum.TextYAlignment.Top
+GUI.TargetDetails.RichText = true
 
 GUI.ClickSelectBtn = Instance.new("ImageButton", GUI.TargetInfoContainer)
-GUI.ClickSelectBtn.Size = UDim2.new(0, 30, 0, 30)
-GUI.ClickSelectBtn.Position = UDim2.new(1, -30, 0, 40)
-GUI.ClickSelectBtn.BackgroundColor3 = Color3.fromRGB(15, 15, 15)
+GUI.ClickSelectBtn.Size = UDim2.new(0, 28, 0, 28)
+GUI.ClickSelectBtn.Position = UDim2.new(0.96, -28, 0.1, 0)
+GUI.ClickSelectBtn.BackgroundColor3 = Color3.fromRGB(30, 25, 40)
 GUI.ClickSelectBtn.Image = "rbxassetid://3944676352" 
-Instance.new("UICorner", GUI.ClickSelectBtn).CornerRadius = UDim.new(1, 0)
+Instance.new("UICorner", GUI.ClickSelectBtn).CornerRadius = UDim.new(0, 4)
 Instance.new("UIStroke", GUI.ClickSelectBtn).Color = Color3.fromRGB(170, 0, 255)
 
 local isClickSelecting = false
 GUI.ClickSelectBtn.MouseButton1Click:Connect(function()
     isClickSelecting = not isClickSelecting
-    GUI.ClickSelectBtn.BackgroundColor3 = isClickSelecting and Color3.fromRGB(60, 60, 60) or Color3.fromRGB(15, 15, 15)
+    pcall(function()
+        game:GetService("TweenService"):Create(GUI.ClickSelectBtn, TweenInfo.new(0.3), {BackgroundColor3 = isClickSelecting and Color3.fromRGB(170, 0, 255) or Color3.fromRGB(30, 25, 40)}):Play()
+    end)
 end)
 
 local function setSpectateTarget(targetPlayer, updateText)
@@ -4946,8 +5201,10 @@ local function setSpectateTarget(targetPlayer, updateText)
     if updateText then GUI.TargetSearchBox.Text = "@" .. targetPlayer.Name end
     local creationDate = "Unknown"
     pcall(function() creationDate = os.date("%d/%m/%Y", os.time() - (targetPlayer.AccountAge * 86400)) end)
-    GUI.TargetDetails.Text = "USERID: " .. targetPlayer.UserId .. "\nDISPLAY: " .. string_upper(targetPlayer.DisplayName) .. "\nCREATED: " .. creationDate
+    
+    GUI.TargetDetails.Text = string.format("<font color='#ffffff'><b>%s</b></font>\n<font color='#aa00ff'>ID:</font> %d\n<font color='#aa00ff'>CREATED:</font> %s", string_upper(targetPlayer.DisplayName), targetPlayer.UserId, creationDate)
     GUI.TargetAvatar.Image = "rbxthumb://type=AvatarHeadShot&id=" .. targetPlayer.UserId .. "&w=150&h=150"
+    GUI.TargetAvStroke.Color = Color3.fromRGB(0, 255, 150)
 end
 
 mouse.Button1Down:Connect(function()
@@ -4958,7 +5215,7 @@ mouse.Button1Down:Connect(function()
             if p and p ~= player then
                 setSpectateTarget(p, true)
                 isClickSelecting = false
-                GUI.ClickSelectBtn.BackgroundColor3 = Color3.fromRGB(15, 15, 15)
+                GUI.ClickSelectBtn.BackgroundColor3 = Color3.fromRGB(30, 25, 40)
             end
         end
     end
@@ -4966,7 +5223,10 @@ end)
 
 GUI.TargetSearchBox:GetPropertyChangedSignal("Text"):Connect(function()
     if GUI.TargetSearchBox.Text == "" then
-        spectatingPlayer = nil; GUI.TargetDetails.Text = "USERID:\nDISPLAY:\nCREATED:"; GUI.TargetAvatar.Image = ""
+        spectatingPlayer = nil
+        GUI.TargetDetails.Text = "<font color='#787882'>WAITING FOR TARGET...</font>"
+        GUI.TargetAvatar.Image = ""
+        GUI.TargetAvStroke.Color = Color3.fromRGB(80, 40, 120)
         return
     end
     local text = string_lower(GUI.TargetSearchBox.Text)
@@ -4977,7 +5237,8 @@ GUI.TargetSearchBox:GetPropertyChangedSignal("Text"):Connect(function()
             local lowerName = string_lower(p.Name)
             local lowerDisplay = string_lower(p.DisplayName)
             if string_sub(lowerName, 1, #text) == text or string_sub(lowerDisplay, 1, #text) == text then
-                setSpectateTarget(p, false); break
+                setSpectateTarget(p, false)
+                break
             end
         end
     end
@@ -5001,18 +5262,18 @@ GUI.StandBtn         = createToggleButton("STAND", GUI.ButtonsContainer)
 GUI.BackpackBtn      = createToggleButton("BACKPACK", GUI.ButtonsContainer)
 GUI.DoggyBtn         = createToggleButton("DOGGY", GUI.ButtonsContainer)
 GUI.DragBtn          = createToggleButton("DRAG", GUI.ButtonsContainer)
-GUI.CopyAnimBtn = createToggleButton("AUTO EMOTE", GUI.ButtonsContainer)
+GUI.CopyAnimBtn      = createToggleButton("AUTO EMOTE", GUI.ButtonsContainer)
 
 addKeybindBox(GUI.TargetFlingBtn, "TargetFling")
 
 GUI.WhitelistBtn = createButton("WHITELIST", GUI.ButtonsContainer)
 GUI.TeleportBtn  = createButton("TELEPORT", GUI.ButtonsContainer)
-GUI.CopyIdBtn = createButton("COPY ID", GUI.ButtonsContainer)
+GUI.CopyIdBtn    = createButton("COPY ID", GUI.ButtonsContainer)
 
 GUI.SpecterFrame.CanvasSize = UDim2.new(0, 0, 0, 500)
 
 -----------------------------------------
---- SISTEMA MESTRE DE AÇÕES (TARGET)
+--- SISTEMA MESTRE DE AÇÕES (TARGET) - OFF-MAP LOCATOR PRO
 -----------------------------------------
 local viewEnabled, viewConn = false, nil
 local currentTargetState, targetAttachConn = nil, nil
@@ -5074,9 +5335,11 @@ local function startTargetAction(actionName, btn, animId, actionLogic)
     if myHum then myHum.PlatformStand = true end
 
     targetAttachConn = RunService.Stepped:Connect(function()
-        if spectatingPlayer and spectatingPlayer.Character and player.Character then
+        -- BUSCA AVANÇADA (Mesmo se cair do mapa ou respawnar)
+        local tChar = spectatingPlayer and (spectatingPlayer.Character or workspace:FindFirstChild(spectatingPlayer.Name))
+        if tChar and player.Character then
             local myHrp = player.Character:FindFirstChild("HumanoidRootPart")
-            if myHrp then actionLogic(myHrp, spectatingPlayer.Character, player.Character) end
+            if myHrp then actionLogic(myHrp, tChar, player.Character) end
         end
     end)
 end
@@ -5087,8 +5350,15 @@ GUI.ViewBtn.MouseButton1Click:Connect(function()
     setToggleState(GUI.ViewBtn, viewEnabled)
     if viewEnabled then
         viewConn = RunService.Heartbeat:Connect(function()
-            if spectatingPlayer and spectatingPlayer.Character and spectatingPlayer.Character:FindFirstChild("Humanoid") then camera.CameraSubject = spectatingPlayer.Character.Humanoid
-            elseif player.Character and player.Character:FindFirstChild("Humanoid") then camera.CameraSubject = player.Character.Humanoid end
+            -- BUSCA AVANÇADA PARA CÂMERA (Impede a câmera de quebrar se o player cair no void)
+            local tChar = spectatingPlayer and (spectatingPlayer.Character or workspace:FindFirstChild(spectatingPlayer.Name))
+            local tSubject = tChar and (tChar:FindFirstChild("Humanoid") or tChar:FindFirstChild("Head") or tChar:FindFirstChildWhichIsA("BasePart"))
+            
+            if tSubject then 
+                camera.CameraSubject = tSubject
+            elseif player.Character and player.Character:FindFirstChild("Humanoid") then 
+                camera.CameraSubject = player.Character.Humanoid 
+            end
         end)
     else
         if viewConn then viewConn:Disconnect() viewConn = nil end
@@ -5098,8 +5368,11 @@ end)
 
 GUI.TeleportBtn.MouseButton1Click:Connect(function()
     if not spectatingPlayer then return end
-    if spectatingPlayer.Character and spectatingPlayer.Character:FindFirstChild("HumanoidRootPart") and player.Character and player.Character:FindFirstChild("HumanoidRootPart") then
-        player.Character.HumanoidRootPart.CFrame = spectatingPlayer.Character.HumanoidRootPart.CFrame * CFrame.new(0, 0, -3)
+    local tChar = spectatingPlayer.Character or workspace:FindFirstChild(spectatingPlayer.Name)
+    local tRoot = tChar and (tChar:FindFirstChild("HumanoidRootPart") or tChar:FindFirstChild("Head") or tChar:FindFirstChildWhichIsA("BasePart"))
+    
+    if tRoot and player.Character and player.Character:FindFirstChild("HumanoidRootPart") then
+        player.Character.HumanoidRootPart.CFrame = tRoot.CFrame * CFrame.new(0, 0, -3)
         local origText = GUI.TeleportBtn.Text
         GUI.TeleportBtn.Text = "TELEPORTED!"
         task.delay(1, function() if GUI.TeleportBtn and GUI.TeleportBtn.Parent then GUI.TeleportBtn.Text = origText end end)
@@ -5108,18 +5381,9 @@ end)
 
 GUI.CopyIdBtn.MouseButton1Click:Connect(function()
     if spectatingPlayer then
-        -- Tenta copiar usando a função padrão de executors
-        s_clip, err_clip = pcall(function() 
-            setclipboard(tostring(spectatingPlayer.UserId)) 
-        end)
-        
-        -- Feedback visual no botão
-        orig_text = GUI.CopyIdBtn.Text
-        if s_clip then
-            GUI.CopyIdBtn.Text = "ID COPIED!"
-        else
-            GUI.CopyIdBtn.Text = "ERROR"
-        end
+        local s_clip, err_clip = pcall(function() setclipboard(tostring(spectatingPlayer.UserId)) end)
+        local orig_text = GUI.CopyIdBtn.Text
+        GUI.CopyIdBtn.Text = s_clip and "ID COPIED!" or "ERROR"
         task.delay(1.5, function() if GUI.CopyIdBtn then GUI.CopyIdBtn.Text = orig_text end end)
     end
 end)
@@ -5134,7 +5398,6 @@ GUI.CopyAnimBtn.MouseButton1Click:Connect(function()
     _G.SyncEmoteEnabled = not _G.SyncEmoteEnabled
     pcall(function() if setToggleState then setToggleState(GUI.CopyAnimBtn, _G.SyncEmoteEnabled) end end)
     
-    -- Limpa as animações se desligar a opção
     if not _G.SyncEmoteEnabled then
         for id, track in pairs(_G.ActiveSyncTracks) do
             if track then track:Stop() end
@@ -5143,51 +5406,48 @@ GUI.CopyAnimBtn.MouseButton1Click:Connect(function()
     end
 end)
 
--- Loop de Monitoramento Furtivo (Alta Frequência)
 task.spawn(function()
     while task.wait(0.1) do
-        if _G.SyncEmoteEnabled and spectatingPlayer and spectatingPlayer.Character then -- Usa a variável de alvo do hub [cite: 534]
-            pcall(function()
-                local myChar = game.Players.LocalPlayer.Character
-                local myAnim = myChar and myChar:FindFirstChildOfClass("Humanoid") and myChar.Humanoid:FindFirstChildOfClass("Animator")
-                
-                local tChar = spectatingPlayer.Character
-                local tAnim = tChar and tChar:FindFirstChildOfClass("Humanoid") and tChar.Humanoid:FindFirstChildOfClass("Animator")
-                
-                if myAnim and tAnim then
-                    local tTracks = tAnim:GetPlayingAnimationTracks()
-                    local currentlyPlaying = {}
+        if _G.SyncEmoteEnabled and spectatingPlayer then 
+            local tChar = spectatingPlayer.Character or workspace:FindFirstChild(spectatingPlayer.Name)
+            if tChar then
+                pcall(function()
+                    local myChar = game.Players.LocalPlayer.Character
+                    local myAnim = myChar and myChar:FindFirstChildOfClass("Humanoid") and myChar.Humanoid:FindFirstChildOfClass("Animator")
+                    local tAnim = tChar:FindFirstChildOfClass("Humanoid") and tChar.Humanoid:FindFirstChildOfClass("Animator")
                     
-                    for _, track in ipairs(tTracks) do
-                        if track.Animation and track.Animation.AnimationId then
-                            local id = track.Animation.AnimationId
-                            currentlyPlaying[id] = true
-                            
-                            -- Sincroniza apenas se for uma nova animação de ação/emote
-                            if not _G.ActiveSyncTracks[id] then
-                                -- Filtro Profissional: Ignora animações de movimento (andar/correr)
-                                if track.Priority == Enum.AnimationPriority.Action or track.Priority == Enum.AnimationPriority.Action2 or track.Priority == Enum.AnimationPriority.Action3 then
-                                    local newAnim = Instance.new("Animation")
-                                    newAnim.AnimationId = id
-                                    local newTrack = myAnim:LoadAnimation(newAnim)
-                                    newTrack.Priority = track.Priority
-                                    newTrack:Play()
-                                    newTrack:AdjustSpeed(track.Speed) -- Sincroniza a velocidade exata
-                                    _G.ActiveSyncTracks[id] = newTrack
+                    if myAnim and tAnim then
+                        local tTracks = tAnim:GetPlayingAnimationTracks()
+                        local currentlyPlaying = {}
+                        
+                        for _, track in ipairs(tTracks) do
+                            if track.Animation and track.Animation.AnimationId then
+                                local id = track.Animation.AnimationId
+                                currentlyPlaying[id] = true
+                                
+                                if not _G.ActiveSyncTracks[id] then
+                                    if track.Priority == Enum.AnimationPriority.Action or track.Priority == Enum.AnimationPriority.Action2 or track.Priority == Enum.AnimationPriority.Action3 then
+                                        local newAnim = Instance.new("Animation")
+                                        newAnim.AnimationId = id
+                                        local newTrack = myAnim:LoadAnimation(newAnim)
+                                        newTrack.Priority = track.Priority
+                                        newTrack:Play()
+                                        newTrack:AdjustSpeed(track.Speed)
+                                        _G.ActiveSyncTracks[id] = newTrack
+                                    end
                                 end
                             end
                         end
-                    end
-                    
-                    -- Para as nossas tracks se o alvo parar de fazer o emote
-                    for id, myTrack in pairs(_G.ActiveSyncTracks) do
-                        if not currentlyPlaying[id] then
-                            myTrack:Stop()
-                            _G.ActiveSyncTracks[id] = nil
+                        
+                        for id, myTrack in pairs(_G.ActiveSyncTracks) do
+                            if not currentlyPlaying[id] then
+                                myTrack:Stop()
+                                _G.ActiveSyncTracks[id] = nil
+                            end
                         end
                     end
-                end
-            end)
+                end)
+            end
         end
     end
 end)
@@ -5204,7 +5464,7 @@ end)
 local function toggleTargetFling()
     if not spectatingPlayer and currentTargetState ~= "TargetFling" then return end
     startTargetAction("TargetFling", GUI.TargetFlingBtn, nil, function(myHrp, tChar, myChar)
-        local tHrp = tChar:FindFirstChild("HumanoidRootPart")
+        local tHrp = tChar:FindFirstChild("HumanoidRootPart") or tChar:FindFirstChild("Head") or tChar:FindFirstChildWhichIsA("BasePart")
         local myHum = myChar:FindFirstChild("Humanoid")
         if tHrp and myHum then
             myHum.PlatformStand = true
@@ -5219,7 +5479,7 @@ GUI.TargetFlingBtn.MouseButton1Click:Connect(toggleTargetFling)
 
 GUI.PushBtn.MouseButton1Click:Connect(function()
     startTargetAction("Push", GUI.PushBtn, nil, function(myHrp, tChar)
-        local tHrp = tChar:FindFirstChild("HumanoidRootPart")
+        local tHrp = tChar:FindFirstChild("HumanoidRootPart") or tChar:FindFirstChild("Head") or tChar:FindFirstChildWhichIsA("BasePart")
         if tHrp then myHrp.CFrame = tHrp.CFrame * CFrame.new(0, 0, 1); myHrp.Velocity = tHrp.CFrame.LookVector * 1500 + Vector3.new(0, 500, 0) end
     end)
 end)
@@ -5235,8 +5495,9 @@ GUI.HeadsitBtn.MouseButton1Click:Connect(function()
     task.spawn(function()
         repeat
             pcall(function()
-                if spectatingPlayer and spectatingPlayer.Character and player.Character then
-                    local targethead = spectatingPlayer.Character:FindFirstChild("Head") or spectatingPlayer.Character:FindFirstChild("HumanoidRootPart")
+                local tChar = spectatingPlayer and (spectatingPlayer.Character or workspace:FindFirstChild(spectatingPlayer.Name))
+                if tChar and player.Character then
+                    local targethead = tChar:FindFirstChild("Head") or tChar:FindFirstChild("HumanoidRootPart") or tChar:FindFirstChildWhichIsA("BasePart")
                     local myHrp = player.Character:FindFirstChild("HumanoidRootPart")
                     local myHum = player.Character:FindFirstChild("Humanoid")
                     
@@ -5254,8 +5515,8 @@ end)
 
 GUI.StandBtn.MouseButton1Click:Connect(function()
     startTargetAction("Stand", GUI.StandBtn, 13823324057, function(myHrp, tChar)
-        local tHrp = tChar:FindFirstChild("HumanoidRootPart")
-        if tHrp then myHrp.CFrame = tHrp.CFrame * CFrame.new(-3,1,0); myHrp.Velocity = tHrp.Velocity end
+        local tHrp = tChar:FindFirstChild("HumanoidRootPart") or tChar:FindFirstChild("Head") or tChar:FindFirstChildWhichIsA("BasePart")
+        if tHrp then myHrp.CFrame = tHrp.CFrame * CFrame.new(-3,1,0); myHrp.Velocity = tHrp.Velocity or Vector3.zero end
     end)
 end)
 
@@ -5270,8 +5531,9 @@ GUI.BackpackBtn.MouseButton1Click:Connect(function()
     task.spawn(function()
         repeat
             pcall(function()
-                if spectatingPlayer and spectatingPlayer.Character and player.Character then
-                    local tRoot = spectatingPlayer.Character:FindFirstChild("HumanoidRootPart")
+                local tChar = spectatingPlayer and (spectatingPlayer.Character or workspace:FindFirstChild(spectatingPlayer.Name))
+                if tChar and player.Character then
+                    local tRoot = tChar:FindFirstChild("HumanoidRootPart") or tChar:FindFirstChild("Torso") or tChar:FindFirstChild("UpperTorso") or tChar:FindFirstChild("Head")
                     local myHrp = player.Character:FindFirstChild("HumanoidRootPart")
                     local myHum = player.Character:FindFirstChild("Humanoid")
                     
@@ -5289,16 +5551,16 @@ end)
 
 GUI.DoggyBtn.MouseButton1Click:Connect(function()
     startTargetAction("Doggy", GUI.DoggyBtn, 13694096724, function(myHrp, tChar)
-        local tRoot = tChar:FindFirstChild("LowerTorso") or tChar:FindFirstChild("HumanoidRootPart")
-        local tHrp = tChar:FindFirstChild("HumanoidRootPart")
+        local tRoot = tChar:FindFirstChild("LowerTorso") or tChar:FindFirstChild("HumanoidRootPart") or tChar:FindFirstChild("Head") or tChar:FindFirstChildWhichIsA("BasePart")
+        local tHrp = tChar:FindFirstChild("HumanoidRootPart") or tRoot
         if tRoot then myHrp.CFrame = tRoot.CFrame * CFrame.new(0,0.23,0); myHrp.Velocity = tHrp and tHrp.Velocity or Vector3.zero end
     end)
 end)
 
 GUI.DragBtn.MouseButton1Click:Connect(function()
     startTargetAction("Drag", GUI.DragBtn, 10714360343, function(myHrp, tChar)
-        local tNode = tChar:FindFirstChild("RightHand") or tChar:FindFirstChild("HumanoidRootPart")
-        local tHrp = tChar:FindFirstChild("HumanoidRootPart")
+        local tNode = tChar:FindFirstChild("RightHand") or tChar:FindFirstChild("HumanoidRootPart") or tChar:FindFirstChild("Head") or tChar:FindFirstChildWhichIsA("BasePart")
+        local tHrp = tChar:FindFirstChild("HumanoidRootPart") or tNode
         if tNode then myHrp.CFrame = tNode.CFrame * CFrame.new(0,-2.5,1) * CFrame.Angles(-2, -3, 0); myHrp.Velocity = tHrp and tHrp.Velocity or Vector3.zero end
     end)
 end)
