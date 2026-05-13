@@ -447,72 +447,88 @@ ApplyS7xAura = function(targetPlayer)
 end
 
 -----------------------------------------
---- MOTOR DE PRESENÇA SUPABASE V6 (REAL-TIME + RENDER LOOP FIX)
+--- MOTOR DE PRESENÇA SUPABASE V7 (REAL-TIME ABSOLUTO)
 -----------------------------------------
--- [ FIX ]: Garante que VOCÊ sempre esteja na lista de renderização!
 S7xUsers = S7xUsers or {}
 S7xUsers[game.Players.LocalPlayer.UserId] = true 
 
 _G.PresenceTags = _G.PresenceTags or {} 
 _G.PresenceAuras = _G.PresenceAuras or {} 
 
+-- Pega o ID da sala. Se estiver em um executor isolado, cria uma sala virtual.
+local function GetSafeJobId()
+    local jid = game.JobId
+    if not jid or jid == "" then return "StudioOrPrivate" end
+    return tostring(jid)
+end
+
 -- [ 1. ENVIO DE PRESENÇA ]
 SendPresence = function()
     if not _G.MyTagPublic then return end
-    pcall(function()
-        local payloadData = {
-            job_id = tostring(game.JobId), 
-            Time = os.time(),
-            Tag = _G.EquippedTag or "User", 
-            Aura = _G.EquippedAura or "None"
-        }
-        _G.SupabaseReq("/presence?on_conflict=id", "POST", { id = tostring(game.Players.LocalPlayer.UserId), payload = payloadData })
+    task.spawn(function()
+        pcall(function()
+            local payloadData = {
+                job_id = GetSafeJobId(), 
+                Tag = _G.EquippedTag or "User", 
+                Aura = _G.EquippedAura or "None"
+            }
+            _G.SupabaseReq("/presence?on_conflict=id", "POST", { id = tostring(game.Players.LocalPlayer.UserId), payload = payloadData })
+        end)
     end)
 end
 
--- [ 2. SINCRONIA GLOBAL ] Puxa todos os usuários do servidor que estão no Supabase
+-- [ 2. SINCRONIA GLOBAL ] (Livre de falhas de horário local)
 SyncServerPresence = function()
     if not _G.S7xTagVisible then return end
-    pcall(function()
-        local HttpService = game:GetService("HttpService")
-        local res = _G.SupabaseReq("/presence?select=id,payload", "GET")
-        if res and res.Body then
-            local decoded = HttpService:JSONDecode(res.Body)
-            if type(decoded) == "table" then
-                local currentTime = os.time()
-                local currentServerUsers = {}
+    task.spawn(function()
+        pcall(function()
+            local HttpService = game:GetService("HttpService")
+            local res = _G.SupabaseReq("/presence?select=id,payload", "GET")
+            if res and res.Body then
+                local decoded = HttpService:JSONDecode(res.Body)
+                if type(decoded) == "table" then
+                    local currentServerUsers = {}
+                    local myJobId = GetSafeJobId()
 
-                for _, row in ipairs(decoded) do
-                    local payload = row.payload
-                    if type(payload) == "string" then pcall(function() payload = HttpService:JSONDecode(payload) end) end
-                    
-                    -- Filtra apenas jogadores que estão no MESMO servidor que você
-                    if type(payload) == "table" and payload.job_id == tostring(game.JobId) then
-                        local uid = tonumber(row.id)
-                        -- Checa se o registro é recente (últimos 40 segundos)
-                        if uid and payload.Time and (currentTime - payload.Time <= 40) then
-                            currentServerUsers[uid] = true
-                            _G.PresenceTags[uid] = payload.Tag 
-                            _G.PresenceAuras[uid] = payload.Aura 
-                            S7xUsers[uid] = true
+                    for _, row in ipairs(decoded) do
+                        local payload = row.payload
+                        if type(payload) == "string" then pcall(function() payload = HttpService:JSONDecode(payload) end) end
+                        
+                        -- Se os dois estão na mesma sala exata, renderiza instantaneamente
+                        if type(payload) == "table" and payload.job_id == myJobId then
+                            local uid = tonumber(row.id)
+                            if uid then
+                                currentServerUsers[uid] = true
+                                _G.PresenceTags[uid] = payload.Tag 
+                                _G.PresenceAuras[uid] = payload.Aura 
+                                
+                                if not S7xUsers[uid] then
+                                    S7xUsers[uid] = true
+                                    local targetPlr = game:GetService("Players"):GetPlayerByUserId(uid)
+                                    if targetPlr then
+                                        if ApplyOrUpdateTag then ApplyOrUpdateTag(targetPlr) end
+                                        if ApplyS7xAura then ApplyS7xAura(targetPlr) end
+                                    end
+                                end
+                            end
                         end
                     end
-                end
 
-                -- Limpeza: Se alguém saiu do banco ou do servidor, remove a tag da tela
-                for uid, _ in pairs(S7xUsers) do
-                    if uid ~= game.Players.LocalPlayer.UserId and not currentServerUsers[uid] then
-                        S7xUsers[uid] = nil
-                        _G.PresenceTags[uid] = nil
-                        _G.PresenceAuras[uid] = nil
-                        if SpecialTags[uid] then 
-                            pcall(function() SpecialTags[uid].Label.Parent:Destroy() end)
-                            SpecialTags[uid] = nil 
+                    -- Limpeza: Some da tela quem saiu da sala
+                    for uid, _ in pairs(S7xUsers) do
+                        if uid ~= game.Players.LocalPlayer.UserId and not currentServerUsers[uid] then
+                            S7xUsers[uid] = nil
+                            _G.PresenceTags[uid] = nil
+                            _G.PresenceAuras[uid] = nil
+                            if SpecialTags[uid] then 
+                                pcall(function() SpecialTags[uid].Label.Parent:Destroy() end)
+                                SpecialTags[uid] = nil 
+                            end
                         end
                     end
                 end
             end
-        end
+        end)
     end)
 end
 
@@ -530,7 +546,7 @@ game:GetService("Players").PlayerRemoving:Connect(function(plr)
     end
 end)
 
--- [ 3. LOOP MESTRE DE REDE ] Comunica com o banco a cada 6 segundos
+-- [ 3. LOOP MESTRE DE REDE ] Comunica com o banco a cada 3 SEGUNDOS (Muito rápido!)
 task.spawn(function()
     _G.S7xAdminFrozen = false
     local lastMsgTime, lastFreezeTime = 0, 0
@@ -540,7 +556,7 @@ task.spawn(function()
     SendPresence()
     SyncServerPresence()
 
-    while task.wait(6) do
+    while task.wait(3) do
         UpdateSupabase() 
         SendPresence()   
         SyncServerPresence() 
@@ -591,12 +607,13 @@ game:GetService("RunService").Stepped:Connect(function()
     end
 end)
 
--- [ 4. LOOP DE RENDERIZAÇÃO ] Mantém as Tags e Auras "vivas" na tela a cada 1 segundo!
+-- [ 4. LOOP DE RENDERIZAÇÃO ] Força a GUI a colar no boneco suavemente
 task.spawn(function()
     while task.wait(1) do
         pcall(function()
-            for _, p in ipairs(game:GetService("Players"):GetPlayers()) do
-                if S7xUsers[p.UserId] then 
+            for uid, _ in pairs(S7xUsers) do
+                local p = game:GetService("Players"):GetPlayerByUserId(uid)
+                if p and p.Character then
                     if ApplyOrUpdateTag then ApplyOrUpdateTag(p) end
                     if ApplyS7xAura then ApplyS7xAura(p) end
                 end
