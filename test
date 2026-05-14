@@ -986,158 +986,118 @@ local function showPlayerInfo(tPlayer)
     )
 end
 
-
 -----------------------------------------
---- SISTEMA DE PRESENÇA HÍBRIDO (VELOCITY / UNIVERSAL FIX)
+--- SISTEMA DE SINAL SUPREME (P2P INSTANTÂNEO + SUPABASE)
 -----------------------------------------
-S7xUsers = S7xUsers or {[game.Players.LocalPlayer.UserId] = true}
+_G.S7xUsers = _G.S7xUsers or {[game.Players.LocalPlayer.UserId] = true}
 SpecialTags = SpecialTags or {} 
 _G.PresenceTags = _G.PresenceTags or {} 
+_G.PresenceAuras = _G.PresenceAuras or {}
 
-PRESENCE_NODE = "https://sx7hub-default-rtdb.firebaseio.com/Presence/" .. tostring(game.JobId)
-PRESENCE_AUTH = "?auth=E5UsTROnWPDksN3L6y3SvqjJMNny7IWeGnuwrKat"
+local SIGNAL_ID_R6 = "rbxassetid://180436148"
+local SIGNAL_ID_R15 = "rbxassetid://507770239"
 
--- MOTOR HTTP 100% BLINDADO
-_G.HttpReq = function(options)
-    local reqFunc = nil
-    -- Busca cirúrgica do método de rede do executor
-    if type(request) == "function" then reqFunc = request
-    elseif type(http_request) == "function" then reqFunc = http_request
-    elseif type(http) == "table" and type(http.request) == "function" then reqFunc = http.request
-    elseif type(syn) == "table" and type(syn.request) == "function" then reqFunc = syn.request
-    elseif type(fluxus) == "table" and type(fluxus.request) == "function" then reqFunc = fluxus.request
-    end
-    
-    if not reqFunc then return nil end
-    
-    options.Headers = options.Headers or {}
-    options.Headers["Content-Type"] = "application/json"
-    options.Headers["User-Agent"] = "Roblox/S7xHub-Premium"
-    
-    local success, result = pcall(function() return reqFunc(options) end)
-    return success and result or nil
-end
-
-HttpReq = _G.HttpReq -- Compatibilidade com o resto do script
-
-SIGNAL_ID_R6 = "rbxassetid://180436148"
-SIGNAL_ID_R15 = "rbxassetid://507770239"
-
-DetermineInitialTag = function()
-    if _G.EquippedTag then return _G.EquippedTag end
-    local rank_init = GetFirebaseRank(game.Players.LocalPlayer) or "User"
-    if rank_init == "Creator" or rank_init == "Co-Owner" then rank_init = "Owner" end
-    if rank_init == "Developers" or rank_init == "Dev" then rank_init = "Developer" end
-    if rank_init == "Disigner" or rank_init == "Designer" then rank_init = "Designer" end
-    if rank_init == "Members" then rank_init = "Member" end
-    return rank_init
-end
-_G.EquippedTag = DetermineInitialTag()
-
--- FIREBASE PUSH SEGURO (MÉTODO PATCH PARA BYPASS DO VELOCITY)
+-- [ 1. ENVIO PARA O BANCO DE DADOS ]
 SendPresence = function()
     if not _G.MyTagPublic then return end
     task.spawn(function()
         pcall(function()
-            if type(_G.HttpReq) == "function" then
-                _G.HttpReq({
-                    Url = PRESENCE_NODE .. "/" .. tostring(game.Players.LocalPlayer.UserId) .. ".json" .. PRESENCE_AUTH,
-                    Method = "PATCH", 
-                    Headers = {
-                        ["Content-Type"] = "application/json",
-                        ["User-Agent"] = "Roblox/S7xHub-Premium"
-                    },
-                    Body = game:GetService("HttpService"):JSONEncode({
-                        Time = os.time(),
-                        Tag = _G.EquippedTag or "User",
-                        Aura = _G.EquippedAura or "None"
-                    })
-                })
-            end
+            local payloadData = {
+                job_id = tostring(game.JobId), 
+                Time = os.time(),
+                Tag = _G.EquippedTag or "User", 
+                Aura = _G.EquippedAura or "None"
+            }
+           _G.SupabaseReq("/presence?on_conflict=id", "POST", { id = tostring(game.Players.LocalPlayer.UserId), payload = payloadData })
         end)
     end)
 end
 
--- 2. P2P PING: Gatilho instantâneo que avisa a engine do Roblox
+-- [ 2. GATILHO INSTANTÂNEO P2P (AVISA A ENGINE DO ROBLOX) ]
 SendP2PPing = function()
     pcall(function()
-        char_ping = game.Players.LocalPlayer.Character
-        if not char_ping then return end
-        hum_ping = char_ping:FindFirstChild("Humanoid")
-        animator_ping = hum_ping and hum_ping:FindFirstChild("Animator")
+        local char = game.Players.LocalPlayer.Character
+        if not char then return end
+        local hum = char:FindFirstChild("Humanoid")
+        local animator = hum and hum:FindFirstChild("Animator")
         
-        if animator_ping then
-            targetId_ping = hum_ping.RigType == Enum.HumanoidRigType.R6 and SIGNAL_ID_R6 or SIGNAL_ID_R15
-            syncAnim_ping = Instance.new("Animation")
-            syncAnim_ping.AnimationId = targetId_ping
-            track_ping = animator_ping:LoadAnimation(syncAnim_ping)
-            track_ping.Priority = Enum.AnimationPriority.Core
-            -- Toca invisível e para no mesmo segundo, só para disparar a rede
-            track_ping:Play(0, 0.0001, 0)
-            task.delay(0.2, function() track_ping:Stop() end)
+        if animator then
+            local targetId = hum.RigType == Enum.HumanoidRigType.R6 and SIGNAL_ID_R6 or SIGNAL_ID_R15
+            local syncAnim = Instance.new("Animation")
+            syncAnim.AnimationId = targetId
+            local track = animator:LoadAnimation(syncAnim)
+            track.Priority = Enum.AnimationPriority.Core
+            -- Toca invisível por 0.1s só para disparar a rede instantaneamente para os outros
+            track:Play(0, 0.0001, 0)
+            task.delay(0.2, function() track:Stop() end)
         end
     end)
 end
 
+-- [ 3. SINCRONIZADOR GLOBAL DO SERVIDOR ]
 SyncServerPresence = function()
     if not _G.S7xTagVisible then return end
-    pcall(function()
-        res_sync = game:HttpGet(PRESENCE_NODE .. ".json" .. PRESENCE_AUTH .. "&t=" .. tostring(tick()))
-        if res_sync and res_sync ~= "null" then
-            decoded_sync = game:GetService("HttpService"):JSONDecode(res_sync)
-            if type(decoded_sync) == "table" then
-                currentTime_sync = os.time()
-                for userIdStr, data in pairs(decoded_sync) do
-                    uid_sync = tonumber(userIdStr)
-                    if uid_sync and uid_sync ~= game.Players.LocalPlayer.UserId then
-                        targetPlr_sync = game:GetService("Players"):GetPlayerByUserId(uid_sync)
-                        if targetPlr_sync and data.Time and (currentTime_sync - data.Time <= 25) then
-                            _G.PresenceTags[uid_sync] = data.Tag 
-                            _G.PresenceAuras[uid_sync] = data.Aura -- <-- RECEBE A AURA DO OUTRO
-                            
-                            if not S7xUsers[uid_sync] then
-                                S7xUsers[uid_sync] = true
-                                if NotifySignalReceived then task.spawn(NotifySignalReceived, targetPlr_sync) end
-                            end
-                            
-                            -- Renderiza na sua tela a Tag e a Aura do outro jogador
-                            task.spawn(function()
-                                if ApplyOrUpdateTag then ApplyOrUpdateTag(targetPlr_sync) end
-                                if ApplyS7xAura then ApplyS7xAura(targetPlr_sync) end
-                            end)
-                            
-                        elseif S7xUsers[uid_sync] then
-                            S7xUsers[uid_sync] = nil
-                            _G.PresenceTags[uid_sync] = nil
-                            _G.PresenceAuras[uid_sync] = nil
-                            if SpecialTags[uid_sync] then 
-                                pcall(function() SpecialTags[uid_sync].Label.Parent:Destroy() end)
-                                SpecialTags[uid_sync] = nil 
+    task.spawn(function()
+        pcall(function()
+            local res = _G.SupabaseReq("/presence?select=id,payload", "GET")
+            if res and res.Body then
+                local decoded = game:GetService("HttpService"):JSONDecode(res.Body)
+                if type(decoded) == "table" and not decoded.error then
+                    local currentTime = os.time()
+                    for _, row in ipairs(decoded) do
+                        local payload = row.payload
+                        if type(payload) == "string" then pcall(function() payload = game:GetService("HttpService"):JSONDecode(payload) end) end
+                        
+                        if type(payload) == "table" and payload.job_id == tostring(game.JobId) then
+                            local uid = tonumber(row.id)
+                            -- Aceita sinais dos últimos 35 segundos
+                            if uid and uid ~= game.Players.LocalPlayer.UserId and payload.Time and (currentTime - payload.Time <= 35) then
+                                local targetPlr = game:GetService("Players"):GetPlayerByUserId(uid)
+                                if targetPlr then
+                                    _G.PresenceTags[uid] = payload.Tag 
+                                    _G.PresenceAuras[uid] = payload.Aura 
+                                    
+                                    if not _G.S7xUsers[uid] then
+                                        _G.S7xUsers[uid] = true
+                                        if type(NotifySignalReceived) == "function" then task.spawn(NotifySignalReceived, targetPlr) end
+                                    end
+                                    
+                                    task.spawn(function()
+                                        if ApplyOrUpdateTag then ApplyOrUpdateTag(targetPlr) end
+                                        if ApplyS7xAura then ApplyS7xAura(targetPlr) end
+                                    end)
+                                end
+                            elseif uid and _G.S7xUsers[uid] then
+                                -- Limpa quem saiu ou desligou a tag
+                                _G.S7xUsers[uid] = nil; _G.PresenceTags[uid] = nil; _G.PresenceAuras[uid] = nil
+                                if SpecialTags[uid] then pcall(function() SpecialTags[uid].Label.Parent:Destroy() end); SpecialTags[uid] = nil end
                             end
                         end
                     end
                 end
             end
-        end
+        end)
     end)
 end
 
--- 4. ESCUTA P2P: O "Ouvido" que capta o grito dos outros instantaneamente
+-- [ 4. O ESCUTADOR P2P (A MÁGICA DA VELOCIDADE) ]
 MonitorP2PPing = function(p, char)
-    hum_mon = char:WaitForChild("Humanoid", 5)
-    animator_mon = hum_mon and hum_mon:WaitForChild("Animator", 5)
-    if animator_mon then
-        animator_mon.AnimationPlayed:Connect(function(track)
-            animId_mon = track.Animation and track.Animation.AnimationId or ""
-            if animId_mon == SIGNAL_ID_R6 or animId_mon == SIGNAL_ID_R15 then
-                -- ALGUÉM ABRIU O PAINEL! Baixa a tag dele do Firebase na mesma hora!
+    local hum = char:WaitForChild("Humanoid", 5)
+    local animator = hum and hum:WaitForChild("Animator", 5)
+    if animator then
+        animator.AnimationPlayed:Connect(function(track)
+            local animId = track.Animation and track.Animation.AnimationId or ""
+            if animId == SIGNAL_ID_R6 or animId == SIGNAL_ID_R15 then
+                -- ALGUÉM ACABOU DE INJETAR O SCRIPT NO MAPA!
+                -- 1. Puxamos a tag dele do banco na mesma hora
                 task.spawn(SyncServerPresence)
+                -- 2. Devolvemos o nosso ping para ele carregar a nossa tag instantaneamente também
+                task.delay(1.5, SendInstantSignal)
             end
         end)
     end
 end
 
--- Conecta a escuta nos outros jogadores
 for _, p in ipairs(game:GetService("Players"):GetPlayers()) do
     if p ~= game.Players.LocalPlayer then
         if p.Character then task.spawn(MonitorP2PPing, p, p.Character) end
@@ -1150,42 +1110,36 @@ end)
 
 -- Remove o rastro ao sair
 RemovePresence = function()
-    if not HttpReq then return end
-    pcall(function() HttpReq({ Url = PRESENCE_NODE .. "/" .. tostring(game.Players.LocalPlayer.UserId) .. ".json" .. PRESENCE_AUTH, Method = "DELETE" }) end)
+    if not _G.SupabaseReq then return end
+    pcall(function() _G.SupabaseReq("/presence?id=eq." .. tostring(game.Players.LocalPlayer.UserId), "DELETE") end)
 end
 game:GetService("Players").LocalPlayer.OnTeleport:Connect(RemovePresence)
 pcall(function() game.Close:Connect(RemovePresence) end)
-game:GetService("Players").PlayerRemoving:Connect(function(plr)
-    if plr == game.Players.LocalPlayer then RemovePresence()
-    else
-        S7xUsers[plr.UserId] = nil
-        _G.PresenceTags[plr.UserId] = nil
-        if SpecialTags[plr.UserId] then SpecialTags[plr.UserId] = nil end
-    end
-end)
 
--- LOOP PRINCIPAL DE SINCRONIZAÇÃO E AUTO-LOAD
+-- [ MOTOR DE INICIALIZAÇÃO INSTANTÂNEA ]
 task.spawn(function()
-    if _G.EquippedTag then
-        ApplyOrUpdateTag(game.Players.LocalPlayer)
-    end
+    -- 1. Carrega você mesmo na sua tela
+    if _G.EquippedTag then ApplyOrUpdateTag(game.Players.LocalPlayer) end
+    if _G.EquippedAura and _G.EquippedAura ~= "None" then ApplyS7xAura(game.Players.LocalPlayer) end
     
-    if _G.EquippedAura and _G.EquippedAura ~= "None" then
-        ApplyS7xAura(game.Players.LocalPlayer)
-    end
+    -- 2. Envia para o Supabase
+    SendPresence()
     
-    if SendPresence then SendPresence() end
-    task.delay(1, function() if SendP2PPing then SendP2PPing() end end)
-    if SyncServerPresence then SyncServerPresence() end
+    -- 3. Dispara o Ping P2P para avisar todos na sala (Delay curto para garantir upload)
+    task.delay(0.5, function() if SendP2PPing then SendP2PPing() end end)
     
-    pulseCount_main = 0
-    while task.wait(3) do
-        pulseCount_main = pulseCount_main + 1
-        if SyncServerPresence then SyncServerPresence() end
+    -- 4. Puxa os dados de quem já estava na sala
+    SyncServerPresence()
+    
+    -- Loop de manutenção (A cada 6 segundos)
+    local pulseCount = 0
+    while task.wait(6) do
+        pulseCount = pulseCount + 1
+        SyncServerPresence()
         
-        if pulseCount_main >= 5 then
-            if SendPresence then SendPresence() end
-            pulseCount_main = 0
+        if pulseCount >= 2 then -- Re-envia presença a cada 12s
+            SendPresence()
+            pulseCount = 0
         end
     end
 end)
