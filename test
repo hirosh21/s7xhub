@@ -447,63 +447,215 @@ ApplyS7xAura = function(targetPlayer)
 end
 
 -----------------------------------------
---- PRESENÇA E COMANDOS AO VIVO (MOTOR OTIMIZADO 10S)
+--- MOTOR MESTRE DE SINALIZAÇÃO E RENDERIZAÇÃO V12
+--- (100% Data-Driven & Anti-Void)
 -----------------------------------------
-S7xUsers = S7xUsers or {[game.Players.LocalPlayer.UserId] = true}
-SpecialTags = SpecialTags or {} 
-_G.PresenceTags = _G.PresenceTags or {} 
 
+_G.PresenceTags = _G.PresenceTags or {}
+_G.PresenceAuras = _G.PresenceAuras or {}
+_G.S7xUsers = _G.S7xUsers or {[game.Players.LocalPlayer.UserId] = true}
+
+-- [ 1. ENVIO FORÇADO (BROADCAST DATA) ]
 SendPresence = function()
     if not _G.MyTagPublic then return end
     task.spawn(function()
         pcall(function()
+            -- Garante que se você não tem uma tag equipada no painel, ele envia a sua role real
+            local myCurrentTag = _G.EquippedTag or (type(GetSupabaseRank) == "function" and GetSupabaseRank(game.Players.LocalPlayer)) or "User"
             local payloadData = {
-                job_id = tostring(game.JobId), Time = os.time(),
-                Tag = _G.EquippedTag or "User", Aura = _G.EquippedAura or "None"
+                job_id = tostring(game.JobId), 
+                Time = os.time(),
+                Tag = myCurrentTag, 
+                Aura = _G.EquippedAura or "None"
             }
            _G.SupabaseReq("/presence?on_conflict=id", "POST", { id = tostring(game.Players.LocalPlayer.UserId), payload = payloadData })
         end)
     end)
 end
 
+-- [ 2. LEITURA AGRESSIVA (SERVER PULL) ]
 SyncServerPresence = function()
     if not _G.S7xTagVisible then return end
-    pcall(function()
-        local res = _G.SupabaseReq("/presence?select=id,payload", "GET")
-        if res and res.Body then
-            local decoded = game:GetService("HttpService"):JSONDecode(res.Body)
-            if type(decoded) == "table" then
-                local currentTime = os.time()
-                for _, row in ipairs(decoded) do
-                    if row.payload and row.payload.job_id == tostring(game.JobId) then
-                        local uid = tonumber(row.id)
-                        if uid and uid ~= game.Players.LocalPlayer.UserId then
-                            local targetPlr = game:GetService("Players"):GetPlayerByUserId(uid)
-                            if targetPlr and row.payload.Time and (currentTime - row.payload.Time <= 35) then
-                                _G.PresenceTags[uid] = row.payload.Tag 
-                                _G.PresenceAuras[uid] = row.payload.Aura 
-                                
-                                if not S7xUsers[uid] then
-                                    S7xUsers[uid] = true
-                                    if NotifySignalReceived then task.spawn(NotifySignalReceived, targetPlr) end
-                                end
-                                task.spawn(function()
-                                    if ApplyOrUpdateTag then ApplyOrUpdateTag(targetPlr) end
-                                    if ApplyS7xAura then ApplyS7xAura(targetPlr) end
-                                end)
-                            else
-                                if S7xUsers[uid] then
-                                    S7xUsers[uid] = nil; _G.PresenceTags[uid] = nil; _G.PresenceAuras[uid] = nil
-                                    if SpecialTags[uid] then pcall(function() SpecialTags[uid].Label.Parent:Destroy() end); SpecialTags[uid] = nil end
+    task.spawn(function()
+        pcall(function()
+            local res = _G.SupabaseReq("/presence?select=id,payload", "GET")
+            if res and res.Body then
+                local decoded = game:GetService("HttpService"):JSONDecode(res.Body)
+                if type(decoded) == "table" and not decoded.error then
+                    local currentTime = os.time()
+                    for _, row in ipairs(decoded) do
+                        local payload = row.payload
+                        if type(payload) == "string" then pcall(function() payload = game:GetService("HttpService"):JSONDecode(payload) end) end
+                        
+                        -- Filtra apenas quem está no SEU Servidor atual (JobId)
+                        if type(payload) == "table" and payload.job_id == tostring(game.JobId) then
+                            local uid = tonumber(row.id)
+                            -- Aceita sinais de até 90 segundos atrás (Compensa qualquer lag de internet)
+                            if uid and uid ~= game.Players.LocalPlayer.UserId and payload.Time and (currentTime - payload.Time <= 90) then
+                                local targetPlr = game:GetService("Players"):GetPlayerByUserId(uid)
+                                if targetPlr then
+                                    -- Atualiza a memória local com a tag instantaneamente
+                                    _G.PresenceTags[uid] = payload.Tag 
+                                    _G.PresenceAuras[uid] = payload.Aura 
+                                    _G.S7xUsers[uid] = true -- Adiciona ao radar ignorando animações
+
+                                    task.spawn(function()
+                                        if ApplyOrUpdateTag then ApplyOrUpdateTag(targetPlr) end
+                                        if ApplyS7xAura then ApplyS7xAura(targetPlr) end
+                                    end)
                                 end
                             end
                         end
                     end
                 end
             end
-        end
+        end)
     end)
 end
+
+-- [ 3. RENDERIZAÇÃO BLINDADA (FORÇA A UI NA TELA) ]
+ApplyOrUpdateTag = function(targetPlayer)
+    if not targetPlayer then return end
+    local char_tgt = targetPlayer.Character
+    if not char_tgt or (char_tgt:FindFirstChild("Humanoid") and char_tgt.Humanoid.Health <= 0) then return end
+    
+    local head_tgt = char_tgt:FindFirstChild("Head") or char_tgt:FindFirstChild("HumanoidRootPart")
+    if not head_tgt then return end
+
+    local fRank = (type(GetSupabaseRank) == "function" and GetSupabaseRank(targetPlayer)) or "User"
+    if fRank == "Creator" then fRank = "Owner" end
+    if fRank == "Developers" or fRank == "Dev" then fRank = "Developer" end
+
+    local rankName_tgt = fRank
+    local userCustomData_tgt = _G.CustomTagsConfig and _G.CustomTagsConfig[tostring(targetPlayer.UserId)]
+    
+    local isForcedCustom = false
+    if userCustomData_tgt then
+        if userCustomData_tgt.IsActive == true or userCustomData_tgt.IsActive == "true" then
+            isForcedCustom = true
+        elseif userCustomData_tgt.Equipped and userCustomData_tgt.Equipped ~= "" then
+            rankName_tgt = userCustomData_tgt.Equipped
+        end
+    end
+
+    if targetPlayer == game.Players.LocalPlayer then
+        if isForcedCustom then 
+            _G.EquippedTag = "Custom" 
+        elseif _G.EquippedTag == "Custom" and not userCustomData_tgt then
+            _G.EquippedTag = nil
+        end
+        rankName_tgt = _G.EquippedTag or rankName_tgt
+    else
+        -- Lógica Mestra de Validação para Outros Players (Sem restrição de S7xUsers)
+        if isForcedCustom then
+            rankName_tgt = "Custom"
+        elseif _G.PresenceTags and _G.PresenceTags[targetPlayer.UserId] then
+            rankName_tgt = _G.PresenceTags[targetPlayer.UserId]
+        else
+            -- Se não está no radar do Supabase, destrói tags velhas e aborta
+            local existing = head_tgt:FindFirstChild("S7x_ProTag")
+            if existing then existing:Destroy() end
+            return
+        end
+    end
+
+    -- Limpa o lixo visual se a pessoa usar rank "User" ou "None"
+    if rankName_tgt == "User" or rankName_tgt == "None" then
+        local existing = head_tgt:FindFirstChild("S7x_ProTag")
+        if existing then existing:Destroy() end
+        return
+    end
+
+    -- Prevenção contra clonagem de GUI (Erro comum do Roblox)
+    local count_tgt = 0
+    for _, v in ipairs(head_tgt:GetChildren()) do
+        if v.Name == "S7x_ProTag" and v:IsA("BillboardGui") then
+            count_tgt = count_tgt + 1
+            if count_tgt > 1 then v:Destroy() end
+        end
+    end
+
+    local existingTag_tgt = head_tgt:FindFirstChild("S7x_ProTag")
+    local textLabel_tgt = nil
+
+    if not existingTag_tgt then
+        existingTag_tgt = Instance.new("BillboardGui")
+        existingTag_tgt.Name = "S7x_ProTag"
+        existingTag_tgt.Adornee = head_tgt
+        existingTag_tgt.Size = UDim2.new(3.5, 0, 0.8, 0) 
+        existingTag_tgt.StudsOffset = Vector3.new(0, 4.0, 0) 
+        existingTag_tgt.AlwaysOnTop = true
+        existingTag_tgt.MaxDistance = 100 
+        existingTag_tgt.Enabled = _G.S7xTagVisible
+        existingTag_tgt.Parent = head_tgt
+
+        textLabel_tgt = Instance.new("TextLabel", existingTag_tgt)
+        textLabel_tgt.Name = "Label"
+        textLabel_tgt.Size = UDim2.new(1, 0, 1, 0)
+        textLabel_tgt.BackgroundTransparency = 1
+        textLabel_tgt.Font = Enum.Font.GothamBlack 
+        textLabel_tgt.TextScaled = true
+        textLabel_tgt.TextStrokeTransparency = 0
+        
+        local grad_tgt = Instance.new("UIGradient", textLabel_tgt)
+        grad_tgt.Name = "ShineGradient"
+        grad_tgt.Rotation = 45 
+        
+        game:GetService("TweenService"):Create(existingTag_tgt, TweenInfo.new(1.2, Enum.EasingStyle.Elastic, Enum.EasingDirection.Out), {StudsOffset = Vector3.new(0, 3.2, 0)}):Play()
+        local textConstraint_tgt = Instance.new("UITextSizeConstraint", textLabel_tgt)
+        textConstraint_tgt.MaxTextSize = (rankName_tgt == "Developer") and 9 or 12
+    else
+        textLabel_tgt = existingTag_tgt:FindFirstChild("Label")
+        existingTag_tgt.Enabled = _G.S7xTagVisible 
+    end
+
+    if not textLabel_tgt then return end
+
+    if SpecialTags[targetPlayer.UserId] and SpecialTags[targetPlayer.UserId].Head ~= head_tgt then
+        pcall(function() SpecialTags[targetPlayer.UserId].Label.Parent:Destroy() end)
+    end
+
+    -- Aplicação Inteligente de Casing (Maiúsculas/Minúsculas Reais)
+    local displayName_tgt = rankName_tgt
+    if rankName_tgt == "Custom" then
+        if userCustomData_tgt and userCustomData_tgt.CustomName and userCustomData_tgt.CustomName ~= "" then 
+            displayName_tgt = userCustomData_tgt.CustomName 
+        else
+            displayName_tgt = "Custom"
+        end
+    else
+        local configForName_tgt = _G.CustomTagsConfig and _G.CustomTagsConfig[rankName_tgt]
+        if configForName_tgt and configForName_tgt.CustomName and configForName_tgt.CustomName ~= "" then
+            displayName_tgt = configForName_tgt.CustomName 
+        else
+            displayName_tgt = rankName_tgt 
+        end
+    end
+
+    textLabel_tgt.Text = displayName_tgt
+    SpecialTags[targetPlayer.UserId] = {Label = textLabel_tgt, Rank = rankName_tgt, Head = head_tgt}
+end
+
+-- [ 4. O LOOP IMORTAL DE RESYNC ]
+-- Roda a cada 2 segundos e força as tags a aparecerem, independente de animações!
+if _G.S7xImortalLoop then task.cancel(_G.S7xImortalLoop) end
+_G.S7xImortalLoop = task.spawn(function()
+    while task.wait(2) do
+        pcall(function()
+            -- 1. Garante que você está renderizado e seguro no banco
+            ApplyOrUpdateTag(game.Players.LocalPlayer)
+            
+            -- 2. Lê agressivamente todos os dados dos usuários na sala via Supabase
+            SyncServerPresence()
+            
+            -- 3. Percorre todos que estão conectados no Supabase e força a tag deles na sua tela
+            for uid, _ in pairs(_G.S7xUsers) do
+                local p = game:GetService("Players"):GetPlayerByUserId(uid)
+                if p then ApplyOrUpdateTag(p) end
+            end
+        end)
+    end
+end)
 
 RemovePresence = function()
     if not _G.SupabaseReq then return end
@@ -1241,23 +1393,90 @@ ApplyS7xAura = function(targetPlayer)
     end)
 end
 
+
+-----------------------------------------
+--- MOTOR MESTRE DE SINALIZAÇÃO E RENDERIZAÇÃO V12
+--- (100% Data-Driven & Anti-Void)
+-----------------------------------------
+
+_G.PresenceTags = _G.PresenceTags or {}
+_G.PresenceAuras = _G.PresenceAuras or {}
+_G.S7xUsers = _G.S7xUsers or {[game.Players.LocalPlayer.UserId] = true}
+
+-- [ 1. ENVIO FORÇADO (BROADCAST DATA) ]
+SendPresence = function()
+    if not _G.MyTagPublic then return end
+    task.spawn(function()
+        pcall(function()
+            -- Garante que se você não tem uma tag equipada no painel, ele envia a sua role real
+            local myCurrentTag = _G.EquippedTag or (type(GetSupabaseRank) == "function" and GetSupabaseRank(game.Players.LocalPlayer)) or "User"
+            local payloadData = {
+                job_id = tostring(game.JobId), 
+                Time = os.time(),
+                Tag = myCurrentTag, 
+                Aura = _G.EquippedAura or "None"
+            }
+           _G.SupabaseReq("/presence?on_conflict=id", "POST", { id = tostring(game.Players.LocalPlayer.UserId), payload = payloadData })
+        end)
+    end)
+end
+
+-- [ 2. LEITURA AGRESSIVA (SERVER PULL) ]
+SyncServerPresence = function()
+    if not _G.S7xTagVisible then return end
+    task.spawn(function()
+        pcall(function()
+            local res = _G.SupabaseReq("/presence?select=id,payload", "GET")
+            if res and res.Body then
+                local decoded = game:GetService("HttpService"):JSONDecode(res.Body)
+                if type(decoded) == "table" and not decoded.error then
+                    local currentTime = os.time()
+                    for _, row in ipairs(decoded) do
+                        local payload = row.payload
+                        if type(payload) == "string" then pcall(function() payload = game:GetService("HttpService"):JSONDecode(payload) end) end
+                        
+                        -- Filtra apenas quem está no SEU Servidor atual (JobId)
+                        if type(payload) == "table" and payload.job_id == tostring(game.JobId) then
+                            local uid = tonumber(row.id)
+                            -- Aceita sinais de até 90 segundos atrás (Compensa qualquer lag de internet)
+                            if uid and uid ~= game.Players.LocalPlayer.UserId and payload.Time and (currentTime - payload.Time <= 90) then
+                                local targetPlr = game:GetService("Players"):GetPlayerByUserId(uid)
+                                if targetPlr then
+                                    -- Atualiza a memória local com a tag instantaneamente
+                                    _G.PresenceTags[uid] = payload.Tag 
+                                    _G.PresenceAuras[uid] = payload.Aura 
+                                    _G.S7xUsers[uid] = true -- Adiciona ao radar ignorando animações
+
+                                    task.spawn(function()
+                                        if ApplyOrUpdateTag then ApplyOrUpdateTag(targetPlr) end
+                                        if ApplyS7xAura then ApplyS7xAura(targetPlr) end
+                                    end)
+                                end
+                            end
+                        end
+                    end
+                end
+            end
+        end)
+    end)
+end
+
+-- [ 3. RENDERIZAÇÃO BLINDADA (FORÇA A UI NA TELA) ]
 ApplyOrUpdateTag = function(targetPlayer)
-    if not S7xUsers[targetPlayer.UserId] then return end
-    
+    if not targetPlayer then return end
     local char_tgt = targetPlayer.Character
     if not char_tgt or (char_tgt:FindFirstChild("Humanoid") and char_tgt.Humanoid.Health <= 0) then return end
     
-    local head_tgt = char_tgt:WaitForChild("Head", 3) or char_tgt:FindFirstChild("HumanoidRootPart")
+    local head_tgt = char_tgt:FindFirstChild("Head") or char_tgt:FindFirstChild("HumanoidRootPart")
     if not head_tgt then return end
 
-    local fRank = GetFirebaseRank(targetPlayer) or "User"
+    local fRank = (type(GetSupabaseRank) == "function" and GetSupabaseRank(targetPlayer)) or "User"
     if fRank == "Creator" then fRank = "Owner" end
     if fRank == "Developers" or fRank == "Dev" then fRank = "Developer" end
 
     local rankName_tgt = fRank
     local userCustomData_tgt = _G.CustomTagsConfig and _G.CustomTagsConfig[tostring(targetPlayer.UserId)]
     
-    -- LÓGICA MESTRA
     local isForcedCustom = false
     if userCustomData_tgt then
         if userCustomData_tgt.IsActive == true or userCustomData_tgt.IsActive == "true" then
@@ -1275,13 +1494,27 @@ ApplyOrUpdateTag = function(targetPlayer)
         end
         rankName_tgt = _G.EquippedTag or rankName_tgt
     else
+        -- Lógica Mestra de Validação para Outros Players (Sem restrição de S7xUsers)
         if isForcedCustom then
             rankName_tgt = "Custom"
         elseif _G.PresenceTags and _G.PresenceTags[targetPlayer.UserId] then
             rankName_tgt = _G.PresenceTags[targetPlayer.UserId]
+        else
+            -- Se não está no radar do Supabase, destrói tags velhas e aborta
+            local existing = head_tgt:FindFirstChild("S7x_ProTag")
+            if existing then existing:Destroy() end
+            return
         end
     end
 
+    -- Limpa o lixo visual se a pessoa usar rank "User" ou "None"
+    if rankName_tgt == "User" or rankName_tgt == "None" then
+        local existing = head_tgt:FindFirstChild("S7x_ProTag")
+        if existing then existing:Destroy() end
+        return
+    end
+
+    -- Prevenção contra clonagem de GUI (Erro comum do Roblox)
     local count_tgt = 0
     for _, v in ipairs(head_tgt:GetChildren()) do
         if v.Name == "S7x_ProTag" and v:IsA("BillboardGui") then
@@ -1305,6 +1538,7 @@ ApplyOrUpdateTag = function(targetPlayer)
         existingTag_tgt.Parent = head_tgt
 
         textLabel_tgt = Instance.new("TextLabel", existingTag_tgt)
+        textLabel_tgt.Name = "Label"
         textLabel_tgt.Size = UDim2.new(1, 0, 1, 0)
         textLabel_tgt.BackgroundTransparency = 1
         textLabel_tgt.Font = Enum.Font.GothamBlack 
@@ -1319,7 +1553,7 @@ ApplyOrUpdateTag = function(targetPlayer)
         local textConstraint_tgt = Instance.new("UITextSizeConstraint", textLabel_tgt)
         textConstraint_tgt.MaxTextSize = (rankName_tgt == "Developer") and 9 or 12
     else
-        textLabel_tgt = existingTag_tgt:FindFirstChildOfClass("TextLabel")
+        textLabel_tgt = existingTag_tgt:FindFirstChild("Label")
         existingTag_tgt.Enabled = _G.S7xTagVisible 
     end
 
@@ -1329,12 +1563,10 @@ ApplyOrUpdateTag = function(targetPlayer)
         pcall(function() SpecialTags[targetPlayer.UserId].Label.Parent:Destroy() end)
     end
 
-    -- [ FIX: PRESERVAÇÃO INTELIGENTE DE CASING DA TAG 3D ]
+    -- Aplicação Inteligente de Casing (Maiúsculas/Minúsculas Reais)
     local displayName_tgt = rankName_tgt
-    
     if rankName_tgt == "Custom" then
         if userCustomData_tgt and userCustomData_tgt.CustomName and userCustomData_tgt.CustomName ~= "" then 
-            -- Respeita 100% o que está escrito no Supabase (Maiúsculas e Minúsculas)
             displayName_tgt = userCustomData_tgt.CustomName 
         else
             displayName_tgt = "Custom"
@@ -1342,10 +1574,8 @@ ApplyOrUpdateTag = function(targetPlayer)
     else
         local configForName_tgt = _G.CustomTagsConfig and _G.CustomTagsConfig[rankName_tgt]
         if configForName_tgt and configForName_tgt.CustomName and configForName_tgt.CustomName ~= "" then
-            -- Respeita o nome customizado de uma role padrão
             displayName_tgt = configForName_tgt.CustomName 
         else
-            -- Usa o nome padrão original da role (Ex: "Co-Owner" em vez de "CO-OWNER")
             displayName_tgt = rankName_tgt 
         end
     end
@@ -1354,44 +1584,27 @@ ApplyOrUpdateTag = function(targetPlayer)
     SpecialTags[targetPlayer.UserId] = {Label = textLabel_tgt, Rank = rankName_tgt, Head = head_tgt}
 end
 
--- MOTOR DE EVENTOS: GARANTE TAGS NO RESPAWN (MÁXIMA PRIORIDADE)
-S7xAttachTagEvents = function(plr)
-    plr.CharacterAdded:Connect(function(char)
-        task.wait(0.5)
-        ApplyOrUpdateTag(plr)
-    end)
-end
-
-for _, p in ipairs(game.Players:GetPlayers()) do
-    task.spawn(S7xAttachTagEvents, p)
-end
-game.Players.PlayerAdded:Connect(S7xAttachTagEvents)
-
-
-
--- LOOP PRINCIPAL DE SINCRONIZAÇÃO
-task.spawn(function()
-    -- Passo 1: Aplica SUA tag na SUA tela instantaneamente
-    ApplyOrUpdateTag(game.Players.LocalPlayer)
-    
-    -- Passo 2: Avisa a todos no servidor que você chegou com essa tag
-    SendPresence()
-    
-    -- Passo 3: Puxa imediatamente a tag de todos que já estão na sala
-    SyncServerPresence()
-    
-    pulseCount_main = 0
-    while task.wait(5) do
-        pulseCount_main = pulseCount_main + 1
-        SyncServerPresence()
-        
-        -- Atualiza sua presença a cada 15 segundos
-        if pulseCount_main >= 3 then
-            SendPresence()
-            pulseCount_main = 0
-        end
+-- [ 4. O LOOP IMORTAL DE RESYNC ]
+-- Roda a cada 2 segundos e força as tags a aparecerem, independente de animações!
+if _G.S7xImortalLoop then task.cancel(_G.S7xImortalLoop) end
+_G.S7xImortalLoop = task.spawn(function()
+    while task.wait(2) do
+        pcall(function()
+            -- 1. Garante que você está renderizado e seguro no banco
+            ApplyOrUpdateTag(game.Players.LocalPlayer)
+            
+            -- 2. Lê agressivamente todos os dados dos usuários na sala via Supabase
+            SyncServerPresence()
+            
+            -- 3. Percorre todos que estão conectados no Supabase e força a tag deles na sua tela
+            for uid, _ in pairs(_G.S7xUsers) do
+                local p = game:GetService("Players"):GetPlayerByUserId(uid)
+                if p then ApplyOrUpdateTag(p) end
+            end
+        end)
     end
 end)
+
 
 task.spawn(function()
     while task.wait(1) do
