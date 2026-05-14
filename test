@@ -172,26 +172,18 @@ _G.S7xParseColor = function(c, defaultColor)
     return defaultColor or Color3.fromRGB(255, 255, 255)
 end
 
--- [ FIX MESTRE 1: CACHE BUSTER ]
--- Obriga o executor a fazer o download da Tag nova na hora, burlando a trava de memória local!
+-- [ FIX MESTRE ]: Remoção do bloqueio de URL. Usamos Cabeçalhos Oficiais para burlar o cache!
 _G.SupabaseReq = function(endpoint, method, body)
-    local finalUrl = SUPABASE_URL .. endpoint
-    if method == "GET" or not method then
-        if string.find(endpoint, "?") then
-            finalUrl = finalUrl .. "&_cb=" .. tostring(tick())
-        else
-            finalUrl = finalUrl .. "?_cb=" .. tostring(tick())
-        end
-    end
-
     local options = {
-        Url = finalUrl,
+        Url = SUPABASE_URL .. endpoint,
         Method = method or "GET",
         Headers = {
             ["apikey"] = SUPABASE_KEY,
             ["Authorization"] = "Bearer " .. SUPABASE_KEY,
             ["Content-Type"] = "application/json",
-            ["Prefer"] = (method == "POST" or method == "PATCH") and "resolution=merge-duplicates" or "return=representation"
+            ["Prefer"] = (method == "POST" or method == "PATCH") and "resolution=merge-duplicates" or "return=representation",
+            ["Cache-Control"] = "no-cache, no-store, must-revalidate", -- Bypassa o cache do executor sem quebrar o Supabase
+            ["Pragma"] = "no-cache"
         }
     }
     if body then options.Body = game:GetService("HttpService"):JSONEncode(body) end
@@ -211,9 +203,11 @@ local function UpdateSupabase()
         local res = _G.SupabaseReq("/users?select=id,role", "GET")
         if res and res.Body then
             local decoded = HttpService:JSONDecode(res.Body)
-            if type(decoded) == "table" then
+            if type(decoded) == "table" and not decoded.error then -- Só carrega se não for mensagem de erro
                 local newCache = {}
-                for _, row in ipairs(decoded) do newCache[tostring(row.id)] = CleanVal(row.role) end
+                for _, row in ipairs(decoded) do 
+                    if row.id and row.role then newCache[tostring(row.id)] = CleanVal(row.role) end
+                end
                 SupabaseCache = newCache
             end
         end
@@ -223,19 +217,21 @@ local function UpdateSupabase()
         local res = _G.SupabaseReq("/auras?select=id,payload", "GET")
         if res and res.Body and res.Body ~= LastAurasData then
             local decoded = HttpService:JSONDecode(res.Body)
-            if type(decoded) == "table" then
+            if type(decoded) == "table" and not decoded.error then
                 local parsedAuras = {}
                 for _, row in ipairs(decoded) do
-                    local payload = row.payload
-                    if type(payload) == "string" then pcall(function() payload = HttpService:JSONDecode(payload) end) end
-                    if type(payload) == "table" then
-                        if tostring(row.id) == myUid and isLocked then
-                            parsedAuras[myUid] = _G.CustomAurasConfig[myUid] or {}
-                        else
-                            parsedAuras[tostring(row.id)] = {
-                                Equipped = CleanVal(payload.Equipped), Texture = CleanVal(payload.Texture),
-                                Color = CleanVal(payload.Color), Rate = tonumber(payload.Rate), Unlocked = payload.Unlocked
-                            }
+                    if row.id and row.payload then
+                        local payload = row.payload
+                        if type(payload) == "string" then pcall(function() payload = HttpService:JSONDecode(payload) end) end
+                        if type(payload) == "table" then
+                            if tostring(row.id) == myUid and isLocked then
+                                parsedAuras[myUid] = _G.CustomAurasConfig[myUid] or {}
+                            else
+                                parsedAuras[tostring(row.id)] = {
+                                    Equipped = CleanVal(payload.Equipped), Texture = CleanVal(payload.Texture),
+                                    Color = CleanVal(payload.Color), Rate = tonumber(payload.Rate), Unlocked = payload.Unlocked
+                                }
+                            end
                         end
                     end
                 end
@@ -249,21 +245,23 @@ local function UpdateSupabase()
         local res = _G.SupabaseReq("/tags?select=id,payload", "GET")
         if res and res.Body and res.Body ~= LastTagsData then
             local decoded = HttpService:JSONDecode(res.Body)
-            if type(decoded) == "table" then
+            if type(decoded) == "table" and not decoded.error then
                 local parsedConfig = {}
                 for _, row in ipairs(decoded) do
-                    local payload = row.payload
-                    if type(payload) == "string" then pcall(function() payload = HttpService:JSONDecode(payload) end) end
-                    if type(payload) == "table" then
-                        if tostring(row.id) == myUid and isLocked then
-                            parsedConfig[myUid] = _G.CustomTagsConfig[myUid] or {}
-                        else
-                            parsedConfig[tostring(row.id)] = {
-                                CustomName = CleanVal(payload.CustomName), Effect = CleanVal(payload.Effect),
-                                Color = CleanVal(payload.Color), Color1 = CleanVal(payload.Color1), Color2 = CleanVal(payload.Color2),
-                                StrokeColor = CleanVal(payload.StrokeColor), StrokeTransparency = tonumber(payload.StrokeTransparency),
-                                IsActive = payload.IsActive, Equipped = CleanVal(payload.Equipped), Unlocked = payload.Unlocked
-                            }
+                    if row.id and row.payload then
+                        local payload = row.payload
+                        if type(payload) == "string" then pcall(function() payload = HttpService:JSONDecode(payload) end) end
+                        if type(payload) == "table" then
+                            if tostring(row.id) == myUid and isLocked then
+                                parsedConfig[myUid] = _G.CustomTagsConfig[myUid] or {}
+                            else
+                                parsedConfig[tostring(row.id)] = {
+                                    CustomName = CleanVal(payload.CustomName), Effect = CleanVal(payload.Effect),
+                                    Color = CleanVal(payload.Color), Color1 = CleanVal(payload.Color1), Color2 = CleanVal(payload.Color2),
+                                    StrokeColor = CleanVal(payload.StrokeColor), StrokeTransparency = tonumber(payload.StrokeTransparency),
+                                    IsActive = payload.IsActive, Equipped = CleanVal(payload.Equipped), Unlocked = payload.Unlocked
+                                }
+                            end
                         end
                     end
                 end
