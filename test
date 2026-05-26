@@ -267,27 +267,20 @@ GetFirebaseRank = function(targetPlayer)
 end
 
 -- ==========================================
--- MOTOR MESTRE DE PRESENÇA E RENDERIZAÇÃO
+-- MOTOR MESTRE DE SINALIZAÇÃO E RENDERIZAÇÃO V16
+-- (Correção de Int8 no Supabase e Limpeza Inteligente)
 -- ==========================================
-_G.PresenceTags = _G.PresenceTags or {}
-_G.S7xUsers = _G.S7xUsers or {[game.Players.LocalPlayer.UserId] = true}
-SpecialTags = SpecialTags or {}
 
 SendPresence = function()
     if not _G.MyTagPublic then return end
     task.spawn(function()
         pcall(function()
-            local myId = tostring(game.Players.LocalPlayer.UserId)
-            
-            -- ANTI-RACE CONDITION: Aguarda o banco baixar o seu cargo real antes de enviar
-            if not SupabaseCache or not SupabaseCache[myId] then
-                task.wait(2) -- Tempo para o UpdateSupabase() terminar a leitura
-            end
+            -- O SEGREDO 1: Enviar o ID como NÚMERO EXATO, senão o Supabase bloqueia o pacote!
+            local myId = game.Players.LocalPlayer.UserId 
             
             local myRank = nil
             if type(GetFirebaseRank) == "function" then myRank = GetFirebaseRank(game.Players.LocalPlayer) end
             
-            -- Se não tiver Tag Equipada, ele puxa o Rank. Se o Rank falhar, envia "User".
             local myCurrentTag = _G.EquippedTag or myRank or "User"
             
             local payloadData = {
@@ -296,6 +289,7 @@ SendPresence = function()
                 Tag = myCurrentTag, 
                 Aura = _G.EquippedAura or "None"
             }
+            -- Injeta os dados na nuvem autorizando o formato numérico
            _G.SupabaseReq("/presence?on_conflict=id", "POST", { id = myId, payload = payloadData })
         end)
     end)
@@ -305,12 +299,12 @@ RemovePresence = function()
     if not _G.SupabaseReq then return end
     task.spawn(function()
         pcall(function() 
-            local myId = tostring(game.Players.LocalPlayer.UserId)
-            -- 1. Exclui a sua presença do mapa para os outros
-            _G.SupabaseReq("/presence?id=eq." .. myId, "DELETE") 
+            local myIdStr = tostring(game.Players.LocalPlayer.UserId)
+            -- 1. Exclui a sua presença do mapa para os outros quando você sai
+            _G.SupabaseReq("/presence?id=eq." .. myIdStr, "DELETE") 
             
-            -- 2. Exclui o ID dos comandos remotos (Economiza limites de leitura do Supabase)
-            _G.SupabaseReq("/live_commands?id=eq." .. myId, "DELETE")
+            -- 2. Limpeza Absoluta: Exclui o ID dos comandos remotos (Economiza cota gratuita do Supabase)
+            _G.SupabaseReq("/live_commands?id=eq." .. myIdStr, "DELETE")
         end)
     end)
 end
@@ -10548,15 +10542,15 @@ if GUI and GUI.CustomTagCard and GUI.CTButton then
 end
 
 -- ==========================================
--- 🚀 AUTO-LOAD E RENDERIZAÇÃO INSTANTÂNEA
+-- 🚀 AUTO-LOAD E RENDERIZAÇÃO INSTANTÂNEA (ZERO DELAY)
 -- ==========================================
 task.spawn(function()
-    -- 1. FORÇA A LEITURA DO BANCO DE DADOS NA MESMA HORA (Sem Delays)
+    -- 1. OBRIGA a baixar todos os cargos do banco de dados no milissegundo 1
     if type(UpdateSupabase) == "function" then UpdateSupabase() end
     
     local myUidStr = tostring(game.Players.LocalPlayer.UserId)
     
-    -- 2. Restaura a tag customizada da memória se houver
+    -- 2. Restaura o visual da Tag Customizada no painel (se for a sua)
     if _G.EquippedTag == "Custom" then
         if not _G.CustomTagsConfig then _G.CustomTagsConfig = {} end
         if not _G.CustomTagsConfig[myUidStr] then 
@@ -10564,25 +10558,20 @@ task.spawn(function()
         end
         _G.CustomTagsConfig[myUidStr].IsActive = true
         _G.CustomTagsConfig[myUidStr].Equipped = "Custom"
-    end
-    
-    -- 3. A MÁGICA: Varre o servidor e pinta a cabeça de TODO MUNDO na hora que o script injeta!
-    for _, p in ipairs(game:GetService("Players"):GetPlayers()) do
-        if type(ApplyOrUpdateTag) == "function" then ApplyOrUpdateTag(p) end
-    end
-    
-    -- 4. Sincroniza o botão visual da Custom Tag
-    if GUI and GUI.CTButton and _G.EquippedTag == "Custom" then
-        GUI.CTButton.Text = "EQUIPPED"
-        if SafeTween then
-            SafeTween(GUI.CTButton, 0.3, {BackgroundColor3 = Color3.fromRGB(140, 0, 255), TextColor3 = Color3.fromRGB(255, 255, 255)})
-        else
+        
+        if GUI and GUI.CTButton then
+            GUI.CTButton.Text = "EQUIPPED"
             GUI.CTButton.BackgroundColor3 = Color3.fromRGB(140, 0, 255)
             GUI.CTButton.TextColor3 = Color3.fromRGB(255, 255, 255)
         end
     end
     
-    -- 5. Dispara presença para a rede informando aos outros que você chegou
+    -- 3. A MÁGICA INSTANTÂNEA: Pinta a cabeça de todo mundo sem esperar nem 1 segundo
+    for _, p in ipairs(game:GetService("Players"):GetPlayers()) do
+        if type(ApplyOrUpdateTag) == "function" then ApplyOrUpdateTag(p) end
+    end
+    
+    -- 4. Dispara a sua presença corrigida para a rede (Avisa aos outros a sua Tag real)
     if type(_G.BroadcastInstantUpdate) == "function" then 
         _G.BroadcastInstantUpdate() 
     elseif type(SendPresence) == "function" then 
