@@ -343,7 +343,7 @@ ApplyOrUpdateTag = function(targetPlayer)
     local head_tgt = char_tgt:FindFirstChild("Head") or char_tgt:FindFirstChild("HumanoidRootPart")
     if not head_tgt then return end
 
-    -- Pega o cargo real direto do cache do Supabase
+    -- Hierarquia Absoluta: Puxa o cargo base do Cache da Nuvem primeiro
     local fRank = (type(GetFirebaseRank) == "function" and GetFirebaseRank(targetPlayer)) or "User"
     if fRank == "Creator" then fRank = "Owner" end
     if fRank == "Developers" or fRank == "Dev" then fRank = "Developer" end
@@ -351,9 +351,7 @@ ApplyOrUpdateTag = function(targetPlayer)
     local rankName_tgt = fRank
     local userCustomData_tgt = _G.CustomTagsConfig and _G.CustomTagsConfig[tostring(targetPlayer.UserId)]
     
-    -- O SEGREDO: Diferencia você dos outros jogadores
     if targetPlayer == game.Players.LocalPlayer then
-        -- Força a tag equipada OU o rank base instantâneo
         rankName_tgt = _G.EquippedTag or fRank
     else
         local isActiveUser = (_G.S7xUsers and _G.S7xUsers[targetPlayer.UserId]) or (_G.PresenceTags and _G.PresenceTags[targetPlayer.UserId])
@@ -362,8 +360,14 @@ ApplyOrUpdateTag = function(targetPlayer)
             if existing then existing:Destroy() end
             return 
         end
-        -- Se não tiver na Presença (ainda), usa o cargo real (Ultimate, Manager, etc.) garantindo que os usuários do painel se vejam.
-        rankName_tgt = (_G.PresenceTags and _G.PresenceTags[targetPlayer.UserId]) or fRank
+        
+        -- O SEGREDO DO SYNC: Se a rede enviar "User" (bug), forçamos o cargo Real (Developer, Supreme, etc)
+        local presenceTag = _G.PresenceTags and _G.PresenceTags[targetPlayer.UserId]
+        if presenceTag and presenceTag ~= "User" then
+            rankName_tgt = presenceTag
+        else
+            rankName_tgt = fRank 
+        end
     end
 
     if rankName_tgt == "None" then
@@ -372,7 +376,7 @@ ApplyOrUpdateTag = function(targetPlayer)
         return
     end
 
-    -- Lógica de Tradução do Nome
+    -- Lógica de Tradução de Tags Customizadas ("Lulu", "Hirosh", etc)
     local displayName_tgt = rankName_tgt
     if rankName_tgt == "Custom" then
         if userCustomData_tgt and userCustomData_tgt.CustomName and userCustomData_tgt.CustomName ~= "" then 
@@ -387,7 +391,7 @@ ApplyOrUpdateTag = function(targetPlayer)
         end
     end
 
-    -- Otimização de Destruição e Reconstrução
+    -- Reciclagem visual limpa para evitar flicker na tela dos outros
     local needsRebuild = true
     local existingTag = head_tgt:FindFirstChild("S7x_ProTag")
     
@@ -427,8 +431,9 @@ ApplyOrUpdateTag = function(targetPlayer)
         grad_tgt.Rotation = 45 
         
         game:GetService("TweenService"):Create(newTag, TweenInfo.new(1.2, Enum.EasingStyle.Elastic, Enum.EasingDirection.Out), {StudsOffset = Vector3.new(0, 3.2, 0)}):Play()
+        
         local textConstraint_tgt = Instance.new("UITextSizeConstraint", textLabel_tgt)
-        textConstraint_tgt.MaxTextSize = (rankName_tgt == "Developer") and 9 or 12
+        textConstraint_tgt.MaxTextSize = (rankName_tgt == "Developer" or rankName_tgt == "Supreme") and 9 or 12
 
         if SpecialTags[targetPlayer.UserId] and SpecialTags[targetPlayer.UserId].Label and SpecialTags[targetPlayer.UserId].Label.Parent then
             pcall(function() SpecialTags[targetPlayer.UserId].Label.Parent:Destroy() end)
@@ -970,17 +975,22 @@ _G.PresenceAuras = _G.PresenceAuras or {}
 local SIGNAL_ID_R6 = "rbxassetid://180436148"
 local SIGNAL_ID_R15 = "rbxassetid://507770239"
 
--- [ 1. ENVIO PARA O BANCO DE DADOS ]
 SendPresence = function()
     if not _G.MyTagPublic then return end
     task.spawn(function()
         pcall(function()
+            -- CORREÇÃO CRÍTICA: Usando GetFirebaseRank (nome real da função no seu código)
+            local fRank = (type(GetFirebaseRank) == "function" and GetFirebaseRank(game.Players.LocalPlayer)) or "User"
+            local myCurrentTag = _G.EquippedTag or fRank
+            
             local payloadData = {
                 job_id = tostring(game.JobId), 
                 Time = os.time(),
-                Tag = _G.EquippedTag or "User", 
+                Tag = myCurrentTag, 
                 Aura = _G.EquippedAura or "None"
             }
+            
+            -- Envia os dados para a rede com resolução de conflitos limpa (evita spam de delete)
            _G.SupabaseReq("/presence?on_conflict=id", "POST", { id = tostring(game.Players.LocalPlayer.UserId), payload = payloadData })
         end)
     end)
@@ -1283,29 +1293,31 @@ SyncServerPresence = function()
 end
 
 
--- [ 4. O LOOP IMORTAL DE RESYNC (OTIMIZADO PARA SUPABASE FREE) ]
 if _G.S7xImortalLoop then task.cancel(_G.S7xImortalLoop) end
 _G.S7xImortalLoop = task.spawn(function()
     local tickCount = 0
-    while task.wait(20) do -- Aumentado para 20s para economizar requisições GET
+    
+    -- Pré-carrega o cache do Supabase imediatamente ao injetar o script
+    if type(UpdateSupabase) == "function" then pcall(UpdateSupabase) end
+
+    while task.wait(15) do -- Respeito impecável ao limite REST API
         tickCount = tickCount + 1
         pcall(function()
-            -- 1. Garante a sua renderização
-            if type(ApplyOrUpdateTag) == "function" then ApplyOrUpdateTag(game.Players.LocalPlayer) end
-            
-            -- 2. Lê a presença do mapa
+            -- 1. Sincroniza a Presença da Sala (Puxa os dados dos outros)
             if type(SyncServerPresence) == "function" then SyncServerPresence() end
             
-            -- 3. Puxa Tags/Auras customizadas apenas a cada 60 segundos (tickCount >= 3)
+            -- 2. Atualiza Nomes Customizados e Permissões Globais apenas a cada 45s
             if tickCount >= 3 then
                 if type(UpdateSupabase) == "function" then UpdateSupabase() end
                 tickCount = 0
             end
             
-            -- 4. Renderiza a tropa toda
-            for uid, _ in pairs(_G.S7xUsers) do
-                local p = game:GetService("Players"):GetPlayerByUserId(uid)
-                if p then ApplyOrUpdateTag(p) end
+            -- 3. Emite o seu sinal para o Supabase (Se mantendo "vivo" no radar)
+            if type(SendPresence) == "function" then SendPresence() end
+            
+            -- 4. Atualiza a renderização de toda a tropa renderizada
+            for _, p in ipairs(game:GetService("Players"):GetPlayers()) do
+                if type(ApplyOrUpdateTag) == "function" then ApplyOrUpdateTag(p) end
             end
         end)
     end
