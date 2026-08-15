@@ -62,7 +62,7 @@ pcall(function()
         end
     end
 
-    -- 3. RESTAURAÇÃO FÍSICA DO PERSONAGEM (Hard Reset do Corpo)
+    -- 3. RESTAURAÇÃO FÍSICA SEGURA (Sem corromper a colisão nativa do corpo)
     pcall(function()
         local char = LP.Character
         if char then
@@ -82,14 +82,6 @@ pcall(function()
                 if hrp:FindFirstChild("BodyGyro") then hrp.BodyGyro:Destroy() end
                 if hrp:FindFirstChild("BodyVelocity") then hrp.BodyVelocity:Destroy() end
             end
-            for _, part in ipairs(char:GetDescendants()) do
-                if part:IsA("BasePart") then
-                    part.CanCollide = true
-                    part.Massless = false
-                    part.CustomPhysicalProperties = PhysicalProperties.new(0.7, 0.3, 0.5, 1, 1)
-                    if part.Name ~= "HumanoidRootPart" then part.Transparency = 0 end
-                end
-            end
         end
         workspace.CurrentCamera.CameraType = Enum.CameraType.Custom
         if char and char:FindFirstChild("Humanoid") then
@@ -97,11 +89,11 @@ pcall(function()
         end
     end)
 
-    -- 4. DESTRUIÇÃO DE OBJETOS NO MAPA E RESET DE LÓGICA
+    -- 4. DESTRUIÇÃO DE OBJETOS DA ENGINE S7X (Preservando o mapa)
     pcall(function()
         if workspace:FindFirstChild("S7xJesusPlatform") then workspace.S7xJesusPlatform:Destroy() end
         if workspace.CurrentCamera:FindFirstChild("S7xRainAtt") then workspace.CurrentCamera.S7xRainAtt:Destroy() end
-        if type(_G.S7xClearAllShaders) == "function" then _G.S7xClearAllShaders() end
+        -- A chamada global de limpeza de shaders foi removida daqui para não "clarear" a iluminação original do jogo.
         if type(_G.S7xClearAimbotESP) == "function" then _G.S7xClearAimbotESP() end
     end)
 
@@ -277,6 +269,9 @@ end
 -- ==========================================
 -- OTIMIZADOR DE NUVEM (PUXA APENAS TAGS E CARGOS)
 -- ==========================================
+-- ==========================================
+-- OTIMIZADOR DE NUVEM (PUXA APENAS TAGS E CARGOS)
+-- ==========================================
 UpdateSupabase = function()
     local HttpService = game:GetService("HttpService")
     local myUid = tostring(game.Players.LocalPlayer.UserId)
@@ -309,11 +304,16 @@ UpdateSupabase = function()
                         if rowUid == myUid and isLocalLocked and parsedConfig[myUid] then
                             -- Preserva local
                         else
+                            -- [ NOVO ]: Suporte completo para 5 Camadas de Cor + Borda
                             parsedConfig[rowUid] = {
                                 CustomName = CleanVal(payload.CustomName), Effect = CleanVal(payload.Effect),
-                                Color = CleanVal(payload.Color), Color1 = CleanVal(payload.Color1), Color2 = CleanVal(payload.Color2),
+                                Color1 = CleanVal(payload.Color1 or payload.Color), 
+                                Color2 = CleanVal(payload.Color2),
+                                Color3 = CleanVal(payload.Color3),
+                                Color4 = CleanVal(payload.Color4),
+                                Color5 = CleanVal(payload.Color5),
                                 StrokeColor = CleanVal(payload.StrokeColor), StrokeTransparency = tonumber(payload.StrokeTransparency),
-                                Font = CleanVal(payload.Font) or "GothamBlack", -- [ NOVO ]: Salva a fonte na memória
+                                Font = CleanVal(payload.Font) or "GothamBlack",
                                 IsActive = payload.IsActive, Equipped = CleanVal(payload.Equipped), Unlocked = payload.Unlocked
                             }
                         end
@@ -1530,14 +1530,17 @@ end) -- Fechamento do task.spawn restaurado
 -- Limpa loops fantasmas
 if _G.TagRenderConnection then _G.TagRenderConnection:Disconnect() end
 
+-----------------------------------------
+--- RENDERIZADOR DE TAGS E CORES (CORES TOTALMENTE CUSTOMIZÁVEIS)
+-----------------------------------------
+if _G.TagRenderConnection then _G.TagRenderConnection:Disconnect() end
+
 _G.TagRenderConnection = game:GetService("RunService").RenderStepped:Connect(function()
     if not _G.S7xTagVisible then return end
     
     local t = tick()
-    local hue = (t % 5) / 5
-    local fastHue = (t % 2.5) / 2.5
     local metallicOffset = (t * 0.7) % 2 - 1
-    local pulseSin = (math.sin(t * 3.5) + 1) / 2 -- Varia suavemente de 0 a 1
+    local pulseSin = (math.sin(t * 3.5) + 1) / 2 
     local fireOffset = (math.sin(t * 6) * 0.15)
 
     for userId, data in pairs(SpecialTags) do
@@ -1553,25 +1556,7 @@ _G.TagRenderConnection = game:GetService("RunService").RenderStepped:Connect(fun
         local grad = lbl:FindFirstChild("ShineGradient") or Instance.new("UIGradient", lbl)
 
         pcall(function()
-            local function ApplyMetallic(baseColor)
-                grad.Color = ColorSequence.new({
-                    ColorSequenceKeypoint.new(0, baseColor),
-                    ColorSequenceKeypoint.new(0.40, baseColor),
-                    ColorSequenceKeypoint.new(0.5, Color3.fromRGB(255, 255, 255)),
-                    ColorSequenceKeypoint.new(0.60, baseColor),
-                    ColorSequenceKeypoint.new(1, baseColor)
-                })
-                grad.Offset = Vector2.new(metallicOffset, 0)
-                lbl.TextColor3 = Color3.fromRGB(255, 255, 255)
-            end
-            
-            local function ApplySolid(color)
-                grad.Color = ColorSequence.new(Color3.fromRGB(255, 255, 255))
-                grad.Offset = Vector2.new(0, 0)
-                lbl.TextColor3 = color
-            end
-
-            -- Busca configuração
+            -- Busca a configuração customizada do jogador
             local customConf = nil
             if rank == "Custom" then
                 customConf = _G.CustomTagsConfig and _G.CustomTagsConfig[tostring(userId)]
@@ -1579,9 +1564,15 @@ _G.TagRenderConnection = game:GetService("RunService").RenderStepped:Connect(fun
                 customConf = _G.CustomTagsConfig and _G.CustomTagsConfig[rank]
             end
             
-            -- LÓGICA DE EFEITOS DINÂMICOS DA TAG EDIT
+            -- LÓGICA DE EFEITOS DINÂMICOS COM 5 CORES
             if customConf then
-                local cMain = _G.S7xParseColor(customConf.Color, Color3.fromRGB(255, 255, 255))
+                -- Extrai as 5 camadas de cor da Customização do Jogador
+                local c1 = _G.S7xParseColor(customConf.Color1 or customConf.Color, Color3.fromRGB(255, 255, 255))
+                local c2 = _G.S7xParseColor(customConf.Color2, Color3.fromRGB(200, 200, 200))
+                local c3 = _G.S7xParseColor(customConf.Color3, Color3.fromRGB(150, 150, 150))
+                local c4 = _G.S7xParseColor(customConf.Color4, Color3.fromRGB(100, 100, 100))
+                local c5 = _G.S7xParseColor(customConf.Color5, Color3.fromRGB(50, 50, 50))
+                
                 local cStroke = _G.S7xParseColor(customConf.StrokeColor, Color3.fromRGB(0, 0, 0))
                 local transpStroke = tonumber(customConf.StrokeTransparency) or 0
                 local effect = customConf.Effect or "Solid"
@@ -1589,152 +1580,133 @@ _G.TagRenderConnection = game:GetService("RunService").RenderStepped:Connect(fun
                 lbl.TextStrokeColor3 = cStroke
                 lbl.TextStrokeTransparency = transpStroke
 
+                -- O SEGREDO PROFISSIONAL: Cada efeito agora usa as Cores (C1 até C5) mapeadas
                 if effect == "Metallic" or effect == "Metalico" then
-                    ApplyMetallic(cMain)
-
-                elseif effect == "Duo-chrome" then
-                    local c1 = _G.S7xParseColor(customConf.Color1, Color3.fromRGB(255, 240, 255))
-                    local c2 = _G.S7xParseColor(customConf.Color2, Color3.fromRGB(240, 255, 255))
-                    
                     grad.Color = ColorSequence.new({
                         ColorSequenceKeypoint.new(0, c1),
-                        ColorSequenceKeypoint.new(0.5, Color3.fromRGB(255, 255, 255)),
-                        ColorSequenceKeypoint.new(1, c2)
+                        ColorSequenceKeypoint.new(0.40, c1),
+                        ColorSequenceKeypoint.new(0.5, c2), -- Brilho Metálico
+                        ColorSequenceKeypoint.new(0.60, c1),
+                        ColorSequenceKeypoint.new(1, c1)
+                    })
+                    grad.Offset = Vector2.new(metallicOffset, 0)
+                    lbl.TextColor3 = Color3.fromRGB(255, 255, 255)
+
+                elseif effect == "Duo-chrome" then
+                    grad.Color = ColorSequence.new({
+                        ColorSequenceKeypoint.new(0, c1),
+                        ColorSequenceKeypoint.new(0.5, c2),
+                        ColorSequenceKeypoint.new(1, c3)
                     })
                     grad.Offset = Vector2.new(metallicOffset * 0.8, 0)
                     lbl.TextColor3 = Color3.fromRGB(255, 255, 255)
 
                 elseif effect == "Rainbow" or effect == "Chroma" then
-                    -- Efeito 1: Arco-íris fluido de alta fidelidade
+                    -- Usa as 5 cores para formar uma onda Chroma personalizada
                     grad.Color = ColorSequence.new({
-                        ColorSequenceKeypoint.new(0, Color3.fromHSV((fastHue + 0) % 1, 0.9, 1)),
-                        ColorSequenceKeypoint.new(0.25, Color3.fromHSV((fastHue + 0.25) % 1, 0.9, 1)),
-                        ColorSequenceKeypoint.new(0.5, Color3.fromHSV((fastHue + 0.5) % 1, 0.9, 1)),
-                        ColorSequenceKeypoint.new(0.75, Color3.fromHSV((fastHue + 0.75) % 1, 0.9, 1)),
-                        ColorSequenceKeypoint.new(1, Color3.fromHSV((fastHue + 1) % 1, 0.9, 1))
+                        ColorSequenceKeypoint.new(0, c1),
+                        ColorSequenceKeypoint.new(0.25, c2),
+                        ColorSequenceKeypoint.new(0.5, c3),
+                        ColorSequenceKeypoint.new(0.75, c4),
+                        ColorSequenceKeypoint.new(1, c5)
                     })
-                    grad.Offset = Vector2.new(0, 0)
+                    grad.Offset = Vector2.new(metallicOffset, 0)
                     lbl.TextColor3 = Color3.fromRGB(255, 255, 255)
 
                 elseif effect == "Neon Pulse" then
-                    -- Efeito 2: Pulsação Neon entre a cor principal e um brilho puro
-                    local lerpedColor = cMain:Lerp(Color3.fromRGB(255, 255, 255), pulseSin * 0.6)
+                    -- Pulsa intensamente entre a Cor 1 e a Cor 2
+                    local lerpedColor = c1:Lerp(c2, pulseSin * 0.6)
                     grad.Color = ColorSequence.new(lerpedColor)
                     grad.Offset = Vector2.new(0, 0)
                     lbl.TextColor3 = lerpedColor
 
                 elseif effect == "Cosmic" then
-                    -- Efeito 3: Galáxia Cósmica animada (Roxo, Ciano, Magenta)
+                    -- Mapeia C1 a C5 na estrutura de uma Galáxia
                     grad.Color = ColorSequence.new({
-                        ColorSequenceKeypoint.new(0, Color3.fromRGB(138, 43, 226)),
-                        ColorSequenceKeypoint.new(0.35, Color3.fromRGB(0, 229, 255)),
-                        ColorSequenceKeypoint.new(0.5, Color3.fromRGB(255, 255, 255)),
-                        ColorSequenceKeypoint.new(0.75, Color3.fromRGB(255, 20, 147)),
-                        ColorSequenceKeypoint.new(1, Color3.fromRGB(75, 0, 130))
+                        ColorSequenceKeypoint.new(0, c1),
+                        ColorSequenceKeypoint.new(0.35, c2),
+                        ColorSequenceKeypoint.new(0.5, c3),
+                        ColorSequenceKeypoint.new(0.75, c4),
+                        ColorSequenceKeypoint.new(1, c5)
                     })
                     grad.Offset = Vector2.new(metallicOffset * 0.9, 0)
                     lbl.TextColor3 = Color3.fromRGB(255, 255, 255)
 
                 elseif effect == "Fire" then
-                    -- Efeito 4: Chamas ardentes oscilantes
+                    -- As chamas usam C1 (Base), C2 e C3 (Meio) e C4 (Topo)
                     grad.Color = ColorSequence.new({
-                        ColorSequenceKeypoint.new(0, Color3.fromRGB(255, 30, 0)),
-                        ColorSequenceKeypoint.new(0.45, Color3.fromRGB(255, 120, 0)),
-                        ColorSequenceKeypoint.new(0.7, Color3.fromRGB(255, 230, 50)),
-                        ColorSequenceKeypoint.new(1, Color3.fromRGB(200, 0, 0))
+                        ColorSequenceKeypoint.new(0, c1),
+                        ColorSequenceKeypoint.new(0.45, c2),
+                        ColorSequenceKeypoint.new(0.7, c3),
+                        ColorSequenceKeypoint.new(1, c4)
                     })
                     grad.Offset = Vector2.new(fireOffset, 0)
                     lbl.TextColor3 = Color3.fromRGB(255, 255, 255)
 
                 elseif effect == "Gold Luxury" then
-                    -- Efeito 5: Ouro maciço com flashes diamantados
                     grad.Color = ColorSequence.new({
-                        ColorSequenceKeypoint.new(0, Color3.fromRGB(218, 165, 32)),
-                        ColorSequenceKeypoint.new(0.4, Color3.fromRGB(255, 215, 0)),
-                        ColorSequenceKeypoint.new(0.5, Color3.fromRGB(255, 255, 255)),
-                        ColorSequenceKeypoint.new(0.6, Color3.fromRGB(255, 215, 0)),
-                        ColorSequenceKeypoint.new(1, Color3.fromRGB(184, 134, 11))
+                        ColorSequenceKeypoint.new(0, c1),
+                        ColorSequenceKeypoint.new(0.4, c2),
+                        ColorSequenceKeypoint.new(0.5, c3), -- Brilho Central Diamante
+                        ColorSequenceKeypoint.new(0.6, c2),
+                        ColorSequenceKeypoint.new(1, c1)
                     })
                     grad.Offset = Vector2.new(metallicOffset * 1.1, 0)
                     lbl.TextColor3 = Color3.fromRGB(255, 255, 255)
 
                 else
-                    ApplySolid(cMain)
+                    grad.Color = ColorSequence.new(Color3.fromRGB(255, 255, 255))
+                    grad.Offset = Vector2.new(0, 0)
+                    lbl.TextColor3 = c1
                 end
                 
             -- ==========================================
             -- CORES ORIGINAIS DAS ROLES DO SISTEMA
             -- ==========================================
-            elseif rank == "Owner" then
-                grad.Color = ColorSequence.new({
-                    ColorSequenceKeypoint.new(0, Color3.fromRGB(210, 210, 210)),
-                    ColorSequenceKeypoint.new(0.5, Color3.fromRGB(255, 255, 255)),
-                    ColorSequenceKeypoint.new(1, Color3.fromRGB(60, 60, 60))
-                })
-                grad.Offset = Vector2.new(metallicOffset * 0.7, 0)
-                lbl.TextColor3 = Color3.fromRGB(255, 255, 255)
-                lbl.TextStrokeColor3 = Color3.fromRGB(0, 0, 0)
-                lbl.TextStrokeTransparency = 0
-            elseif rank == "Co-Owner" then
-                ApplyMetallic(Color3.fromRGB(90, 50, 20)) 
-                lbl.TextStrokeColor3 = Color3.fromRGB(0, 0, 0)
-                lbl.TextStrokeTransparency = 0
-            elseif rank == "Supreme" then
-                ApplyMetallic(Color3.fromRGB(0, 20, 100)) 
-                lbl.TextStrokeColor3 = Color3.fromRGB(0, 0, 0)
-                lbl.TextStrokeTransparency = 0
-            elseif rank == "Contributor" then
-                ApplyMetallic(Color3.fromRGB(255, 85, 0)) 
-                lbl.TextStrokeColor3 = Color3.fromRGB(0, 0, 0)
-                lbl.TextStrokeTransparency = 0
-            elseif rank == "Friends" then
-                ApplyMetallic(Color3.fromRGB(173, 216, 230)) 
-                lbl.TextStrokeColor3 = Color3.fromRGB(0, 0, 0)
-                lbl.TextStrokeTransparency = 0
-            elseif rank == "Helper" then
-                ApplyMetallic(Color3.fromRGB(255, 200, 0)) 
-                lbl.TextStrokeColor3 = Color3.fromRGB(255, 255, 255)
-                lbl.TextStrokeTransparency = 0   
-            elseif rank == "Supervisor" then
-                ApplyMetallic(Color3.fromRGB(60, 0, 90)) 
-                lbl.TextStrokeColor3 = Color3.fromRGB(0, 0, 0)
-                lbl.TextStrokeTransparency = 0
-            elseif rank == "Manager" then
-                ApplyMetallic(Color3.fromRGB(120, 0, 0)) 
-                lbl.TextStrokeColor3 = Color3.fromRGB(0, 0, 0)
-                lbl.TextStrokeTransparency = 0
-            elseif rank == "Developer" then
-                ApplyMetallic(Color3.fromRGB(180, 140, 0)) 
-                lbl.TextStrokeColor3 = Color3.fromRGB(0, 0, 0)
-                lbl.TextStrokeTransparency = 0
-            elseif rank == "Marketing" then
-                ApplyMetallic(Color3.fromRGB(0, 80, 0)) 
-                lbl.TextStrokeColor3 = Color3.fromRGB(0, 0, 0)
-                lbl.TextStrokeTransparency = 0
-            elseif rank == "Influencer" then
-                ApplyMetallic(Color3.fromRGB(216, 175, 255)) 
-                lbl.TextStrokeColor3 = Color3.fromRGB(255, 20, 147)
-                lbl.TextStrokeTransparency = 0
-            elseif rank == "Ultimate" then
-                ApplySolid(Color3.fromHSV(hue, 1, 1))
-                lbl.TextStrokeColor3 = Color3.fromRGB(255, 255, 255)
-                lbl.TextStrokeTransparency = 0
-            elseif rank == "Designer" then
-                ApplySolid(Color3.fromRGB(0, 100, 255))
-                lbl.TextStrokeColor3 = Color3.fromRGB(0, 0, 0)
-                lbl.TextStrokeTransparency = 0.2
-            elseif rank == "Tester" then
-                ApplySolid(Color3.fromRGB(139, 69, 19))
-                lbl.TextStrokeColor3 = Color3.fromRGB(255, 255, 255)
-                lbl.TextStrokeTransparency = 0
-            elseif rank == "User" then
-                ApplySolid(Color3.fromRGB(210, 210, 215))
-                lbl.TextStrokeColor3 = Color3.fromRGB(30, 30, 35)
-                lbl.TextStrokeTransparency = 0.2
             else
-                ApplySolid(Color3.fromRGB(255, 255, 255))
-                lbl.TextStrokeColor3 = Color3.fromRGB(0, 0, 0)
-                lbl.TextStrokeTransparency = 0
+                local function ApplyMetallicRole(baseColor)
+                    grad.Color = ColorSequence.new({
+                        ColorSequenceKeypoint.new(0, baseColor),
+                        ColorSequenceKeypoint.new(0.40, baseColor),
+                        ColorSequenceKeypoint.new(0.5, Color3.fromRGB(255, 255, 255)),
+                        ColorSequenceKeypoint.new(0.60, baseColor),
+                        ColorSequenceKeypoint.new(1, baseColor)
+                    })
+                    grad.Offset = Vector2.new(metallicOffset, 0)
+                    lbl.TextColor3 = Color3.fromRGB(255, 255, 255)
+                end
+                
+                local function ApplySolidRole(color)
+                    grad.Color = ColorSequence.new(Color3.fromRGB(255, 255, 255))
+                    grad.Offset = Vector2.new(0, 0)
+                    lbl.TextColor3 = color
+                end
+
+                if rank == "Owner" then
+                    grad.Color = ColorSequence.new({
+                        ColorSequenceKeypoint.new(0, Color3.fromRGB(210, 210, 210)),
+                        ColorSequenceKeypoint.new(0.5, Color3.fromRGB(255, 255, 255)),
+                        ColorSequenceKeypoint.new(1, Color3.fromRGB(60, 60, 60))
+                    })
+                    grad.Offset = Vector2.new(metallicOffset * 0.7, 0)
+                    lbl.TextColor3 = Color3.fromRGB(255, 255, 255)
+                    lbl.TextStrokeColor3 = Color3.fromRGB(0, 0, 0)
+                    lbl.TextStrokeTransparency = 0
+                elseif rank == "Co-Owner" then ApplyMetallicRole(Color3.fromRGB(90, 50, 20)); lbl.TextStrokeColor3 = Color3.fromRGB(0, 0, 0); lbl.TextStrokeTransparency = 0
+                elseif rank == "Supreme" then ApplyMetallicRole(Color3.fromRGB(0, 20, 100)); lbl.TextStrokeColor3 = Color3.fromRGB(0, 0, 0); lbl.TextStrokeTransparency = 0
+                elseif rank == "Contributor" then ApplyMetallicRole(Color3.fromRGB(255, 85, 0)); lbl.TextStrokeColor3 = Color3.fromRGB(0, 0, 0); lbl.TextStrokeTransparency = 0
+                elseif rank == "Friends" then ApplyMetallicRole(Color3.fromRGB(173, 216, 230)); lbl.TextStrokeColor3 = Color3.fromRGB(0, 0, 0); lbl.TextStrokeTransparency = 0
+                elseif rank == "Helper" then ApplyMetallicRole(Color3.fromRGB(255, 200, 0)); lbl.TextStrokeColor3 = Color3.fromRGB(255, 255, 255); lbl.TextStrokeTransparency = 0   
+                elseif rank == "Supervisor" then ApplyMetallicRole(Color3.fromRGB(60, 0, 90)); lbl.TextStrokeColor3 = Color3.fromRGB(0, 0, 0); lbl.TextStrokeTransparency = 0
+                elseif rank == "Manager" then ApplyMetallicRole(Color3.fromRGB(120, 0, 0)); lbl.TextStrokeColor3 = Color3.fromRGB(0, 0, 0); lbl.TextStrokeTransparency = 0
+                elseif rank == "Developer" then ApplyMetallicRole(Color3.fromRGB(180, 140, 0)); lbl.TextStrokeColor3 = Color3.fromRGB(0, 0, 0); lbl.TextStrokeTransparency = 0
+                elseif rank == "Marketing" then ApplyMetallicRole(Color3.fromRGB(0, 80, 0)); lbl.TextStrokeColor3 = Color3.fromRGB(0, 0, 0); lbl.TextStrokeTransparency = 0
+                elseif rank == "Influencer" then ApplyMetallicRole(Color3.fromRGB(216, 175, 255)); lbl.TextStrokeColor3 = Color3.fromRGB(255, 20, 147); lbl.TextStrokeTransparency = 0
+                elseif rank == "Designer" then ApplySolidRole(Color3.fromRGB(0, 100, 255)); lbl.TextStrokeColor3 = Color3.fromRGB(0, 0, 0); lbl.TextStrokeTransparency = 0.2
+                elseif rank == "Tester" then ApplySolidRole(Color3.fromRGB(139, 69, 19)); lbl.TextStrokeColor3 = Color3.fromRGB(255, 255, 255); lbl.TextStrokeTransparency = 0
+                elseif rank == "User" then ApplySolidRole(Color3.fromRGB(210, 210, 215)); lbl.TextStrokeColor3 = Color3.fromRGB(30, 30, 35); lbl.TextStrokeTransparency = 0.2
+                else ApplySolidRole(Color3.fromRGB(255, 255, 255)); lbl.TextStrokeColor3 = Color3.fromRGB(0, 0, 0); lbl.TextStrokeTransparency = 0
+                end
             end
         end)
     end
@@ -13867,7 +13839,7 @@ task.spawn(function()
 end)
 
 -----------------------------------------
---- SISTEMA TAG EDIT (CUSTOM TAG BUILDER & 3D PREVIEW)
+--- SISTEMA TAG EDIT (MULTI-COLOR PALETTE & 3D PREVIEW)
 -----------------------------------------
 task.spawn(function()
     local targetTab = GUI.TagEditFrame
@@ -13877,7 +13849,7 @@ task.spawn(function()
     local HttpService = game:GetService("HttpService")
 
     -- [ SISTEMA DE HISTÓRICO LOCAL ]
-    local HISTORY_FILE = "S7x_TagHistory.json"
+    local HISTORY_FILE = "S7x_TagHistory_V2.json"
     local tagHistory = {}
     pcall(function()
         if readfile and isfile and isfile(HISTORY_FILE) then
@@ -14014,11 +13986,15 @@ task.spawn(function()
     local currentCustomName = userCustomData.CustomName or ""
     local currentEffect = userCustomData.Effect or "Solid"
     local currentFont = userCustomData.Font or "GothamBlack"
-    local currentColor1 = userCustomData.Color or "#FFFFFF"
-    local currentColor2 = userCustomData.Color2 or "#00E5FF"
+    
+    -- Inicia com 5 cores!
+    local cColor1 = userCustomData.Color1 or userCustomData.Color or "#FFFFFF"
+    local cColor2 = userCustomData.Color2 or "#00E5FF"
+    local cColor3 = userCustomData.Color3 or "#FF00FF"
+    local cColor4 = userCustomData.Color4 or "#FFFF00"
+    local cColor5 = userCustomData.Color5 or "#FF0000"
     local currentStroke = userCustomData.StrokeColor or "#000000"
 
-    -- Função Core de Preview e Sincronização
     local function UpdateRealTimePreview()
         local displayTag = currentCustomName
         if displayTag == "" or string.match(displayTag, "^%s*$") then
@@ -14031,19 +14007,21 @@ task.spawn(function()
         _G.CustomTagsConfig[uidStr].CustomName = displayTag
         _G.CustomTagsConfig[uidStr].Effect = currentEffect
         _G.CustomTagsConfig[uidStr].Font = currentFont
-        _G.CustomTagsConfig[uidStr].Color = currentColor1
-        _G.CustomTagsConfig[uidStr].Color1 = currentColor1
-        _G.CustomTagsConfig[uidStr].Color2 = currentColor2
+        _G.CustomTagsConfig[uidStr].Color1 = cColor1
+        _G.CustomTagsConfig[uidStr].Color2 = cColor2
+        _G.CustomTagsConfig[uidStr].Color3 = cColor3
+        _G.CustomTagsConfig[uidStr].Color4 = cColor4
+        _G.CustomTagsConfig[uidStr].Color5 = cColor5
         _G.CustomTagsConfig[uidStr].StrokeColor = currentStroke
         
-        -- Atualiza em tempo real APENAS se estiver equipado
+        -- Otimização: Apenas processa se a tag estiver equipada
         if _G.EquippedTag == "Custom" then
             _G.CustomTagsConfig[uidStr].IsActive = true
             if type(ApplyOrUpdateTag) == "function" then ApplyOrUpdateTag(player) end
         end
     end
 
-    -- [ 5. NAME INPUT (DESIGN ROUNDED/PILL) ]
+    -- [ 5. NAME INPUT ]
     local NameCard = Instance.new("Frame", targetTab)
     NameCard.Size = UDim2.new(0.95, 0, 0, 50)
     NameCard.BackgroundColor3 = Color3.fromRGB(16, 16, 20)
@@ -14059,7 +14037,7 @@ task.spawn(function()
     NameInput.TextSize = 13
     NameInput.Text = currentCustomName
     NameInput.PlaceholderText = "TYPE CUSTOM TAG NAME..."
-    Instance.new("UICorner", NameInput).CornerRadius = UDim.new(1, 0) -- Design Pill
+    Instance.new("UICorner", NameInput).CornerRadius = UDim.new(1, 0) 
     local NameInputStroke = Instance.new("UIStroke", NameInput)
     NameInputStroke.Color = Color3.fromRGB(60, 60, 70)
     NameInputStroke.Thickness = 1.5
@@ -14179,21 +14157,6 @@ task.spawn(function()
         txt.TextSize = 12
         txt.TextColor3 = Color3.fromRGB(255, 255, 255)
         
-        local grad = Instance.new("UIGradient", txt)
-        if eName == "Metallic" then
-            grad.Color = ColorSequence.new({ColorSequenceKeypoint.new(0, Color3.fromRGB(150, 150, 150)), ColorSequenceKeypoint.new(0.5, Color3.fromRGB(255, 255, 255)), ColorSequenceKeypoint.new(1, Color3.fromRGB(150, 150, 150))})
-        elseif eName == "Duo-chrome" then
-            grad.Color = ColorSequence.new({ColorSequenceKeypoint.new(0, Color3.fromRGB(255, 150, 255)), ColorSequenceKeypoint.new(1, Color3.fromRGB(150, 255, 255))})
-        elseif eName == "Rainbow" then
-            grad.Color = ColorSequence.new({ColorSequenceKeypoint.new(0, Color3.fromRGB(255, 0, 0)), ColorSequenceKeypoint.new(0.33, Color3.fromRGB(0, 255, 0)), ColorSequenceKeypoint.new(0.66, Color3.fromRGB(0, 0, 255)), ColorSequenceKeypoint.new(1, Color3.fromRGB(255, 0, 0))})
-        elseif eName == "Fire" then
-            grad.Color = ColorSequence.new({ColorSequenceKeypoint.new(0, Color3.fromRGB(255, 50, 0)), ColorSequenceKeypoint.new(0.5, Color3.fromRGB(255, 200, 0)), ColorSequenceKeypoint.new(1, Color3.fromRGB(180, 0, 0))})
-        elseif eName == "Cosmic" then
-            grad.Color = ColorSequence.new({ColorSequenceKeypoint.new(0, Color3.fromRGB(138, 43, 226)), ColorSequenceKeypoint.new(0.5, Color3.fromRGB(0, 229, 255)), ColorSequenceKeypoint.new(1, Color3.fromRGB(255, 20, 147))})
-        elseif eName == "Gold Luxury" then
-            grad.Color = ColorSequence.new({ColorSequenceKeypoint.new(0, Color3.fromRGB(218, 165, 32)), ColorSequenceKeypoint.new(0.5, Color3.fromRGB(255, 255, 255)), ColorSequenceKeypoint.new(1, Color3.fromRGB(184, 134, 11))})
-        end
-
         btn.MouseButton1Click:Connect(function()
             currentEffect = eName
             UpdateRealTimePreview()
@@ -14204,17 +14167,25 @@ task.spawn(function()
 
     refreshGridSelections()
 
-    -- [ 8. COLOR PICKERS ]
-    createSectionTitle("COLORS & BORDERS", 7)
+    -- [ 8. COLOR PICKERS (GRID COM 6 CORES) ]
+    createSectionTitle("COLOR PALETTE EDITOR", 7)
     
     local ColorsContainer = Instance.new("Frame", targetTab)
-    ColorsContainer.Size = UDim2.new(0.95, 0, 0, 140)
+    ColorsContainer.Size = UDim2.new(0.95, 0, 0, 0) -- Tamanho dinâmico
     ColorsContainer.BackgroundTransparency = 1
     ColorsContainer.LayoutOrder = 8
-    local cLayout = Instance.new("UIListLayout", ColorsContainer)
-    cLayout.Padding = UDim.new(0, 8)
-    cLayout.SortOrder = Enum.SortOrder.LayoutOrder
+    
+    local colorsGrid = Instance.new("UIGridLayout", ColorsContainer)
+    colorsGrid.CellSize = UDim2.new(0.48, 0, 0, 36)
+    colorsGrid.CellPadding = UDim2.new(0, 10, 0, 8)
+    colorsGrid.HorizontalAlignment = Enum.HorizontalAlignment.Center
+    colorsGrid.SortOrder = Enum.SortOrder.LayoutOrder
 
+    colorsGrid:GetPropertyChangedSignal("AbsoluteContentSize"):Connect(function()
+        ColorsContainer.Size = UDim2.new(0.95, 0, 0, colorsGrid.AbsoluteContentSize.Y)
+    end)
+
+    -- UI DO COLOR PICKER POPUP
     local ColorPickerModal = Instance.new("Frame", GUI.ScreenGui)
     ColorPickerModal.Name = "S7xColorPicker"
     ColorPickerModal.Size = UDim2.new(0, 240, 0, 260)
@@ -14232,7 +14203,7 @@ task.spawn(function()
     local SVMapBlackOverlay = Instance.new("Frame", SVMap); SVMapBlackOverlay.Size = UDim2.new(1, 0, 1, 0); SVMapBlackOverlay.BackgroundColor3 = Color3.fromRGB(0, 0, 0); SVMapBlackOverlay.ZIndex = 1002; Instance.new("UICorner", SVMapBlackOverlay).CornerRadius = UDim.new(0, 4)
     local UIGradientBlack = Instance.new("UIGradient", SVMapBlackOverlay); UIGradientBlack.Rotation = 90; UIGradientBlack.Transparency = NumberSequence.new({NumberSequenceKeypoint.new(0, 1), NumberSequenceKeypoint.new(1, 0)})
     local MapKnob = Instance.new("Frame", SVMapBlackOverlay); MapKnob.Size = UDim2.new(0, 10, 0, 10); MapKnob.BackgroundColor3 = Color3.fromRGB(255, 255, 255); MapKnob.AnchorPoint = Vector2.new(0.5, 0.5); MapKnob.Position = UDim2.new(1, 0, 0, 0); MapKnob.ZIndex = 1003; Instance.new("UICorner", MapKnob).CornerRadius = UDim.new(1, 0)
-    Instance.new("UIStroke", MapKnob).Color = Color3.fromRGB(0, 0, 0); Instance.new("UIStroke", MapKnob).Thickness = 2
+    local MapKnobStroke = Instance.new("UIStroke", MapKnob); MapKnobStroke.Color = Color3.fromRGB(0, 0, 0); MapKnobStroke.Thickness = 2
 
     local HueSlider = Instance.new("ImageButton", ColorPickerModal)
     HueSlider.Size = UDim2.new(1, -20, 0, 12); HueSlider.Position = UDim2.new(0, 10, 0, 175); HueSlider.AutoButtonColor = false; HueSlider.ZIndex = 1001; Instance.new("UICorner", HueSlider).CornerRadius = UDim.new(1, 0)
@@ -14292,9 +14263,10 @@ task.spawn(function()
         ColorPickerModal.Visible = true
     end
 
+    -- Criação dos 6 botões (5 Camadas + 1 Borda)
     local function createColorBtn(titleText, defaultHex, layoutOrder, onColorChange)
         local frame = Instance.new("Frame", ColorsContainer)
-        frame.Size = UDim2.new(1, 0, 0, 40)
+        frame.Size = UDim2.new(1, 0, 0, 36)
         frame.BackgroundColor3 = Color3.fromRGB(16, 16, 20)
         frame.LayoutOrder = layoutOrder
         Instance.new("UICorner", frame).CornerRadius = UDim.new(0, 6)
@@ -14302,27 +14274,27 @@ task.spawn(function()
 
         local title = Instance.new("TextLabel", frame)
         title.Size = UDim2.new(0.6, 0, 1, 0)
-        title.Position = UDim2.new(0, 15, 0, 0)
+        title.Position = UDim2.new(0, 10, 0, 0)
         title.BackgroundTransparency = 1
         title.Text = titleText
         title.TextColor3 = Color3.fromRGB(200, 200, 200)
         title.Font = Enum.Font.GothamBold
-        title.TextSize = 11
+        title.TextSize = 10
         title.TextXAlignment = Enum.TextXAlignment.Left
 
         local hexLbl = Instance.new("TextLabel", frame)
         hexLbl.Size = UDim2.new(0, 60, 1, 0)
-        hexLbl.Position = UDim2.new(1, -110, 0, 0)
+        hexLbl.Position = UDim2.new(1, -95, 0, 0)
         hexLbl.BackgroundTransparency = 1
         hexLbl.Text = defaultHex or "#FFFFFF"
         hexLbl.TextColor3 = Color3.fromRGB(150, 150, 150)
         hexLbl.Font = Enum.Font.Code
-        hexLbl.TextSize = 11
+        hexLbl.TextSize = 10
         hexLbl.TextXAlignment = Enum.TextXAlignment.Right
 
         local colorPreviewBtn = Instance.new("TextButton", frame)
-        colorPreviewBtn.Size = UDim2.new(0, 26, 0, 26)
-        colorPreviewBtn.Position = UDim2.new(1, -36, 0.5, -13)
+        colorPreviewBtn.Size = UDim2.new(0, 22, 0, 22)
+        colorPreviewBtn.Position = UDim2.new(1, -30, 0.5, -11)
         colorPreviewBtn.BackgroundColor3 = _G.S7xParseColor(defaultHex, Color3.fromRGB(255,255,255))
         colorPreviewBtn.Text = ""
         Instance.new("UICorner", colorPreviewBtn).CornerRadius = UDim.new(1, 0)
@@ -14336,9 +14308,12 @@ task.spawn(function()
         return hexLbl, colorPreviewBtn
     end
 
-    local c1Lbl, c1Btn = createColorBtn("MAIN COLOR", currentColor1, 1, function(newHex) currentColor1 = newHex; UpdateRealTimePreview() end)
-    local c2Lbl, c2Btn = createColorBtn("SECONDARY COLOR", currentColor2, 2, function(newHex) currentColor2 = newHex; UpdateRealTimePreview() end)
-    local strkLbl, strkBtn = createColorBtn("BORDER COLOR", currentStroke, 3, function(newHex) currentStroke = newHex; UpdateRealTimePreview() end)
+    local c1Lbl, c1Btn = createColorBtn("COLOR 1 (BASE)", cColor1, 1, function(newHex) cColor1 = newHex; UpdateRealTimePreview() end)
+    local c2Lbl, c2Btn = createColorBtn("COLOR 2 (SHINE)", cColor2, 2, function(newHex) cColor2 = newHex; UpdateRealTimePreview() end)
+    local c3Lbl, c3Btn = createColorBtn("COLOR 3", cColor3, 3, function(newHex) cColor3 = newHex; UpdateRealTimePreview() end)
+    local c4Lbl, c4Btn = createColorBtn("COLOR 4", cColor4, 4, function(newHex) cColor4 = newHex; UpdateRealTimePreview() end)
+    local c5Lbl, c5Btn = createColorBtn("COLOR 5", cColor5, 5, function(newHex) cColor5 = newHex; UpdateRealTimePreview() end)
+    local strkLbl, strkBtn = createColorBtn("BORDER", currentStroke, 6, function(newHex) currentStroke = newHex; UpdateRealTimePreview() end)
 
     -- [ 9. BOTÕES FINAIS (SAVE E EQUIP) ]
     local ActionContainer = Instance.new("Frame", targetTab)
@@ -14388,25 +14363,22 @@ task.spawn(function()
 
     EquipBtn.MouseButton1Click:Connect(function()
         if _G.EquippedTag == "Custom" then 
-            -- DESEQUIPA E RESTAURA A TAG ORIGINAL
             _G.EquippedTag = nil 
             if _G.CustomTagsConfig and _G.CustomTagsConfig[uidStr] then
                 _G.CustomTagsConfig[uidStr].IsActive = false
             end
             if type(S7xNotify) == "function" then S7xNotify("TAG REMOVED", "Returned to default role tag.") end
         else 
-            -- EQUIPA A TAG CUSTOMIZADA
             _G.EquippedTag = "Custom" 
             if _G.CustomTagsConfig and _G.CustomTagsConfig[uidStr] then
                 _G.CustomTagsConfig[uidStr].IsActive = true
             end
-            UpdateRealTimePreview() -- Garante que os dados visuais estejam prontos
+            UpdateRealTimePreview() 
             if type(S7xNotify) == "function" then S7xNotify("TAG EQUIPPED", "Custom tag applied.") end
         end
         
         refreshEquipVisuals()
         
-        -- Aplica a mudança visual instantaneamente na cabeça
         if type(ApplyOrUpdateTag) == "function" then ApplyOrUpdateTag(player) end
         if type(SendPresence) == "function" then task.spawn(SendPresence) end
     end)
@@ -14450,7 +14422,6 @@ task.spawn(function()
             nameLbl.Position = UDim2.new(0, 15, 0, 0)
             nameLbl.BackgroundTransparency = 1
             
-            -- Aplica a fonte salva no histórico
             local sFont, eFont = pcall(function() return Enum.Font[entry.Font or "GothamBlack"] end)
             nameLbl.Font = (sFont and eFont) and eFont or Enum.Font.GothamBlack
             
@@ -14464,25 +14435,28 @@ task.spawn(function()
             nameLbl.TextStrokeColor3 = cStroke
             nameLbl.TextStrokeTransparency = 0
             
-            -- Recriação visual perfeita do efeito salvo
             if entry.Effect and entry.Effect ~= "Solid" then
                 local grad = Instance.new("UIGradient", nameLbl)
-                local c2 = _G.S7xParseColor(entry.Color2, Color3.fromRGB(200,200,200))
+                local cc1 = _G.S7xParseColor(entry.Color1, Color3.fromRGB(255,255,255))
+                local cc2 = _G.S7xParseColor(entry.Color2, Color3.fromRGB(200,200,200))
+                local cc3 = _G.S7xParseColor(entry.Color3, Color3.fromRGB(150,150,150))
+                local cc4 = _G.S7xParseColor(entry.Color4, Color3.fromRGB(100,100,100))
+                local cc5 = _G.S7xParseColor(entry.Color5, Color3.fromRGB(50,50,50))
                 
                 if entry.Effect == "Duo-chrome" then
-                    grad.Color = ColorSequence.new({ColorSequenceKeypoint.new(0, cMain), ColorSequenceKeypoint.new(0.5, Color3.fromRGB(255,255,255)), ColorSequenceKeypoint.new(1, c2)})
+                    grad.Color = ColorSequence.new({ColorSequenceKeypoint.new(0, cc1), ColorSequenceKeypoint.new(0.5, cc2), ColorSequenceKeypoint.new(1, cc3)})
                 elseif entry.Effect == "Rainbow" then
-                    grad.Color = ColorSequence.new({ColorSequenceKeypoint.new(0, Color3.fromRGB(255, 0, 0)), ColorSequenceKeypoint.new(0.33, Color3.fromRGB(0, 255, 0)), ColorSequenceKeypoint.new(0.66, Color3.fromRGB(0, 0, 255)), ColorSequenceKeypoint.new(1, Color3.fromRGB(255, 0, 0))})
+                    grad.Color = ColorSequence.new({ColorSequenceKeypoint.new(0, cc1), ColorSequenceKeypoint.new(0.25, cc2), ColorSequenceKeypoint.new(0.5, cc3), ColorSequenceKeypoint.new(0.75, cc4), ColorSequenceKeypoint.new(1, cc5)})
                 elseif entry.Effect == "Fire" then
-                    grad.Color = ColorSequence.new({ColorSequenceKeypoint.new(0, Color3.fromRGB(255, 50, 0)), ColorSequenceKeypoint.new(0.5, Color3.fromRGB(255, 200, 0)), ColorSequenceKeypoint.new(1, Color3.fromRGB(180, 0, 0))})
+                    grad.Color = ColorSequence.new({ColorSequenceKeypoint.new(0, cc1), ColorSequenceKeypoint.new(0.45, cc2), ColorSequenceKeypoint.new(0.7, cc3), ColorSequenceKeypoint.new(1, cc4)})
                 elseif entry.Effect == "Cosmic" then
-                    grad.Color = ColorSequence.new({ColorSequenceKeypoint.new(0, Color3.fromRGB(138, 43, 226)), ColorSequenceKeypoint.new(0.5, Color3.fromRGB(0, 229, 255)), ColorSequenceKeypoint.new(1, Color3.fromRGB(255, 20, 147))})
+                    grad.Color = ColorSequence.new({ColorSequenceKeypoint.new(0, cc1), ColorSequenceKeypoint.new(0.35, cc2), ColorSequenceKeypoint.new(0.5, cc3), ColorSequenceKeypoint.new(0.75, cc4), ColorSequenceKeypoint.new(1, cc5)})
                 elseif entry.Effect == "Gold Luxury" then
-                    grad.Color = ColorSequence.new({ColorSequenceKeypoint.new(0, Color3.fromRGB(218, 165, 32)), ColorSequenceKeypoint.new(0.5, Color3.fromRGB(255, 255, 255)), ColorSequenceKeypoint.new(1, Color3.fromRGB(184, 134, 11))})
+                    grad.Color = ColorSequence.new({ColorSequenceKeypoint.new(0, cc1), ColorSequenceKeypoint.new(0.4, cc2), ColorSequenceKeypoint.new(0.5, cc3), ColorSequenceKeypoint.new(0.6, cc2), ColorSequenceKeypoint.new(1, cc1)})
                 elseif entry.Effect == "Metallic" then
-                    grad.Color = ColorSequence.new({ColorSequenceKeypoint.new(0, cMain), ColorSequenceKeypoint.new(0.5, Color3.fromRGB(255,255,255)), ColorSequenceKeypoint.new(1, cMain)})
+                    grad.Color = ColorSequence.new({ColorSequenceKeypoint.new(0, cc1), ColorSequenceKeypoint.new(0.4, cc1), ColorSequenceKeypoint.new(0.5, cc2), ColorSequenceKeypoint.new(0.6, cc1), ColorSequenceKeypoint.new(1, cc1)})
                 else
-                    grad.Color = ColorSequence.new({ColorSequenceKeypoint.new(0, cMain), ColorSequenceKeypoint.new(1, c2)})
+                    grad.Color = ColorSequence.new({ColorSequenceKeypoint.new(0, cc1), ColorSequenceKeypoint.new(1, cc2)})
                 end
                 nameLbl.TextColor3 = Color3.fromRGB(255,255,255)
             end
@@ -14507,11 +14481,20 @@ task.spawn(function()
                 NameInput.Text = entry.Name
                 currentEffect = entry.Effect or "Solid"
                 currentFont = entry.Font or "GothamBlack"
-                currentColor1 = entry.Color1
-                currentColor2 = entry.Color2
-                currentStroke = entry.Stroke
+                cColor1 = entry.Color1 or "#FFFFFF"
+                cColor2 = entry.Color2 or "#00E5FF"
+                cColor3 = entry.Color3 or "#FF00FF"
+                cColor4 = entry.Color4 or "#FFFF00"
+                cColor5 = entry.Color5 or "#FF0000"
+                currentStroke = entry.Stroke or "#000000"
                 
-                -- Atualiza visualmente o painel para refletir a tag restaurada
+                c1Lbl.Text = cColor1; c1Btn.BackgroundColor3 = _G.S7xParseColor(cColor1, Color3.fromRGB(255,255,255))
+                c2Lbl.Text = cColor2; c2Btn.BackgroundColor3 = _G.S7xParseColor(cColor2, Color3.fromRGB(0,229,255))
+                c3Lbl.Text = cColor3; c3Btn.BackgroundColor3 = _G.S7xParseColor(cColor3, Color3.fromRGB(255,0,255))
+                c4Lbl.Text = cColor4; c4Btn.BackgroundColor3 = _G.S7xParseColor(cColor4, Color3.fromRGB(255,255,0))
+                c5Lbl.Text = cColor5; c5Btn.BackgroundColor3 = _G.S7xParseColor(cColor5, Color3.fromRGB(255,0,0))
+                strkLbl.Text = currentStroke; strkBtn.BackgroundColor3 = _G.S7xParseColor(currentStroke, Color3.fromRGB(0,0,0))
+                
                 refreshGridSelections()
                 UpdateRealTimePreview()
                 
@@ -14520,7 +14503,6 @@ task.spawn(function()
         end
         HistoryList.CanvasSize = UDim2.new(0, 0, 0, #tagHistory * 46)
         
-        -- Atualiza o scroll total da aba Tag Edit
         local contentHeight = layout.AbsoluteContentSize.Y
         if contentHeight > 0 then
             targetTab.CanvasSize = UDim2.new(0, 0, 0, contentHeight + 40)
@@ -14529,7 +14511,6 @@ task.spawn(function()
 
     RenderHistoryUI()
 
-    -- Motor do Botão Salvar (Cloud + Histórico Local)
     SaveBtn.MouseButton1Click:Connect(function()
         SaveBtn.Text = "SAVING..."
         UpdateRealTimePreview()
@@ -14538,15 +14519,17 @@ task.spawn(function()
             Name = currentCustomName,
             Effect = currentEffect,
             Font = currentFont,
-            Color1 = currentColor1,
-            Color2 = currentColor2,
+            Color1 = cColor1,
+            Color2 = cColor2,
+            Color3 = cColor3,
+            Color4 = cColor4,
+            Color5 = cColor5,
             Stroke = currentStroke
         }
         
-        -- Evita duplicatas no histórico se a tag for idêntica à última salva
         if #tagHistory == 0 or (tagHistory[1].Name ~= newEntry.Name or tagHistory[1].Effect ~= newEntry.Effect or tagHistory[1].Font ~= newEntry.Font or tagHistory[1].Color1 ~= newEntry.Color1) then
             table.insert(tagHistory, 1, newEntry)
-            if #tagHistory > 10 then table.remove(tagHistory, 11) end -- Mantém as 10 últimas
+            if #tagHistory > 10 then table.remove(tagHistory, 11) end
             saveTagHistory()
             RenderHistoryUI()
         end
@@ -14568,12 +14551,7 @@ task.spawn(function()
         SaveBtn.TextColor3 = Color3.fromRGB(255, 255, 255)
     end)
 
-    -- Atualizador dinâmico de Scroll de toda a tela
     layout:GetPropertyChangedSignal("AbsoluteContentSize"):Connect(function()
         targetTab.CanvasSize = UDim2.new(0, 0, 0, layout.AbsoluteContentSize.Y + 40)
     end)
 end)
-
--- =========================================================================
--- 🛑 FINAL DO SCRIPT 🛑
--- =========================================================================
