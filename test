@@ -1221,7 +1221,8 @@ workspace.CurrentCamera:GetPropertyChangedSignal("ViewportSize"):Connect(functio
             local constraint = GUI.MainFrame:FindFirstChildOfClass("UISizeConstraint")
             if constraint then
                 local newSize = workspace.CurrentCamera.ViewportSize
-                constraint.MaxSize = Vector2.new(newSize.X * 0.90, newSize.Y * 0.80)
+                -- Atualizado para 95% do Y (Altura) para permitir o crescimento "para baixo"
+                constraint.MaxSize = Vector2.new(newSize.X * 0.90, newSize.Y * 0.95)
             end
         end
     end)
@@ -1846,13 +1847,15 @@ GUI.MainFrame.Active = true
 GUI.MainFrame.Draggable = true 
 GUI.MainFrame.ClipsDescendants = false
 
+-- LIMITADOR NATIVO (Barreira física contra vazamento de tela)
 local S7xSizeConstraint = Instance.new("UISizeConstraint", GUI.MainFrame)
-S7xSizeConstraint.MaxSize = Vector2.new(workspace.CurrentCamera.ViewportSize.X * 0.90, workspace.CurrentCamera.ViewportSize.Y * 0.80)
+-- Permite que o painel ocupe quase toda a altura da tela (95%)
+S7xSizeConstraint.MaxSize = Vector2.new(workspace.CurrentCamera.ViewportSize.X * 0.90, workspace.CurrentCamera.ViewportSize.Y * 0.95)
 
--- ESCALA PROPORCIONAL MOBILE (Encolhe a UI inteira em 15%, incluindo textos e botões)
+-- ESCALA PROPORCIONAL MOBILE (Mantido em 90% para proteger a legibilidade das fontes)
 if isMobile then
     local MobileScale = Instance.new("UIScale", GUI.MainFrame)
-    MobileScale.Scale = 0.85 
+    MobileScale.Scale = 0.90 
 end
 
 local MainCorner = Instance.new("UICorner", GUI.MainFrame)
@@ -13492,8 +13495,8 @@ end)
 -- ==========================================
 -- VARIÁVEIS SEGURAS DE TAMANHO E POSIÇÃO (BLINDADO)
 -- ==========================================
--- Substitua a linha antiga por esta:
-_G.S7xPanelTargetSize = isMobile and UDim2.new(0.85, 0, 0.75, 0) or UDim2.new(0, 530, 0, 480)
+-- Mobile: 75% de Largura e 92% de Altura
+_G.S7xPanelTargetSize = isMobile and UDim2.new(0.75, 0, 0.92, 0) or UDim2.new(0, 530, 0, 480)
 _G.S7xPanelTargetPos = UDim2.new(0.5, 0, 0.5, 0)
 
 local panelOpen = false
