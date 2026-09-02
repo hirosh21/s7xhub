@@ -1883,7 +1883,7 @@ GUI.Title.TextSize = 18
 GUI.Title.TextXAlignment = Enum.TextXAlignment.Center
 
 GUI.VersionLabel = Instance.new("TextLabel", GUI.TopBar)
-GUI.VersionLabel.Text = "1.35.0"
+GUI.VersionLabel.Text = "1.35.1"
 GUI.VersionLabel.TextColor3 = Color3.fromRGB(150, 150, 150)
 GUI.VersionLabel.BackgroundTransparency = 1
 GUI.VersionLabel.Size = UDim2.new(0, 80, 1, 0)
@@ -2826,7 +2826,7 @@ task.spawn(function()
     VText.Size = UDim2.new(1, -20, 1, 0)
     VText.Position = UDim2.new(0, 18, 0, 0)
     VText.BackgroundTransparency = 1
-    VText.Text = "v1.35.0"
+    VText.Text = "v1.35.1"
     VText.TextColor3 = Color3.fromRGB(200, 200, 200)
     VText.Font = Enum.Font.GothamBold
     VText.TextSize = 9
