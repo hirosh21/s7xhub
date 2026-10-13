@@ -2957,7 +2957,7 @@ task.spawn(function()
     GUI.ChatTabNavBtn.MouseButton1Click:Connect(function() switchChatTab(true) end)
     GUI.PlayersTabNavBtn.MouseButton1Click:Connect(function() switchChatTab(false) end)
 
-    -- ==========================================
+  -- ==========================================
     -- [ ÁREA DO CHAT GLOBAL (UI BLINDADA) ]
     -- ==========================================
     if GUI.ChatScroll then pcall(function() GUI.ChatScroll:Destroy() end) end
@@ -2992,48 +2992,6 @@ task.spawn(function()
         GUI.ChatScroll.CanvasSize = UDim2.new(0, 0, 0, GUI.ChatLayout.AbsoluteContentSize.Y + 20) 
     end)
 
-  -- ==========================================
-    -- [ SISTEMAS DE UI DO CHAT: INPUT & REPLY ]
-    -- ==========================================
-    -- Barra de Resposta Flutuante (Invisível por padrão)
-    GUI.ReplyBar = Instance.new("Frame", GUI.ChatArea)
-    GUI.ReplyBar.Size = UDim2.new(1, 0, 0, 25)
-    GUI.ReplyBar.Position = UDim2.new(0, 0, 1, -80) -- Posicionada logo acima do Input
-    GUI.ReplyBar.BackgroundColor3 = Color3.fromRGB(30, 20, 40)
-    GUI.ReplyBar.Visible = false
-    GUI.ReplyBar.ZIndex = 4
-    Instance.new("UICorner", GUI.ReplyBar).CornerRadius = UDim.new(0, 6)
-    Instance.new("UIStroke", GUI.ReplyBar).Color = Color3.fromRGB(170, 0, 255)
-
-    GUI.ReplyText = Instance.new("TextLabel", GUI.ReplyBar)
-    GUI.ReplyText.Size = UDim2.new(1, -35, 1, 0)
-    GUI.ReplyText.Position = UDim2.new(0, 10, 0, 0)
-    GUI.ReplyText.BackgroundTransparency = 1
-    GUI.ReplyText.TextColor3 = Color3.fromRGB(200, 200, 200)
-    GUI.ReplyText.Font = Enum.Font.GothamMedium
-    GUI.ReplyText.TextSize = 10
-    GUI.ReplyText.TextXAlignment = Enum.TextXAlignment.Left
-    GUI.ReplyText.RichText = true
-
-    GUI.ReplyCloseBtn = Instance.new("TextButton", GUI.ReplyBar)
-    GUI.ReplyCloseBtn.Size = UDim2.new(0, 20, 0, 20)
-    GUI.ReplyCloseBtn.Position = UDim2.new(1, -25, 0.5, -10)
-    GUI.ReplyCloseBtn.BackgroundColor3 = Color3.fromRGB(255, 50, 50)
-    GUI.ReplyCloseBtn.Text = "X"
-    GUI.ReplyCloseBtn.TextColor3 = Color3.fromRGB(255, 255, 255)
-    GUI.ReplyCloseBtn.Font = Enum.Font.GothamBold
-    GUI.ReplyCloseBtn.TextSize = 10
-    Instance.new("UICorner", GUI.ReplyCloseBtn).CornerRadius = UDim.new(1, 0)
-
-    -- Variável Global para armazenar quem estamos respondendo
-    _G.ChatState = { ReplyingToName = nil }
-
-    GUI.ReplyCloseBtn.MouseButton1Click:Connect(function()
-        _G.ChatState.ReplyingToName = nil
-        GUI.ReplyBar.Visible = false
-    end)
-
-    -- Barra de Mensagens Blindada
     GUI.CInputArea = Instance.new("Frame", GUI.ChatArea)
     GUI.CInputArea.Size = UDim2.new(1, 0, 0, 42)
     GUI.CInputArea.Position = UDim2.new(0, 0, 1, -52) 
@@ -3064,62 +3022,32 @@ task.spawn(function()
     Instance.new("UICorner", GUI.CSendBtn).CornerRadius = UDim.new(1, 0)
 
     -- ==========================================
-    -- [ MOTOR DE BOLHAS DO CHAT AVANÇADO (S7X ENGINE) ]
+    -- [ MOTOR DE BOLHAS CLÁSSICO E 100% ESTÁVEL ]
     -- ==========================================
     task.spawn(function()
         _G.LastChatID = 0
         _G.LocalRenderedMsgs = {} 
-        _G.PendingLocalMsg = nil 
         local HttpService = game:GetService("HttpService")
 
-        _G.RenderDiscordMessage = function(msgData, isOptimistic)
-            if not msgData or not msgData.message_text or msgData.message_text == "" then return end
-            
-            local isMe = (tostring(msgData.sender_id) == tostring(game.Players.LocalPlayer.UserId))
-            
-            if not isOptimistic then
-                if isMe and _G.PendingLocalMsg == msgData.message_text then
-                    _G.PendingLocalMsg = nil 
-                    if msgData.id then _G.LocalRenderedMsgs[msgData.id] = true end
-                    return 
-                end
-            end
-
+        _G.RenderDiscordMessage = function(msgData)
+            if type(msgData) ~= "table" then return end
+            if not msgData.message_text or msgData.message_text == "" then return end
             if msgData.id and _G.LocalRenderedMsgs[msgData.id] then return end
             if msgData.id then _G.LocalRenderedMsgs[msgData.id] = true end
 
-            -- [ 1. LÓGICA DE DECODIFICAÇÃO DE RESPOSTA (DB SAFE) ]
+            local senderId = msgData.sender_id or 0
+            local senderName = msgData.sender_name or "Unknown"
             local rawText = msgData.message_text
-            local replyName = nil
-            local matchReply, matchText = string.match(rawText, "^%[REPLY:(.-)%](.*)")
-            
-            if matchReply then
-                replyName = matchReply
-                rawText = matchText
-            end
+            local safeRole = msgData.sender_role or "USER"
 
-            -- [ 2. LÓGICA DE MENÇÃO (@USER) ]
+            local isMe = (tostring(senderId) == tostring(game.Players.LocalPlayer.UserId))
             local bubbleColor = isMe and Color3.fromRGB(0, 132, 255) or Color3.fromRGB(38, 38, 40)
-            local myName = game.Players.LocalPlayer.Name
-            
-            if string.find(string.lower(rawText), "@" .. string.lower(myName)) then
-                -- Se o jogador for mencionado, muda a cor APENAS PARA ELE
-                bubbleColor = Color3.fromRGB(170, 80, 0)
-                rawText = string.gsub(rawText, "(?i)@" .. myName, "<font color='#ffff00'><b>@" .. myName .. "</b></font>")
-                pcall(function()
-                    local sfx = Instance.new("Sound", game:GetService("CoreGui"))
-                    sfx.SoundId = "rbxassetid://6895082404"
-                    sfx.Volume = 2; sfx:Play()
-                    game:GetService("Debris"):AddItem(sfx, 2)
-                end)
-            end
 
             local msgContainer = Instance.new("Frame", GUI.ChatScroll)
             msgContainer.Name = "Msg_" .. (msgData.id or "Temp")
-            msgContainer.Size = UDim2.new(1, 0, 0, 0)
+            msgContainer.Size = UDim2.new(1, 0, 0, 30)
             msgContainer.BackgroundTransparency = 1
             msgContainer.AutomaticSize = Enum.AutomaticSize.Y
-            msgContainer.ZIndex = 5
 
             local contLayout = Instance.new("UIListLayout", msgContainer)
             contLayout.FillDirection = Enum.FillDirection.Horizontal
@@ -3130,91 +3058,64 @@ task.spawn(function()
             local avatar = Instance.new("ImageButton", msgContainer)
             avatar.Size = UDim2.new(0, 36, 0, 36)
             avatar.BackgroundColor3 = Color3.fromRGB(20, 20, 25)
-            avatar.Image = "rbxthumb://type=AvatarHeadShot&id=" .. msgData.sender_id .. "&w=150&h=150"
+            avatar.Image = "rbxthumb://type=AvatarHeadShot&id=" .. senderId .. "&w=150&h=150"
             avatar.LayoutOrder = isMe and 2 or 1 
             Instance.new("UICorner", avatar).CornerRadius = UDim.new(1, 0)
             
-            -- [ LÓGICA DE ABRIR PERFIL AO CLICAR NA FOTO DA MENSAGEM ]
             avatar.MouseButton1Click:Connect(function()
-                if _G.ExecutePlayerSearch then 
-                    _G.ExecutePlayerSearch(msgData.sender_id) 
-                    -- Alterna para a aba Players automaticamente
-                    GUI.ChatArea.Visible = false
-                    GUI.PlayersArea.Visible = true
-                    game:GetService("TweenService"):Create(GUI.PlayersTabNavBtn, TweenInfo.new(0.3), {BackgroundColor3 = Color3.fromRGB(25, 25, 30)}):Play()
-                    game:GetService("TweenService"):Create(GUI.ChatTabNavBtn, TweenInfo.new(0.3), {BackgroundColor3 = Color3.fromRGB(15, 15, 18)}):Play()
-                    if not GUI.PlayersTabNavBtn:FindFirstChildOfClass("UIStroke") then Instance.new("UIStroke", GUI.PlayersTabNavBtn).Color = Color3.fromRGB(170, 0, 255) end
-                    if GUI.ChatTabNavBtn:FindFirstChildOfClass("UIStroke") then GUI.ChatTabNavBtn:FindFirstChildOfClass("UIStroke"):Destroy() end
-                end
+                if _G.ExecutePlayerSearch then _G.ExecutePlayerSearch(senderId) end
             end)
 
             local contentArea = Instance.new("Frame", msgContainer)
-            contentArea.Size = UDim2.new(0, 0, 0, 0)
+            contentArea.Size = UDim2.new(0, 50, 0, 30)
             contentArea.BackgroundTransparency = 1
             contentArea.AutomaticSize = Enum.AutomaticSize.XY
             contentArea.LayoutOrder = isMe and 1 or 2
 
             local contentLayout = Instance.new("UIListLayout", contentArea)
             contentLayout.SortOrder = Enum.SortOrder.LayoutOrder
-            contentLayout.Padding = UDim.new(0, 2)
+            contentLayout.Padding = UDim.new(0, 4)
             contentLayout.HorizontalAlignment = isMe and Enum.HorizontalAlignment.Right or Enum.HorizontalAlignment.Left
 
-            -- [ Renderização da Label de Resposta (Se Existir) ]
-            if replyName then
-                local repLbl = Instance.new("TextLabel", contentArea)
-                repLbl.Size = UDim2.new(0, 0, 0, 12)
-                repLbl.AutomaticSize = Enum.AutomaticSize.X
-                repLbl.BackgroundTransparency = 1
-                repLbl.RichText = true
-                repLbl.Text = "<font color='#aaaaaa'>↳ Replying to </font><font color='#17e3ff'>@" .. replyName .. "</font>"
-                repLbl.Font = Enum.Font.GothamMedium
-                repLbl.TextSize = 9
-            end
-
-            local safeRole = msgData.sender_role or "USER"
-
             local nameLbl = Instance.new("TextLabel", contentArea)
-            nameLbl.Size = UDim2.new(0, 0, 0, 14)
+            nameLbl.Size = UDim2.new(0, 50, 0, 14)
             nameLbl.AutomaticSize = Enum.AutomaticSize.X
             nameLbl.BackgroundTransparency = 1
             nameLbl.RichText = true
-            nameLbl.Text = "<b><font color='#ffffff'>"..msgData.sender_name.."</font></b> <font size='10' color='"..(isMe and "#aaffff" or "#aa00ff").."'>["..string.upper(safeRole).."]</font>"
+            nameLbl.Text = "<b><font color='#ffffff'>"..senderName.."</font></b> <font size='10' color='"..(isMe and "#aaffff" or "#aa00ff").."'>["..string.upper(safeRole).."]</font>"
             nameLbl.Font = Enum.Font.GothamMedium
             nameLbl.TextSize = 11
+            nameLbl.TextXAlignment = isMe and Enum.TextXAlignment.Right or Enum.TextXAlignment.Left
 
             local bubbleContainer = Instance.new("Frame", contentArea)
-            bubbleContainer.Size = UDim2.new(0, 30, 0, 30) 
+            bubbleContainer.Size = UDim2.new(0, 20, 0, 20)
             bubbleContainer.AutomaticSize = Enum.AutomaticSize.XY
             bubbleContainer.BackgroundColor3 = bubbleColor
             bubbleContainer.BorderSizePixel = 0
             Instance.new("UICorner", bubbleContainer).CornerRadius = UDim.new(0, 12)
 
             local bubblePadding = Instance.new("UIPadding", bubbleContainer)
-            bubblePadding.PaddingTop = UDim.new(0, 8)
-            bubblePadding.PaddingBottom = UDim.new(0, 8)
-            bubblePadding.PaddingLeft = UDim.new(0, 12)
-            bubblePadding.PaddingRight = UDim.new(0, 12)
+            bubblePadding.PaddingTop = UDim.new(0, 8); bubblePadding.PaddingBottom = UDim.new(0, 8)
+            bubblePadding.PaddingLeft = UDim.new(0, 12); bubblePadding.PaddingRight = UDim.new(0, 12)
 
             local tail = Instance.new("Frame", bubbleContainer)
-            tail.Size = UDim2.new(0, 14, 0, 14)
+            tail.Size = UDim2.new(0, 12, 0, 12)
             tail.BackgroundColor3 = bubbleColor
             tail.BorderSizePixel = 0
             tail.ZIndex = 0
             tail.Rotation = 45 
-            
             if isMe then
-                tail.AnchorPoint = Vector2.new(0.5, 0.5)
-                tail.Position = UDim2.new(1, -2, 1, -6)
+                tail.AnchorPoint = Vector2.new(1, 1)
+                tail.Position = UDim2.new(1, 4, 1, -4)
             else
-                tail.AnchorPoint = Vector2.new(0.5, 0.5)
-                tail.Position = UDim2.new(0, 2, 1, -6)
+                tail.AnchorPoint = Vector2.new(0, 1)
+                tail.Position = UDim2.new(0, -4, 1, -4)
             end
 
             local msgLbl = Instance.new("TextLabel", bubbleContainer)
             msgLbl.Size = UDim2.new(0, 10, 0, 10)
             msgLbl.AutomaticSize = Enum.AutomaticSize.XY
             msgLbl.BackgroundTransparency = 1
-            msgLbl.RichText = true
             msgLbl.Text = rawText
             msgLbl.TextColor3 = Color3.fromRGB(255, 255, 255)
             msgLbl.Font = Enum.Font.GothamMedium
@@ -3228,48 +3129,13 @@ task.spawn(function()
             sizeConstraint.MaxSize = Vector2.new(220, 9999) 
 
             local spacer = Instance.new("Frame", contentArea)
-            spacer.Size = UDim2.new(1, 0, 0, 4)
+            spacer.Size = UDim2.new(1, 0, 0, 2)
             spacer.BackgroundTransparency = 1
 
-            -- [ INTERAÇÃO: HOLD TO REPLY ]
-            local pressTick = 0
-            local isPressing = false
-
-            bubbleContainer.InputBegan:Connect(function(input)
-                if input.UserInputType.Name:find("MouseButton1") or input.UserInputType.Name:find("Touch") then
-                    isPressing = true
-                    pressTick = tick()
-                    
-                    task.spawn(function()
-                        while isPressing do
-                            if tick() - pressTick >= 0.5 then
-                                isPressing = false
-                                _G.ChatState.ReplyingToName = msgData.sender_name
-                                local snippet = rawText:sub(1, 25) .. (#rawText > 25 and "..." or "")
-                                
-                                GUI.ReplyText.Text = "Replying to <b>@" .. msgData.sender_name .. "</b>: " .. snippet
-                                GUI.ReplyBar.Visible = true
-                                break
-                            end
-                            game:GetService("RunService").Heartbeat:Wait()
-                        end
-                    end)
-                end
-            end)
-
-            bubbleContainer.InputEnded:Connect(function(input)
-                if input.UserInputType.Name:find("MouseButton1") or input.UserInputType.Name:find("Touch") then
-                    isPressing = false
-                end
-            end)
-
-            -- Auto-Scroll Estável
-            task.defer(function()
-                local currentY = GUI.ChatScroll.CanvasPosition.Y
-                local windowY = GUI.ChatScroll.AbsoluteWindowSize.Y
-                local targetY = GUI.ChatLayout.AbsoluteContentSize.Y + 20
-                if (targetY - currentY) <= (windowY + 150) or isMe then
-                    GUI.ChatScroll.CanvasPosition = Vector2.new(0, targetY)
+            -- Auto-Scroll Imediato sem Animação (Para não conflitar com a UI)
+            task.delay(0.1, function()
+                if GUI.ChatScroll and GUI.ChatLayout then
+                    GUI.ChatScroll.CanvasPosition = Vector2.new(0, GUI.ChatLayout.AbsoluteContentSize.Y + 100)
                 end
             end)
         end
@@ -3278,44 +3144,37 @@ task.spawn(function()
             local content = GUI.CMsgBox.Text
             if content == "" or string.match(content, "^%s*$") then return end
             
-            -- Se estiver respondendo, embute no texto (Blindagem Supabase)
-            if _G.ChatState.ReplyingToName then
-                content = "[REPLY:" .. _G.ChatState.ReplyingToName .. "]" .. content
-                _G.ChatState.ReplyingToName = nil
-                GUI.ReplyBar.Visible = false
-            end
-
             local myRank = "User"
             pcall(function()
                 if type(GetFirebaseRank) == "function" then myRank = GetFirebaseRank(game.Players.LocalPlayer) or "User" end
             end)
             
+            -- [ CORREÇÃO VITAL ]: O audio_id precisa existir para o banco de dados aceitar a mensagem!
             local payload = {
                 sender_id = tostring(game.Players.LocalPlayer.UserId), 
                 sender_name = game.Players.LocalPlayer.DisplayName,
                 sender_role = myRank, 
                 job_id = tostring(game.JobId),
                 message_text = content,
-                audio_id = "" -- Exigido pelo banco de dados original
+                audio_id = "" 
             }
             
             GUI.CMsgBox.Text = ""
-            _G.PendingLocalMsg = content
 
-            -- Optimistic UI (Aparece na hora)
-            _G.RenderDiscordMessage(payload, true)
+            -- Feedback Local Imediato
+            _G.RenderDiscordMessage(payload)
             
-            -- Disparo Oculto
+            -- Disparo Oculto e Seguro
             task.spawn(function() pcall(function() _G.SupabaseReq("/global_chat", "POST", payload) end) end)
         end
 
-        -- Eventos
+        -- [ EVENTOS DE CLIQUE SEGURA ]
         GUI.CSendBtn.MouseButton1Click:Connect(_G.SendChatPayload)
         GUI.CMsgBox.FocusLost:Connect(function(enterPressed)
             if enterPressed and GUI.CMsgBox.Text ~= "" then _G.SendChatPayload() end
         end)
 
-        -- Carregamento Inicial
+        -- [ CARREGAMENTO INICIAL DO HISTÓRICO ]
         task.spawn(function()
             pcall(function()
                 local res = _G.SupabaseReq("/global_chat?order=id.desc&limit=15", "GET")
@@ -3326,7 +3185,7 @@ task.spawn(function()
                             local msg = decoded[i]
                             if msg.id and msg.id > _G.LastChatID then
                                 _G.LastChatID = msg.id
-                                _G.RenderDiscordMessage(msg, false)
+                                _G.RenderDiscordMessage(msg)
                             end
                         end
                     end
@@ -3334,8 +3193,8 @@ task.spawn(function()
             end)
         end)
 
-        -- Loop de Sincronização Tempo Real
-        while task.wait(2.5) do 
+        -- [ LOOP DE ATUALIZAÇÃO BLINDADO ]
+        while task.wait(3) do 
             if GUI.ChatArea and GUI.ChatArea.Visible then
                 pcall(function()
                     local res = _G.SupabaseReq("/global_chat?id=gt.".._G.LastChatID.."&order=id.asc", "GET")
@@ -3345,13 +3204,13 @@ task.spawn(function()
                             for _, msg in ipairs(decoded) do
                                 if msg.id and msg.id > _G.LastChatID then
                                     _G.LastChatID = msg.id
-                                    _G.RenderDiscordMessage(msg, false)
+                                    _G.RenderDiscordMessage(msg)
                                 end
                             end
                         end
                     end
 
-                    -- GC
+                    -- Auto-limpeza anti-lag do banco de dados
                     if _G.LastChatID > 60 then
                         if game.Players.LocalPlayer.UserId % 2 ~= 0 then
                             local thresholdId = _G.LastChatID - 40
